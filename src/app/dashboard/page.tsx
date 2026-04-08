@@ -57,15 +57,7 @@ export default function DashboardPage() {
       textColor: 'text-amber-600',
       trend: 'Por atender'
     },
-    {
-      title: 'Ingresos Hoy',
-      value: `$${dashboardStats.ingresosHoy.toFixed(2)}`,
-      icon: DollarSign,
-      color: 'from-blue-violet to-azure-blue',
-      bgColor: 'bg-violet-50',
-      textColor: 'text-violet-600',
-      trend: 'Actualizado'
-    },
+   
     {
       title: 'Consultas Pend.',
       value: dashboardStats.consultasPendientes,
@@ -143,7 +135,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {stats.map((stat, index) => (
           <Card key={index} className="border-0 shadow-soft hover:shadow-lg transition-shadow">
             <CardContent className="p-6">

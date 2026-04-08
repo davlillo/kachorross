@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import logo from '@/media/logo.png';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -108,9 +109,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {/* Logo */}
         <div className="p-6 border-b border-border">
           <Link to="/dashboard" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-amber-gold to-blaze-orange rounded-xl flex items-center justify-center shadow-md">
-              <PawPrint className="w-5 h-5 text-white" />
-            </div>
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-brw-lg mb-4">
+            <img src={logo} alt="Logo" className="w-full h-full object-contain" />
+          </div>
             <div>
               <h1 className="font-bold text-lg leading-tight">
                 <span className="text-azure-blue">Vet.</span>{' '}

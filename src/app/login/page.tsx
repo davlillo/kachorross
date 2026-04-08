@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PawPrint, Loader2, Stethoscope } from 'lucide-react';
+import logo from '@/media/logo.png';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -49,8 +50,8 @@ export default function LoginPage() {
       <div className="relative z-10 w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-amber-gold to-blaze-orange rounded-3xl shadow-lg mb-4">
-            <PawPrint className="w-12 h-12 text-white" />
+          <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-brw-lg mb-4">
+            <img src={logo} alt="Logo" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-3xl font-bold text-foreground">
             <span className="text-azure-blue">Veterinaria</span>{' '}
@@ -153,7 +154,7 @@ export default function LoginPage() {
         </Card>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
-          © 2024 Veterinaria Kachorro's. Todos los derechos reservados.
+          © 2026 Veterinaria Kachorro's. Todos los derechos reservados.
         </p>
       </div>
     </div>
