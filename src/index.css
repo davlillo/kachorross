@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Paleta principal - Emerald como solicitado */
+    --background: 150 30% 98%;
+    --foreground: 160 20% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 160 20% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 160 20% 15%;
+    --primary: 158 75% 35%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 45 100% 52%;
+    --secondary-foreground: 160 20% 15%;
+    --muted: 150 20% 95%;
+    --muted-foreground: 160 10% 45%;
+    --accent: 45 100% 52%;
+    --accent-foreground: 160 20% 15%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 150 20% 88%;
+    --input: 150 20% 88%;
+    --ring: 158 75% 35%;
+    --radius: 0.625rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 160 20% 25%;
+    --sidebar-primary: 158 75% 35%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 45 100% 52%;
+    --sidebar-accent-foreground: 160 20% 15%;
+    --sidebar-border: 150 20% 88%;
+    --sidebar-ring: 158 75% 35%;
+
+    /* Colores personalizados de la marca */
+    --amber-gold: 45 100% 52%;
+    --blaze-orange: 19 97% 50%;
+    --neon-pink: 336 100% 50%;
+    --blue-violet: 262 82% 58%;
+    --azure-blue: 217 100% 61%;
+    --sky-light: 195 71% 77%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+/* Clases de utilidad para colores de marca */
+@layer utilities {
+  .text-amber-gold {
+    color: hsl(var(--amber-gold));
+  }
+  .bg-amber-gold {
+    background-color: hsl(var(--amber-gold));
+  }
+  .text-blaze-orange {
+    color: hsl(var(--blaze-orange));
+  }
+  .bg-blaze-orange {
+    background-color: hsl(var(--blaze-orange));
+  }
+  .text-neon-pink {
+    color: hsl(var(--neon-pink));
+  }
+  .bg-neon-pink {
+    background-color: hsl(var(--neon-pink));
+  }
+  .text-blue-violet {
+    color: hsl(var(--blue-violet));
+  }
+  .bg-blue-violet {
+    background-color: hsl(var(--blue-violet));
+  }
+  .text-azure-blue {
+    color: hsl(var(--azure-blue));
+  }
+  .bg-azure-blue {
+    background-color: hsl(var(--azure-blue));
+  }
+  .text-sky-light {
+    color: hsl(var(--sky-light));
+  }
+  .bg-sky-light {
+    background-color: hsl(var(--sky-light));
+  }
+  .border-sky-light {
+    border-color: hsl(var(--sky-light));
+  }
+}
+
+/* Animaciones personalizadas */
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s ease-out;
+}
