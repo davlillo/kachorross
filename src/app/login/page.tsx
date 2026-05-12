@@ -39,11 +39,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-light/30 via-background to-esmerald-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-sky-light/30 via-background to-purpura-50 flex items-center justify-center p-4">
       {/* Decoración de fondo */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-20 -right-20 w-96 h-96 bg-amber-gold/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-esmerald-400/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-purpura-400/10 rounded-full blur-3xl" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-violet/5 rounded-full blur-3xl" />
       </div>
 
@@ -63,7 +63,7 @@ export default function LoginPage() {
         <Card className="border-0 shadow-soft">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center flex items-center justify-center gap-2">
-              <Stethoscope className="w-5 h-5 text-esmerald-500" />
+              <Stethoscope className="w-5 h-5 text-purpura-500" />
               Iniciar Sesión
             </CardTitle>
             <CardDescription className="text-center">
@@ -106,7 +106,7 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full h-11 bg-gradient-to-r from-esmerald-500 to-esmerald-600 hover:from-esmerald-600 hover:to-esmerald-700 text-white font-semibold"
+                className="w-full h-11 bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700 text-white font-semibold"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -130,7 +130,7 @@ export default function LoginPage() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="flex-1 text-xs border-esmerald-200 hover:bg-esmerald-50"
+                  className="flex-1 text-xs border-purpura-200 hover:bg-purpura-50"
                   onClick={() => fillDemoCredentials('doctora')}
                 >
                   <Stethoscope className="w-3 h-3 mr-1" />

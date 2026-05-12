@@ -55,17 +55,17 @@ module.exports = {
         'blue-violet': '#8338ec',
         'azure-blue': '#3a86ff',
         'sky-light': '#87CEEB',
-        'esmerald': {
-          50: '#ecfdf5',
-          100: '#d1fae5',
-          200: '#a7f3d0',
-          300: '#6ee7b7',
-          400: '#34d399',
-          500: '#10b981',
-          600: '#059669',
-          700: '#047857',
-          800: '#065f46',
-          900: '#064e3b',
+        'purpura': {
+          50: '#faf5ff',
+          100: '#f3e8ff',
+          200: '#e9d5ff',
+          300: '#d8b4fe',
+          400: '#c084fc',
+          500: '#a855f7',
+          600: '#9333ea',
+          700: '#7e22ce',
+          800: '#6b21a8',
+          900: '#581c87',
         },
       },
       borderRadius: {
@@ -78,7 +78,7 @@ module.exports = {
       boxShadow: {
         xs: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
         'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.1)',
-        'glow': '0 0 20px rgba(16, 185, 129, 0.3)',
+        'glow': '0 0 20px rgba(168, 85, 247, 0.3)',
       },
       keyframes: {
         "accordion-down": {

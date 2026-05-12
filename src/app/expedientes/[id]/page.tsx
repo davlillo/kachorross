@@ -90,7 +90,7 @@ export default function ExpedienteDetailPage() {
         </div>
         <div className="flex gap-2">
           <Link to={`/consulta/nueva?mascota=${mascota.id}`}>
-            <Button className="bg-gradient-to-r from-esmerald-500 to-esmerald-600">
+            <Button className="bg-gradient-to-r from-purpura-500 to-purpura-600">
               <Plus className="w-4 h-4 mr-2" />
               Nueva Consulta
             </Button>
@@ -103,7 +103,7 @@ export default function ExpedienteDetailPage() {
         <Card className="border-0 shadow-soft lg:col-span-1">
           <CardHeader className="pb-4">
             <CardTitle className="text-lg flex items-center gap-2">
-              <PawPrint className="w-5 h-5 text-esmerald-500" />
+              <PawPrint className="w-5 h-5 text-purpura-500" />
               Información del Paciente
             </CardTitle>
           </CardHeader>
@@ -116,7 +116,7 @@ export default function ExpedienteDetailPage() {
                   alt={mascota.nombre}
                   className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
                 />
-                <button className="absolute bottom-0 right-0 w-8 h-8 bg-esmerald-500 rounded-full flex items-center justify-center text-white shadow-md hover:bg-esmerald-600 transition-colors">
+                <button className="absolute bottom-0 right-0 w-8 h-8 bg-purpura-500 rounded-full flex items-center justify-center text-white shadow-md hover:bg-purpura-600 transition-colors">
                   <Camera className="w-4 h-4" />
                 </button>
               </div>
@@ -263,7 +263,7 @@ export default function ExpedienteDetailPage() {
                                 <h4 className="font-semibold">{consulta.motivo}</h4>
                                 <Badge 
                                   variant={consulta.estado === 'finalizado' ? 'default' : 'secondary'}
-                                  className={consulta.estado === 'finalizado' ? 'bg-esmerald-500' : 'bg-amber-gold text-amber-900'}
+                                  className={consulta.estado === 'finalizado' ? 'bg-purpura-500' : 'bg-amber-gold text-amber-900'}
                                 >
                                   {consulta.estado === 'finalizado' ? 'Finalizado' : 'Pendiente'}
                                 </Badge>
@@ -341,8 +341,8 @@ export default function ExpedienteDetailPage() {
                           className="flex items-center justify-between p-4 rounded-xl bg-muted/50"
                         >
                           <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full bg-esmerald-100 flex items-center justify-center">
-                              <Syringe className="w-5 h-5 text-esmerald-600" />
+                            <div className="w-10 h-10 rounded-full bg-purpura-100 flex items-center justify-center">
+                              <Syringe className="w-5 h-5 text-purpura-600" />
                             </div>
                             <div>
                               <p className="font-semibold">{vacuna.nombre}</p>
@@ -355,7 +355,7 @@ export default function ExpedienteDetailPage() {
                               {new Date(vacuna.fechaAplicacion).toLocaleDateString('es-ES')}
                             </p>
                             {vacuna.proximaDosis && (
-                              <p className="text-sm text-esmerald-600">
+                              <p className="text-sm text-purpura-600">
                                 <span className="text-muted-foreground">Próxima:</span>{' '}
                                 {new Date(vacuna.proximaDosis).toLocaleDateString('es-ES')}
                               </p>

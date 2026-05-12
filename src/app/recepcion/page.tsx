@@ -55,7 +55,7 @@ export default function RecepcionPage() {
 
   const getEstadoColor = (estado: string) => {
     const colors: Record<string, string> = {
-      listo: 'bg-esmerald-500',
+      listo: 'bg-purpura-500',
       pagando: 'bg-amber-gold text-amber-900',
       entregado: 'bg-gray-400'
     };
@@ -95,7 +95,7 @@ export default function RecepcionPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Badge variant="outline" className="px-3 py-1 text-esmerald-600 border-esmerald-200">
+          <Badge variant="outline" className="px-3 py-1 text-purpura-600 border-purpura-200">
             <CheckCircle className="w-3 h-3 mr-1" />
             {monitorSalida.filter(m => m.estado === 'listo').length} listos
           </Badge>
@@ -167,7 +167,7 @@ export default function RecepcionPage() {
                   {/* Total */}
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-muted-foreground">Total a pagar:</span>
-                    <span className="text-2xl font-bold text-esmerald-600">${item.total.toFixed(2)}</span>
+                    <span className="text-2xl font-bold text-purpura-600">${item.total.toFixed(2)}</span>
                   </div>
 
                   {/* Botones */}
@@ -181,7 +181,7 @@ export default function RecepcionPage() {
                     </Button>
                     {item.estado !== 'entregado' && (
                       <Button 
-                        className="flex-1 bg-gradient-to-r from-esmerald-500 to-esmerald-600 hover:from-esmerald-600 hover:to-esmerald-700"
+                        className="flex-1 bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700"
                         onClick={() => handleMarcarTerminado(item.consultaId)}
                         disabled={consultaTerminada === item.consultaId}
                       >
@@ -231,8 +231,8 @@ export default function RecepcionPage() {
                     key={consulta.id} 
                     className="flex items-center gap-4 p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
                   >
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-esmerald-100 to-esmerald-200 flex items-center justify-center">
-                      <Stethoscope className="w-5 h-5 text-esmerald-600" />
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purpura-100 to-purpura-200 flex items-center justify-center">
+                      <Stethoscope className="w-5 h-5 text-purpura-600" />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
@@ -267,7 +267,7 @@ export default function RecepcionPage() {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <ClipboardList className="w-5 h-5 text-esmerald-500" />
+              <ClipboardList className="w-5 h-5 text-purpura-500" />
               Detalle de Receta-Factura
             </DialogTitle>
           </DialogHeader>
@@ -275,7 +275,7 @@ export default function RecepcionPage() {
             <div className="space-y-4">
               {/* Info paciente */}
               <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <PawPrint className="w-5 h-5 text-esmerald-500" />
+                <PawPrint className="w-5 h-5 text-purpura-500" />
                 <div>
                   <p className="font-semibold">
                     {mascotas.find(m => m.id === consultaSeleccionada.mascotaId)?.nombre}
@@ -312,7 +312,7 @@ export default function RecepcionPage() {
               {/* Total */}
               <div className="flex items-center justify-between pt-4 border-t">
                 <span className="text-lg font-medium">Total:</span>
-                <span className="text-2xl font-bold text-esmerald-600">
+                <span className="text-2xl font-bold text-purpura-600">
                   ${consultaSeleccionada.total.toFixed(2)}
                 </span>
               </div>
@@ -335,8 +335,8 @@ export default function RecepcionPage() {
             <DialogTitle className="text-center">¿Confirmar salida?</DialogTitle>
           </DialogHeader>
           <div className="text-center py-4">
-            <div className="w-16 h-16 rounded-full bg-esmerald-100 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-esmerald-600" />
+            <div className="w-16 h-16 rounded-full bg-purpura-100 flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-8 h-8 text-purpura-600" />
             </div>
             <p className="text-muted-foreground">
               Esta acción marcará la consulta como finalizada y el paciente saldrá de la lista activa.
@@ -348,7 +348,7 @@ export default function RecepcionPage() {
             </Button>
             <Button 
               onClick={confirmarTerminado}
-              className="flex-1 bg-gradient-to-r from-esmerald-500 to-esmerald-600"
+              className="flex-1 bg-gradient-to-r from-purpura-500 to-purpura-600"
             >
               <CheckCircle className="w-4 h-4 mr-1" />
               Confirmar

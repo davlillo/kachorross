@@ -133,7 +133,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 className={`
                   flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
                   ${isActive 
-                    ? 'bg-gradient-to-r from-esmerald-500 to-esmerald-600 text-white shadow-md' 
+                    ? 'bg-gradient-to-r from-purpura-500 to-purpura-600 text-white shadow-md' 
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   }
                 `}
@@ -158,9 +158,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
-                <Avatar className="w-10 h-10 border-2 border-esmerald-200">
+                <Avatar className="w-10 h-10 border-2 border-purpura-200">
                   <AvatarImage src={user.avatar} alt={user.nombre} />
-                  <AvatarFallback className="bg-gradient-to-br from-esmerald-400 to-esmerald-600 text-white">
+                  <AvatarFallback className="bg-gradient-to-br from-purpura-400 to-purpura-600 text-white">
                     {getInitials(user.nombre)}
                   </AvatarFallback>
                 </Avatar>
@@ -239,7 +239,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   className={`
                     flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
                     ${isActive 
-                      ? 'bg-esmerald-500 text-white' 
+                      ? 'bg-purpura-500 text-white' 
                       : 'text-muted-foreground hover:bg-muted'
                     }
                   `}

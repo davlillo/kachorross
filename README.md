@@ -85,7 +85,7 @@ El sistema incluye datos simulados para probar todas las funcionalidades:
 
 El sistema utiliza una paleta vibrante y amigable:
 
-- **Esmerald** (`#10b981`) - Color primario, salud y naturaleza
+- **Púrpura** (`#a855f7`) - Color primario, creatividad y cuidado
 - **Amber Gold** (`#ffbe0b`) - Acentos y alertas
 - **Blaze Orange** (`#fb5607`) - Acciones importantes
 - **Neon Pink** (`#ff006e`) - Badges y notificaciones

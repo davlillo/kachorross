@@ -51,7 +51,7 @@ export default function ExpedientesPage() {
       perro: 'bg-blue-100 text-blue-700',
       gato: 'bg-pink-100 text-pink-700',
       ave: 'bg-amber-100 text-amber-700',
-      conejo: 'bg-esmerald-100 text-esmerald-700',
+      conejo: 'bg-purpura-100 text-purpura-700',
       otro: 'bg-gray-100 text-gray-700'
     };
     return colors[especie] || 'bg-gray-100 text-gray-700';
@@ -63,7 +63,7 @@ export default function ExpedientesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold text-foreground flex items-center gap-2">
-            <FileText className="w-7 h-7 text-esmerald-500" />
+            <FileText className="w-7 h-7 text-purpura-500" />
             Expedientes Clínicos
           </h1>
           <p className="text-muted-foreground mt-1">
@@ -96,7 +96,7 @@ export default function ExpedientesPage() {
                 variant={filtroEspecie === 'todos' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setFiltroEspecie('todos')}
-                className={filtroEspecie === 'todos' ? 'bg-esmerald-500' : ''}
+                className={filtroEspecie === 'todos' ? 'bg-purpura-500' : ''}
               >
                 Todos
               </Button>
@@ -190,13 +190,13 @@ export default function ExpedientesPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Stethoscope className="w-4 h-4 text-esmerald-500" />
+                        <Stethoscope className="w-4 h-4 text-purpura-500" />
                         <span className="font-medium">{expediente.consultas.length}</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <Link to={`/expedientes/${expediente.mascotaId}`}>
-                        <Button variant="ghost" size="sm" className="text-esmerald-600 hover:text-esmerald-700">
+                        <Button variant="ghost" size="sm" className="text-purpura-600 hover:text-purpura-700">
                           Ver expediente
                           <ArrowRight className="w-4 h-4 ml-1" />
                         </Button>
@@ -215,7 +215,7 @@ export default function ExpedientesPage() {
         {[
           { label: 'Perros', value: expedientes.filter(e => e.mascota.especie === 'perro').length, icon: '🐕', color: 'bg-blue-50' },
           { label: 'Gatos', value: expedientes.filter(e => e.mascota.especie === 'gato').length, icon: '🐱', color: 'bg-pink-50' },
-          { label: 'Otros', value: expedientes.filter(e => !['perro', 'gato'].includes(e.mascota.especie)).length, icon: '🐾', color: 'bg-esmerald-50' },
+          { label: 'Otros', value: expedientes.filter(e => !['perro', 'gato'].includes(e.mascota.especie)).length, icon: '🐾', color: 'bg-purpura-50' },
           { label: 'Total', value: expedientes.length, icon: '📋', color: 'bg-violet-50' },
         ].map((stat, index) => (
           <Card key={index} className="border-0 shadow-soft">

@@ -88,7 +88,7 @@ export default function NuevaConsultaPage() {
   const getCategoriaColor = (categoria: string) => {
     const colors: Record<string, string> = {
       servicio: 'bg-blue-100 text-blue-700',
-      vacuna: 'bg-esmerald-100 text-esmerald-700',
+      vacuna: 'bg-purpura-100 text-purpura-700',
       medicamento: 'bg-amber-100 text-amber-700',
       petshop: 'bg-pink-100 text-pink-700',
       laboratorio: 'bg-violet-100 text-violet-700',
@@ -164,7 +164,7 @@ export default function NuevaConsultaPage() {
           </Link>
           <div>
             <h1 className="text-2xl lg:text-3xl font-bold text-foreground flex items-center gap-2">
-              <Stethoscope className="w-7 h-7 text-esmerald-500" />
+              <Stethoscope className="w-7 h-7 text-purpura-500" />
               Nueva Consulta
             </h1>
             <p className="text-muted-foreground">
@@ -181,7 +181,7 @@ export default function NuevaConsultaPage() {
           <Card className="border-0 shadow-soft">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <PawPrint className="w-5 h-5 text-esmerald-500" />
+                <PawPrint className="w-5 h-5 text-purpura-500" />
                 Paciente
               </CardTitle>
             </CardHeader>
@@ -216,7 +216,7 @@ export default function NuevaConsultaPage() {
               ) : (
                 <Button 
                   onClick={() => setShowMascotaDialog(true)}
-                  className="w-full h-20 border-dashed border-2 border-muted hover:border-esmerald-300 hover:bg-esmerald-50"
+                  className="w-full h-20 border-dashed border-2 border-muted hover:border-purpura-300 hover:bg-purpura-50"
                   variant="outline"
                 >
                   <Plus className="w-5 h-5 mr-2" />
@@ -230,7 +230,7 @@ export default function NuevaConsultaPage() {
           <Card className="border-0 shadow-soft">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <Stethoscope className="w-5 h-5 text-esmerald-500" />
+                <Stethoscope className="w-5 h-5 text-purpura-500" />
                 Información Clínica
               </CardTitle>
             </CardHeader>
@@ -315,7 +315,7 @@ export default function NuevaConsultaPage() {
                 <span>Servicios y Productos</span>
                 <Dialog open={showProductDialog} onOpenChange={setShowProductDialog}>
                   <DialogTrigger asChild>
-                    <Button size="sm" className="bg-esmerald-500 hover:bg-esmerald-600">
+                    <Button size="sm" className="bg-purpura-500 hover:bg-purpura-600">
                       <Plus className="w-4 h-4 mr-1" />
                       Agregar
                     </Button>
@@ -364,7 +364,7 @@ export default function NuevaConsultaPage() {
                             </div>
                             <div className="text-right">
                               <p className="font-semibold">${producto.precio.toFixed(2)}</p>
-                              <Plus className="w-4 h-4 text-esmerald-500 ml-auto" />
+                              <Plus className="w-4 h-4 text-purpura-500 ml-auto" />
                             </div>
                           </button>
                         ))}
@@ -418,12 +418,12 @@ export default function NuevaConsultaPage() {
             <CardFooter className="flex-col gap-4 border-t pt-4">
               <div className="w-full flex items-center justify-between text-lg">
                 <span className="font-medium">Total:</span>
-                <span className="font-bold text-2xl text-esmerald-600">${total.toFixed(2)}</span>
+                <span className="font-bold text-2xl text-purpura-600">${total.toFixed(2)}</span>
               </div>
               <Button 
                 onClick={handleSubmit}
                 disabled={!isValid}
-                className="w-full h-12 bg-gradient-to-r from-esmerald-500 to-esmerald-600 hover:from-esmerald-600 hover:to-esmerald-700 text-white font-semibold"
+                className="w-full h-12 bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700 text-white font-semibold"
               >
                 <Save className="w-5 h-5 mr-2" />
                 Guardar Consulta

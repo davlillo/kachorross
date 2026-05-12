@@ -4,35 +4,35 @@
 
 @layer base {
   :root {
-    /* Paleta principal - Emerald como solicitado */
-    --background: 150 30% 98%;
-    --foreground: 160 20% 15%;
+    /* Paleta principal - Púrpura */
+    --background: 270 25% 98%;
+    --foreground: 270 20% 15%;
     --card: 0 0% 100%;
-    --card-foreground: 160 20% 15%;
+    --card-foreground: 270 20% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 160 20% 15%;
-    --primary: 158 75% 35%;
+    --popover-foreground: 270 20% 15%;
+    --primary: 270 75% 42%;
     --primary-foreground: 0 0% 100%;
     --secondary: 45 100% 52%;
-    --secondary-foreground: 160 20% 15%;
-    --muted: 150 20% 95%;
-    --muted-foreground: 160 10% 45%;
+    --secondary-foreground: 270 20% 15%;
+    --muted: 270 20% 95%;
+    --muted-foreground: 270 10% 45%;
     --accent: 45 100% 52%;
-    --accent-foreground: 160 20% 15%;
+    --accent-foreground: 270 20% 15%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 150 20% 88%;
-    --input: 150 20% 88%;
-    --ring: 158 75% 35%;
+    --border: 270 20% 88%;
+    --input: 270 20% 88%;
+    --ring: 270 75% 42%;
     --radius: 0.625rem;
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 160 20% 25%;
-    --sidebar-primary: 158 75% 35%;
+    --sidebar-foreground: 270 20% 25%;
+    --sidebar-primary: 270 75% 42%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 45 100% 52%;
-    --sidebar-accent-foreground: 160 20% 15%;
-    --sidebar-border: 150 20% 88%;
-    --sidebar-ring: 158 75% 35%;
+    --sidebar-accent-foreground: 270 20% 15%;
+    --sidebar-border: 270 20% 88%;
+    --sidebar-ring: 270 75% 42%;
 
     /* Colores personalizados de la marca */
     --amber-gold: 45 100% 52%;

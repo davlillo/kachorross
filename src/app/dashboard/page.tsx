@@ -43,9 +43,9 @@ export default function DashboardPage() {
       title: 'Pacientes Hoy',
       value: dashboardStats.pacientesHoy,
       icon: Users,
-      color: 'from-esmerald-400 to-esmerald-600',
-      bgColor: 'bg-esmerald-50',
-      textColor: 'text-esmerald-600',
+      color: 'from-purpura-400 to-purpura-600',
+      bgColor: 'bg-purpura-50',
+      textColor: 'text-purpura-600',
       trend: '+2 vs ayer'
     },
     {
@@ -103,7 +103,7 @@ export default function DashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
-            {getGreeting()}, <span className="text-esmerald-600">{user?.nombre.split(' ')[0]}</span>
+            {getGreeting()}, <span className="text-purpura-600">{user?.nombre.split(' ')[0]}</span>
           </h1>
           <p className="text-muted-foreground mt-1">
             {getRoleLabel(user?.rol || '')} • {new Date().toLocaleDateString('es-ES', { 
@@ -117,7 +117,7 @@ export default function DashboardPage() {
         <div className="flex gap-2">
           {user?.rol === 'doctora' && (
             <Link to="/consulta/nueva">
-              <Button className="bg-gradient-to-r from-esmerald-500 to-esmerald-600 hover:from-esmerald-600 hover:to-esmerald-700">
+              <Button className="bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700">
                 <Stethoscope className="w-4 h-4 mr-2" />
                 Nueva Consulta
               </Button>
@@ -164,11 +164,11 @@ export default function DashboardPage() {
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                <Activity className="w-5 h-5 text-esmerald-500" />
+                <Activity className="w-5 h-5 text-purpura-500" />
                 {user?.rol === 'recepcion' ? 'Monitor de Salida' : 'Próximas Citas'}
               </CardTitle>
               <Link to={user?.rol === 'recepcion' ? '/recepcion' : '/expedientes'}>
-                <Button variant="ghost" size="sm" className="text-esmerald-600">
+                <Button variant="ghost" size="sm" className="text-purpura-600">
                   Ver todo
                   <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
@@ -195,7 +195,7 @@ export default function DashboardPage() {
                         <Badge 
                           variant={item.estado === 'listo' ? 'default' : item.estado === 'pagando' ? 'secondary' : 'outline'}
                           className={`
-                            ${item.estado === 'listo' ? 'bg-esmerald-500' : ''}
+                            ${item.estado === 'listo' ? 'bg-purpura-500' : ''}
                             ${item.estado === 'pagando' ? 'bg-amber-gold text-amber-900' : ''}
                           `}
                         >
@@ -226,8 +226,8 @@ export default function DashboardPage() {
                     key={cita.id} 
                     className="flex items-center gap-4 p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
                   >
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-esmerald-100 to-esmerald-200 flex items-center justify-center">
-                      <PawPrint className="w-5 h-5 text-esmerald-600" />
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purpura-100 to-purpura-200 flex items-center justify-center">
+                      <PawPrint className="w-5 h-5 text-purpura-600" />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
@@ -236,7 +236,7 @@ export default function DashboardPage() {
                           variant="outline"
                           className={`
                             ${cita.tipo === 'urgente' ? 'border-neon-pink text-neon-pink' : ''}
-                            ${cita.tipo === 'control' ? 'border-esmerald-500 text-esmerald-600' : ''}
+                            ${cita.tipo === 'control' ? 'border-purpura-500 text-purpura-600' : ''}
                             ${cita.tipo === 'seguimiento' ? 'border-azure-blue text-azure-blue' : ''}
                           `}
                         >
@@ -246,7 +246,7 @@ export default function DashboardPage() {
                       <p className="text-sm text-muted-foreground">{cita.propietario}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-esmerald-600">{cita.hora}</p>
+                      <p className="font-semibold text-purpura-600">{cita.hora}</p>
                     </div>
                   </div>
                 ))}

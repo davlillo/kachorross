@@ -47,7 +47,7 @@ import type { Producto } from '@/types';
 
 const categorias = [
   { value: 'servicio', label: 'Servicios', icon: Stethoscope, color: 'bg-blue-100 text-blue-700' },
-  { value: 'vacuna', label: 'Vacunas', icon: Syringe, color: 'bg-esmerald-100 text-esmerald-700' },
+  { value: 'vacuna', label: 'Vacunas', icon: Syringe, color: 'bg-purpura-100 text-purpura-700' },
   { value: 'medicamento', label: 'Medicamentos', icon: Pill, color: 'bg-amber-100 text-amber-700' },
   { value: 'petshop', label: 'PetShop', icon: ShoppingBag, color: 'bg-pink-100 text-pink-700' },
   { value: 'laboratorio', label: 'Laboratorio', icon: FlaskConical, color: 'bg-violet-100 text-violet-700' },
@@ -288,7 +288,7 @@ export default function CatalogoPage() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={producto.activo ? 'default' : 'secondary'} className={producto.activo ? 'bg-esmerald-500' : ''}>
+                        <Badge variant={producto.activo ? 'default' : 'secondary'} className={producto.activo ? 'bg-purpura-500' : ''}>
                           {producto.activo ? 'Activo' : 'Inactivo'}
                         </Badge>
                       </TableCell>
@@ -398,7 +398,7 @@ export default function CatalogoPage() {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Plus className="w-5 h-5 text-esmerald-500" />
+              <Plus className="w-5 h-5 text-purpura-500" />
               Nuevo Producto
             </DialogTitle>
           </DialogHeader>
@@ -469,7 +469,7 @@ export default function CatalogoPage() {
               <X className="w-4 h-4 mr-1" />
               Cancelar
             </Button>
-            <Button onClick={saveCreate} className="bg-gradient-to-r from-esmerald-500 to-esmerald-600">
+            <Button onClick={saveCreate} className="bg-gradient-to-r from-purpura-500 to-purpura-600">
               <Save className="w-4 h-4 mr-1" />
               Crear Producto
             </Button>
