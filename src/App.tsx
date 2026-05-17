@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import Layout from '@/components/Layout';
 import LoginPage from '@/app/login/page';
+import RegistroPage from '@/app/registro/page';
 import DashboardPage from '@/app/dashboard/page';
 import ExpedientesPage from '@/app/expedientes/page';
 import ExpedienteDetailPage from '@/app/expedientes/[id]/page';
@@ -45,6 +46,15 @@ function AppRoutes() {
         element={
           <PublicRoute>
             <LoginPage />
+          </PublicRoute>
+        } 
+      />
+
+      <Route 
+        path="/registro" 
+        element={
+          <PublicRoute>
+            <RegistroPage />
           </PublicRoute>
         } 
       />

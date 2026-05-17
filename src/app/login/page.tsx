@@ -4,9 +4,8 @@ import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { PawPrint, Loader2, Stethoscope } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import logo from '@/media/logo.png';
 
 export default function LoginPage() {
@@ -29,56 +28,61 @@ export default function LoginPage() {
     }
   };
 
-  const fillDemoCredentials = (role: 'doctora' | 'recepcion') => {
-    if (role === 'doctora') {
-      setEmail('doctora@kachorros.com');
-    } else {
-      setEmail('recepcion@kachorros.com');
-    }
-    setPassword('123456');
-  };
+  
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-light/30 via-background to-purpura-50 flex items-center justify-center p-4">
-      {/* Decoración de fondo */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-20 -right-20 w-96 h-96 bg-amber-gold/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-purpura-400/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-violet/5 rounded-full blur-3xl" />
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-6 relative overflow-hidden">
+      {/* Fondo elegante y sutil */}
+      <div className="pointer-events-none absolute -top-24 -left-24 w-72 h-72 bg-purpura-400/12 rounded-full blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-28 -right-20 w-96 h-96 bg-azure-blue/12 rounded-full blur-3xl" />
+      {/* Capas de fondo adicionales: blobs y vignette para mejorar el espacio alrededor */}
+      <div className="pointer-events-none absolute -top-40 left-10 w-80 h-80 rounded-full" style={{background: 'radial-gradient(circle at 30% 30%, rgba(124,58,237,0.06), transparent 30%)', filter: 'blur(48px)'}} />
+      <div className="pointer-events-none absolute -bottom-40 right-8 w-96 h-96 rounded-full" style={{background: 'radial-gradient(circle at 70% 70%, rgba(58,134,255,0.04), transparent 25%)', filter: 'blur(56px)'}} />
+      <div className="pointer-events-none absolute inset-0" aria-hidden style={{background: 'radial-gradient(circle at 50% 10%, rgba(2,6,23,0.02), transparent 25%), radial-gradient(ellipse at center, rgba(255,255,255,0.0), transparent 60%)'}} />
+      <div className="w-full max-w-5xl rounded-2xl shadow-glow overflow-hidden flex flex-col md:flex-row bg-white md:min-h-[520px]">
+        {/* Left panel: ilustración / branding */}
+        <div className="hidden md:flex w-full md:w-1/2 bg-gradient-to-br from-purpura-700 to-purpura-500 p-12 md:p-12 flex-col justify-center items-start gap-8 text-white relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-white/0 pointer-events-none" aria-hidden="true" />
+          {/* Decoración SVG sutil */}
+          <svg className="absolute -right-24 -bottom-24 opacity-20" width="420" height="420" viewBox="0 0 420 420" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+            <defs>
+              <linearGradient id="g1" x1="0" x2="1">
+                <stop offset="0%" stopColor="#7C3AED" stopOpacity="0.12" />
+                <stop offset="100%" stopColor="#06B6D4" stopOpacity="0.06" />
+              </linearGradient>
+            </defs>
+            <circle cx="210" cy="210" r="200" fill="url(#g1)" />
+          </svg>
 
-      <div className="relative z-10 w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-brw-lg mb-4">
-            <img src={logo} alt="Logo" className="w-full h-full object-contain" />
+          <div className="flex items-center gap-6">
+            <div className="w-44 h-44 flex items-center justify-center">
+              <img src={logo} alt="Logo" className="max-w-full max-h-full object-contain" />
+            </div>
+            <div>
+              <h2 className="text-4xl font-extrabold leading-tight">Veterinaria<br/>Kachorros</h2>
+              <p className="text-sm opacity-90 mt-2">Sistema de Gestión Clínica</p>
+            </div>
           </div>
-          <h1 className="text-3xl font-bold text-foreground">
-            <span className="text-azure-blue">Veterinaria</span>{' '}
-            <span className="text-blue-violet">Kachorro's</span>
-          </h1>
-          <p className="text-muted-foreground mt-2">Sistema de Gestión Clínica</p>
+
+          
         </div>
 
-        <Card className="border-0 shadow-soft">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center flex items-center justify-center gap-2">
-              <Stethoscope className="w-5 h-5 text-purpura-500" />
-              Iniciar Sesión
-            </CardTitle>
-            <CardDescription className="text-center">
-              Ingrese sus credenciales para acceder al sistema
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        {/* Right panel: formulario */}
+        <div className="w-full md:w-1/2 bg-white p-8 md:p-12 flex items-center justify-center">
+          <div className="w-full max-w-md">
+            <div className="mb-6" />
+
+            <h1 className="text-2xl font-bold text-center mb-1">Iniciar sesión</h1>
+            <p className="text-sm text-center text-muted-foreground mb-6">Ingresa tus credenciales para continuar</p>
+
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <Alert variant="destructive" className="animate-fade-in-up">
+                <Alert variant="destructive">
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
 
-              <div className="space-y-2">
+              <div>
                 <Label htmlFor="email">Correo electrónico</Label>
                 <Input
                   id="email"
@@ -87,11 +91,11 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="h-11"
+                  className="mt-1 h-11"
                 />
               </div>
 
-              <div className="space-y-2">
+              <div>
                 <Label htmlFor="password">Contraseña</Label>
                 <Input
                   id="password"
@@ -100,62 +104,33 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="h-11"
+                  className="mt-1 h-11"
                 />
               </div>
 
-              <Button
-                type="submit"
-                className="w-full h-11 bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700 text-white font-semibold"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Ingresando...
-                  </>
-                ) : (
-                  'Ingresar al Sistema'
-                )}
-              </Button>
-            </form>
-
-            {/* Botones de demo rápida */}
-            <div className="mt-6 pt-6 border-t border-border">
-              <p className="text-xs text-muted-foreground text-center mb-3">
-                Credenciales de demostración:
-              </p>
-              <div className="flex gap-2">
+              <div className="flex justify-center pt-1">
                 <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 text-xs border-purpura-200 hover:bg-purpura-50"
-                  onClick={() => fillDemoCredentials('doctora')}
+                  type="submit"
+                  className="h-11 min-w-[240px] px-6 text-sm bg-gradient-to-r from-purpura-500 to-purpura-600 text-white font-semibold shadow-md"
+                  disabled={isLoading}
                 >
-                  <Stethoscope className="w-3 h-3 mr-1" />
-                  Doctora
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 text-xs border-azure-blue/30 hover:bg-azure-blue/10"
-                  onClick={() => fillDemoCredentials('recepcion')}
-                >
-                  Recepción
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin inline-block" />
+                      Ingresando...
+                    </>
+                  ) : (
+                    'Iniciar Sesión'
+                  )}
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground text-center mt-2">
-                Contraseña: <span className="font-mono bg-muted px-1 rounded">123456</span>
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+            </form>
 
-        <p className="text-center text-sm text-muted-foreground mt-6">
-          © 2026 Veterinaria Kachorro's. Todos los derechos reservados.
-        </p>
+            
+
+            <p className="text-center text-sm text-muted-foreground mt-6">© 2026 Veterinaria Kachorro's</p>
+          </div>
+        </div>
       </div>
     </div>
   );
