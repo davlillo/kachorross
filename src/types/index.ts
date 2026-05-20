@@ -109,3 +109,30 @@ export interface DashboardStats {
   ingresosHoy: number;
   consultasPendientes: number;
 }
+
+// ─── DTOs para creación ───
+
+export interface CrearPropietarioDTO {
+  nombre: string;
+  telefono: string;
+  email?: string;
+  direccion?: string;
+}
+
+export interface CrearMascotaDTO {
+  nombre: string;
+  especie: Mascota['especie'];
+  raza: string;
+  fechaNacimiento: string;
+  sexo: Mascota['sexo'];
+  color?: string;
+  peso?: number;
+  foto?: string;
+  alergias?: string[];
+  notasEspeciales?: string;
+}
+
+export interface RegistrarExpedienteDTO {
+  propietario: CrearPropietarioDTO;
+  mascota: CrearMascotaDTO;
+}

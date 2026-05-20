@@ -1,39 +1,31 @@
 import { useState } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { mascotas, catalogo } from '@/data/mockData';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { mascotas } from '@/data/mockData';
 import { useConsultas } from '@/hooks/useConsultas';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/atoms/ui/card';
+import { Button } from '@/components/atoms/ui/button';
+import { Input } from '@/components/atoms/ui/input';
+import { Label } from '@/components/atoms/ui/label';
+import { Textarea } from '@/components/atoms/ui/textarea';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+} from '@/components/atoms/ui/dialog';
+import { PageHeader } from '@/components/molecules/PageHeader';
+import { ProductSelectorDialog } from '@/components/organisms/ProductSelectorDialog';
+
 import {
-  ArrowLeft,
-  Plus,
   Stethoscope,
   Search,
   Calendar,
   PawPrint,
   User,
   Save,
+  Plus,
   CheckCircle,
-  X
+  X,
 } from 'lucide-react';
 import type { DetalleConsulta, Producto } from '@/types';
 
@@ -58,8 +50,6 @@ export default function NuevaConsultaPage() {
   const [detalles, setDetalles] = useState<DetalleConsulta[]>([]);
   
   const [showProductDialog, setShowProductDialog] = useState(false);
-  const [productSearch, setProductSearch] = useState('');
-  const [selectedCategoria, setSelectedCategoria] = useState<string>('todos');
 
   const mascotasFiltradas = mascotaSearch 
     ? mascotas.filter(m => 
@@ -67,34 +57,6 @@ export default function NuevaConsultaPage() {
         m.propietario.nombre.toLowerCase().includes(mascotaSearch.toLowerCase())
       )
     : mascotas;
-
-  const productosFiltrados = catalogo.filter(p => {
-    const matchCategoria = selectedCategoria === 'todos' || p.categoria === selectedCategoria;
-    const matchSearch = !productSearch || 
-      p.nombre.toLowerCase().includes(productSearch.toLowerCase()) ||
-      p.codigo.toLowerCase().includes(productSearch.toLowerCase());
-    return matchCategoria && matchSearch && p.activo;
-  });
-
-  const categorias = [
-    { value: 'todos', label: 'Todos' },
-    { value: 'servicio', label: 'Servicios' },
-    { value: 'vacuna', label: 'Vacunas' },
-    { value: 'medicamento', label: 'Medicamentos' },
-    { value: 'petshop', label: 'PetShop' },
-    { value: 'laboratorio', label: 'Laboratorio' },
-  ];
-
-  const getCategoriaColor = (categoria: string) => {
-    const colors: Record<string, string> = {
-      servicio: 'bg-blue-100 text-blue-700',
-      vacuna: 'bg-purpura-100 text-purpura-700',
-      medicamento: 'bg-amber-100 text-amber-700',
-      petshop: 'bg-pink-100 text-pink-700',
-      laboratorio: 'bg-violet-100 text-violet-700',
-    };
-    return colors[categoria] || 'bg-gray-100 text-gray-700';
-  };
 
   const addProducto = (producto: Producto) => {
     const existingIndex = detalles.findIndex(d => d.productoId === producto.id);
@@ -116,7 +78,6 @@ export default function NuevaConsultaPage() {
       };
       setDetalles([...detalles, nuevoDetalle]);
     }
-    setShowProductDialog(false);
   };
 
   const removeDetalle = (id: string) => {
@@ -154,30 +115,15 @@ export default function NuevaConsultaPage() {
 
   return (
     <div className="space-y-6 animate-fade-in-up">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Link to="/dashboard">
-            <Button variant="outline" size="icon">
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-foreground flex items-center gap-2">
-              <Stethoscope className="w-7 h-7 text-purpura-500" />
-              Nueva Consulta
-            </h1>
-            <p className="text-muted-foreground">
-              Registre la atención médica del paciente
-            </p>
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        title="Nueva Consulta"
+        description="Registre la atención médica del paciente"
+        icon={Stethoscope}
+        backHref="/dashboard"
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Formulario Principal */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Selección de Paciente */}
           <Card className="border-0 shadow-soft">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
@@ -226,7 +172,6 @@ export default function NuevaConsultaPage() {
             </CardContent>
           </Card>
 
-          {/* Datos de la Consulta */}
           <Card className="border-0 shadow-soft">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
@@ -307,71 +252,19 @@ export default function NuevaConsultaPage() {
           </Card>
         </div>
 
-        {/* Panel de Servicios y Total */}
         <div className="space-y-6">
           <Card className="border-0 shadow-soft">
             <CardHeader>
               <CardTitle className="text-lg flex items-center justify-between">
                 <span>Servicios y Productos</span>
-                <Dialog open={showProductDialog} onOpenChange={setShowProductDialog}>
-                  <DialogTrigger asChild>
-                    <Button size="sm" className="bg-purpura-500 hover:bg-purpura-600">
-                      <Plus className="w-4 h-4 mr-1" />
-                      Agregar
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-                    <DialogHeader>
-                      <DialogTitle>Agregar Servicio o Producto</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4 mt-4">
-                      <div className="flex gap-2">
-                        <div className="relative flex-1">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                          <Input
-                            placeholder="Buscar producto..."
-                            value={productSearch}
-                            onChange={(e) => setProductSearch(e.target.value)}
-                            className="pl-10"
-                          />
-                        </div>
-                        <Select value={selectedCategoria} onValueChange={setSelectedCategoria}>
-                          <SelectTrigger className="w-[140px]">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {categorias.map(cat => (
-                              <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="overflow-y-auto max-h-[400px] space-y-2">
-                        {productosFiltrados.map((producto) => (
-                          <button
-                            key={producto.id}
-                            onClick={() => addProducto(producto)}
-                            className="w-full flex items-center justify-between p-3 rounded-lg border hover:bg-muted transition-colors text-left"
-                          >
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium">{producto.nombre}</span>
-                                <Badge className={getCategoriaColor(producto.categoria)}>
-                                  {producto.categoria}
-                                </Badge>
-                              </div>
-                              <p className="text-sm text-muted-foreground">{producto.descripcion}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-semibold">${producto.precio.toFixed(2)}</p>
-                              <Plus className="w-4 h-4 text-purpura-500 ml-auto" />
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                <Button
+                  size="sm"
+                  className="bg-purpura-500 hover:bg-purpura-600"
+                  onClick={() => setShowProductDialog(true)}
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Agregar
+                </Button>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -433,7 +326,12 @@ export default function NuevaConsultaPage() {
         </div>
       </div>
 
-      {/* Dialog de selección de mascota */}
+      <ProductSelectorDialog
+        open={showProductDialog}
+        onOpenChange={setShowProductDialog}
+        onSelect={addProducto}
+      />
+
       <Dialog open={showMascotaDialog} onOpenChange={setShowMascotaDialog}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
           <DialogHeader>
@@ -480,4 +378,3 @@ export default function NuevaConsultaPage() {
     </div>
   );
 }
-

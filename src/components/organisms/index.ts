@@ -1,0 +1,8 @@
+export { default as Layout } from './Layout'
+export { PatientInfoCard } from './PatientInfoCard'
+export { MonitorCard } from './MonitorCard'
+export { DetailRecepcionDialog } from './DetailRecepcionDialog'
+export { ConfirmSalidaDialog } from './ConfirmSalidaDialog'
+export { ProductSelectorDialog } from './ProductSelectorDialog'
+export { ProductFormDialog } from './ProductFormDialog'
+export { ProductTable } from './ProductTable'

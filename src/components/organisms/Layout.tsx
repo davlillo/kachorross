@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import logo from '@/media/logo.png';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/atoms/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,9 +9,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+} from '@/components/atoms/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/atoms/ui/avatar';
+import { Badge } from '@/components/atoms/ui/badge';
 import {
   PawPrint,
   LayoutDashboard,
@@ -24,7 +24,9 @@ import {
   Bell,
   Menu,
   X,
-  ChevronDown
+  ChevronDown,
+  Users,
+  Shield,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -41,7 +43,7 @@ const navItems: NavItem[] = [
     label: 'Dashboard',
     href: '/dashboard',
     icon: LayoutDashboard,
-    roles: ['doctora', 'recepcion', 'admin'],
+    roles: ['doctora', 'admin'],
   },
   {
     label: 'Expedientes',
@@ -53,7 +55,7 @@ const navItems: NavItem[] = [
     label: 'Nueva Consulta',
     href: '/consulta/nueva',
     icon: Stethoscope,
-    roles: ['doctora'],
+    roles: ['doctora', 'admin'],
   },
   {
     label: 'Recepción',
@@ -67,6 +69,12 @@ const navItems: NavItem[] = [
     href: '/admin/catalogo',
     icon: Settings,
     roles: ['doctora', 'admin'],
+  },
+  {
+    label: 'Usuarios',
+    href: '/admin/usuarios',
+    icon: Users,
+    roles: ['admin'],
   },
 ];
 
@@ -108,7 +116,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <aside className="hidden lg:flex flex-col w-64 bg-card border-r border-border fixed h-full">
         {/* Logo */}
         <div className="p-6 border-b border-border">
-          <Link to="/dashboard" className="flex items-center gap-3">
+          <Link to={user.rol === 'recepcion' ? '/recepcion' : '/dashboard'} className="flex items-center gap-3">
             <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-brw-lg mb-4">
             <img src={logo} alt="Logo" className="w-full h-full object-contain" />
           </div>
@@ -164,8 +172,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     {getInitials(user.nombre)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex-1 text-left">
-                  <p className="font-medium text-sm truncate">{user.nombre}</p>
+                <div className="flex-1 text-left min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-medium text-sm truncate">{user.nombre}</p>
+                    {user.rol === 'admin' && (
+                      <Shield className="w-3 h-3 text-amber-500 shrink-0" />
+                    )}
+                  </div>
                   <p className="text-xs text-muted-foreground">{getRoleLabel(user.rol)}</p>
                 </div>
                 <ChevronDown className="w-4 h-4 text-muted-foreground" />
@@ -178,10 +191,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <User className="w-4 h-4 mr-2" />
                 Perfil
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Settings className="w-4 h-4 mr-2" />
-                Configuración
-              </DropdownMenuItem>
+              {user.rol !== 'recepcion' && (
+                <DropdownMenuItem onClick={() => navigate('/configuracion')}>
+                  <Settings className="w-4 h-4 mr-2" />
+                  Historial de Ventas
+                </DropdownMenuItem>
+              )}
+              {user.rol === 'admin' && (
+                <DropdownMenuItem onClick={() => navigate('/admin/usuarios')}>
+                  <Users className="w-4 h-4 mr-2" />
+                  Gestión de Usuarios
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-destructive">
                 <LogOut className="w-4 h-4 mr-2" />
@@ -195,10 +216,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border">
         <div className="flex items-center justify-between p-4">
-          <Link to="/dashboard" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-amber-gold to-blaze-orange rounded-lg flex items-center justify-center">
-              <PawPrint className="w-4 h-4 text-white" />
-            </div>
+          <Link to={user.rol === 'recepcion' ? '/recepcion' : '/dashboard'} className="flex items-center gap-2">
+            <img src={logo} alt="Logo" className="w-8 h-8 object-contain" />
             <span className="font-bold text-sm">
               <span className="text-azure-blue">Vet.</span>{' '}
               <span className="text-blue-violet">Kachorro's</span>
