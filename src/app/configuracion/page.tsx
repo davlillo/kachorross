@@ -1,19 +1,15 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/atoms/ui/card';
 import { Badge } from '@/components/atoms/ui/badge';
 import { Input } from '@/components/atoms/ui/input';
 import { PageHeader } from '@/components/molecules/PageHeader';
+import { ConsultaController } from '@/controllers/consulta.controller';
+import { MascotaController } from '@/controllers/mascota.controller';
 import {
   Settings, History, Search, TrendingUp, DollarSign,
   Calendar, Receipt, ChevronRight, Stethoscope, Pill,
   Syringe, ShoppingBag, FlaskConical,
 } from 'lucide-react';
-import { consultasHistoricas, consultasPendientes, mascotas } from '@/data/mockData';
-
-const todasLasConsultas = [
-  ...consultasHistoricas.filter(c => c.estado === 'finalizado'),
-  ...consultasPendientes.filter(c => c.estado === 'finalizado'),
-];
 
 const categoriaIcon: Record<string, React.ElementType> = {
   servicio: Stethoscope,
@@ -32,8 +28,24 @@ const categoriaColor: Record<string, string> = {
 };
 
 export default function ConfiguracionPage() {
+  const consultaCtrl = ConsultaController.getInstance();
+  const mascotaCtrl = MascotaController.getInstance();
   const [busqueda, setBusqueda] = useState('');
   const [expandido, setExpandido] = useState<string | null>(null);
+  const [mascotas, setMascotas] = useState<any[]>([]);
+  const [todasLasConsultas, setTodasLasConsultas] = useState<any[]>([]);
+
+  useEffect(() => {
+    const load = async () => {
+      const [consultas, mascotasData] = await Promise.all([
+        consultaCtrl.getAll(),
+        mascotaCtrl.getAll(),
+      ]);
+      setMascotas(mascotasData);
+      setTodasLasConsultas(consultas.filter(c => c.estado === 'finalizado'));
+    };
+    void load();
+  }, [consultaCtrl, mascotaCtrl]);
 
   const consultasFiltradas = useMemo(() => {
     const q = busqueda.toLowerCase();

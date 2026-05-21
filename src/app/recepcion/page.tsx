@@ -1,6 +1,4 @@
 import { useState } from 'react';
-
-import { monitorSalida, consultasPendientes } from '@/data/mockData';
 import { useConsultas } from '@/hooks/useConsultas';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/atoms/ui/card';
 import { Badge } from '@/components/atoms/ui/badge';
@@ -18,11 +16,12 @@ import {
 } from 'lucide-react';
 
 export default function RecepcionPage() {
-  const { finalizarConsulta } = useConsultas();
+  const { consultas, monitorSalida, finalizarConsulta, isLoading } = useConsultas();
   const [selectedConsulta, setSelectedConsulta] = useState<string | null>(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [consultaTerminada, setConsultaTerminada] = useState<string | null>(null);
 
+  const consultasPendientes = consultas.filter(c => c.estado === 'pendiente');
   const consultaSeleccionada = consultasPendientes.find(c => c.id === selectedConsulta);
 
   const handleVerDetalle = (consultaId: string) => {
@@ -59,7 +58,7 @@ export default function RecepcionPage() {
           </TabsTrigger>
           <TabsTrigger value="consultas" className="flex items-center gap-2">
             <Stethoscope className="w-4 h-4" />
-            Consultas del Día ({consultasPendientes.length})
+            Consultas del Día ({isLoading ? '...' : consultasPendientes.length})
           </TabsTrigger>
         </TabsList>
 
@@ -127,8 +126,9 @@ export default function RecepcionPage() {
         open={showDetailDialog}
         onOpenChange={setShowDetailDialog}
         consulta={consultaSeleccionada}
+        mascota={monitorSalida.find(m => m.consultaId === selectedConsulta)?.mascota}
         onTerminado={(id) => {
-          finalizarConsulta(id);
+          void finalizarConsulta(id);
           setConsultaTerminada(id);
           setShowDetailDialog(false);
           setTimeout(() => setConsultaTerminada(null), 3000);

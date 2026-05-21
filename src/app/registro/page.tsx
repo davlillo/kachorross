@@ -14,8 +14,10 @@ import {
 import { CheckCircle2, XCircle } from 'lucide-react';
 import { AuthBackground } from '@/components/molecules/AuthBackground';
 import { BrandPanel } from '@/components/molecules/BrandPanel';
+import { AuthController } from '@/controllers/auth.controller';
 
 export default function RegistroPage() {
+  const authCtrl = AuthController.getInstance();
 	const navigate = useNavigate();
 	const [nombre, setNombre] = useState('');
 	const [correo, setCorreo] = useState('');
@@ -26,7 +28,7 @@ export default function RegistroPage() {
 	const [isError, setIsError] = useState(false);
 	const contrasenasCoinciden = !confirmarContrasena || contrasena === confirmarContrasena;
 
-	const handleSubmit = (e: React.FormEvent) => {
+	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setIsError(false);
 
@@ -42,8 +44,21 @@ export default function RegistroPage() {
 			return;
 		}
 
+		const result = await authCtrl.registrar(
+      nombre.trim(),
+      correo.trim(),
+      contrasena,
+      rol as 'doctora' | 'recepcion' | 'admin'
+    );
+
+    if (!result.ok) {
+      setIsError(true);
+      setMensaje(result.error ?? 'No se pudo completar el registro.');
+      return;
+    }
+
 		setIsError(false);
-		setMensaje('Registro preparado. Conecta este formulario con tu backend cuando quieras.');
+		setMensaje('Usuario registrado correctamente. Ahora puedes iniciar sesión.');
 	};
 
 	return (

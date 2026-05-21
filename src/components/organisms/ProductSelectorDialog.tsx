@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/atoms/ui/dialog'
 import { Input } from '@/components/atoms/ui/input'
 import { Badge } from '@/components/atoms/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/atoms/ui/select'
 import { Search, Plus } from 'lucide-react'
-import { catalogo } from '@/data/mockData'
+import { useCatalogo } from '@/hooks/useConsultas'
 import type { Producto } from '@/types'
 
 const categorias = [
@@ -33,16 +33,17 @@ interface ProductSelectorDialogProps {
 }
 
 export function ProductSelectorDialog({ open, onOpenChange, onSelect }: ProductSelectorDialogProps) {
+  const { productos } = useCatalogo()
   const [productSearch, setProductSearch] = useState('')
   const [selectedCategoria, setSelectedCategoria] = useState('todos')
 
-  const productosFiltrados = catalogo.filter(p => {
+  const productosFiltrados = useMemo(() => productos.filter(p => {
     const matchCategoria = selectedCategoria === 'todos' || p.categoria === selectedCategoria
     const matchSearch = !productSearch ||
       p.nombre.toLowerCase().includes(productSearch.toLowerCase()) ||
       p.codigo.toLowerCase().includes(productSearch.toLowerCase())
     return matchCategoria && matchSearch && p.activo
-  })
+  }), [productos, productSearch, selectedCategoria])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

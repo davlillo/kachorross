@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MascotaController } from '@/controllers/mascota.controller';
+import { supabase } from '@/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/atoms/ui/card';
 import { Button } from '@/components/atoms/ui/button';
 import { Input } from '@/components/atoms/ui/input';
@@ -45,37 +46,72 @@ export default function NuevoExpedientePage() {
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
   const [mascotaAlergias, setMascotaAlergias] = useState('');
   const [mascotaNotas, setMascotaNotas] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const isValid = propNombre.trim() && propTelefono.trim() && mascotaNombre.trim() && mascotaRaza.trim() && mascotaFechaNac.trim();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const subirFotoMascota = async (): Promise<string | undefined> => {
+    if (!fotoFile) return undefined;
+
+    const ext = (fotoFile.name.split('.').pop() || 'jpg').toLowerCase();
+    const fileName = `mascotas/${crypto.randomUUID()}.${ext}`;
+    const contentType = fotoFile.type || `image/${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('mascotas')
+      .upload(fileName, fotoFile, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType,
+      });
+
+    if (uploadError) {
+      throw new Error(`No se pudo subir la foto: ${uploadError.message}`);
+    }
+
+    const { data } = supabase.storage.from('mascotas').getPublicUrl(fileName);
+    return data.publicUrl;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValid) return;
+    setError(null);
 
-    const expediente = ctrl.registrar({
-      propietario: {
-        nombre: propNombre.trim(),
-        telefono: propTelefono.trim(),
-        email: propEmail.trim() || undefined,
-        direccion: propDireccion.trim() || undefined,
-      },
-      mascota: {
-        nombre: mascotaNombre.trim(),
-        especie: mascotaEspecie,
-        raza: mascotaRaza.trim(),
-        fechaNacimiento: mascotaFechaNac,
-        sexo: mascotaSexo,
-        color: mascotaColor.trim() || undefined,
-        peso: mascotaPeso ? parseFloat(mascotaPeso) : undefined,
-        foto: fotoPreview || undefined,
-        alergias: mascotaAlergias
-          ? mascotaAlergias.split(',').map(a => a.trim()).filter(Boolean)
-          : undefined,
-        notasEspeciales: mascotaNotas.trim() || undefined,
-      },
-    });
+    try {
+      setIsSaving(true);
+      const fotoPersistente = await subirFotoMascota();
 
-    navigate(`/expedientes/${expediente.mascotaId}`);
+      const expediente = await ctrl.registrar({
+        propietario: {
+          nombre: propNombre.trim(),
+          telefono: propTelefono.trim(),
+          email: propEmail.trim() || undefined,
+          direccion: propDireccion.trim() || undefined,
+        },
+        mascota: {
+          nombre: mascotaNombre.trim(),
+          especie: mascotaEspecie,
+          raza: mascotaRaza.trim(),
+          fechaNacimiento: mascotaFechaNac,
+          sexo: mascotaSexo,
+          color: mascotaColor.trim() || undefined,
+          peso: mascotaPeso ? parseFloat(mascotaPeso) : undefined,
+          foto: fotoPersistente || undefined,
+          alergias: mascotaAlergias
+            ? mascotaAlergias.split(',').map(a => a.trim()).filter(Boolean)
+            : undefined,
+          notasEspeciales: mascotaNotas.trim() || undefined,
+        },
+      });
+
+      navigate(`/expedientes/${expediente.mascotaId}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo guardar el paciente.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -88,6 +124,11 @@ export default function NuevoExpedientePage() {
       />
 
       <form onSubmit={handleSubmit}>
+        {error && (
+          <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="border-0 shadow-soft">
             <CardHeader>
@@ -320,11 +361,11 @@ export default function NuevoExpedientePage() {
           </Button>
           <Button
             type="submit"
-            disabled={!isValid}
+            disabled={!isValid || isSaving}
             className="bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700 min-w-[180px]"
           >
             <Save className="w-4 h-4 mr-2" />
-            Guardar Paciente
+            {isSaving ? 'Guardando...' : 'Guardar Paciente'}
           </Button>
         </div>
       </form>

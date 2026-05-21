@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { MascotaController } from '@/controllers/mascota.controller';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/atoms/ui/card';
@@ -37,8 +37,27 @@ export default function ExpedienteDetailPage() {
 
   // ── Datos reactivos desde el controller ─────────────────────────────────────
   const [refresh, setRefresh] = useState(0);
-  const expediente = id ? ctrl.getExpedienteById(id) : undefined;
+  const [expediente, setExpediente] = useState<any | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const mascota    = expediente?.mascota;
+
+  useEffect(() => {
+    const load = async () => {
+      if (!id) return;
+      try {
+        setIsLoading(true);
+        setLoadError(null);
+        const data = await ctrl.getExpedienteById(id);
+        setExpediente(data);
+      } catch (error) {
+        setLoadError(error instanceof Error ? error.message : 'No se pudo cargar el expediente');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    void load();
+  }, [id, ctrl, refresh]);
 
   // ── Filtros de fecha ─────────────────────────────────────────────────────────
   const [consultaDesde, setConsultaDesde] = useState('');
@@ -122,9 +141,9 @@ export default function ExpedienteDetailPage() {
   };
 
   // ── Guardar edición ──────────────────────────────────────────────────────────
-  const guardarEdicion = () => {
+  const guardarEdicion = async () => {
     if (!id) return;
-    ctrl.actualizar(id, {
+    await ctrl.actualizar(id, {
       mascota: {
         nombre: editNombre.trim(),
         especie: editEspecie,
@@ -148,15 +167,23 @@ export default function ExpedienteDetailPage() {
   };
 
   // ── Confirmar eliminación ────────────────────────────────────────────────────
-  const confirmarEliminar = () => {
+  const confirmarEliminar = async () => {
     if (!id) return;
-    ctrl.eliminar(id);
+    await ctrl.eliminar(id);
     setDeleteOpen(false);
     navigate('/expedientes');
   };
 
   // ── Not found ────────────────────────────────────────────────────────────────
-  if (!expediente || !mascota) {
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <p className="text-muted-foreground">Cargando expediente...</p>
+      </div>
+    );
+  }
+
+  if (loadError || !expediente || !mascota) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-4">

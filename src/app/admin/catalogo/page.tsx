@@ -121,7 +121,7 @@ export default function CatalogoPage() {
         onOpenChange={setShowEditDialog}
         onSave={(data) => {
           if (selectedProducto) {
-            actualizarProducto(selectedProducto.id, data);
+            void actualizarProducto(selectedProducto.id, data);
             setShowEditDialog(false);
           }
         }}
@@ -134,7 +134,7 @@ export default function CatalogoPage() {
         open={showCreateDialog}
         onOpenChange={setShowCreateDialog}
         onSave={(data) => {
-          crearProducto(data);
+          void crearProducto(data);
           setShowCreateDialog(false);
         }}
         mode="create"

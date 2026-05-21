@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { AuthController } from '@/controllers/auth.controller';
 import type { Perfil } from '@/types';
 
@@ -16,8 +16,17 @@ const authCtrl = AuthController.getInstance();
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<Perfil | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const boot = async () => {
+      const current = await authCtrl.getCurrentUser();
+      setUser(current);
+      setIsLoading(false);
+    };
+    void boot();
+  }, []);
 
   const login = useCallback(async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
@@ -36,8 +45,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const logout = useCallback(() => {
-    authCtrl.logout();
+  const logout = useCallback(async () => {
+    await authCtrl.logout();
     setUser(null);
     setError(null);
   }, []);

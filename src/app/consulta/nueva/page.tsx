@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { mascotas } from '@/data/mockData';
+import { MascotaController } from '@/controllers/mascota.controller';
 import { useConsultas } from '@/hooks/useConsultas';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/atoms/ui/card';
 import { Button } from '@/components/atoms/ui/button';
@@ -32,10 +32,15 @@ import type { DetalleConsulta, Producto } from '@/types';
 export default function NuevaConsultaPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const mascotaCtrl = MascotaController.getInstance();
   const { crearConsulta, calcularTotal } = useConsultas();
+  const [mascotas, setMascotas] = useState<any[]>([]);
   
   const mascotaId = searchParams.get('mascota');
-  const mascotaSeleccionada = mascotaId ? mascotas.find(m => m.id === mascotaId) : undefined;
+  const mascotaSeleccionada = useMemo(
+    () => (mascotaId ? mascotas.find(m => m.id === mascotaId) : undefined),
+    [mascotas, mascotaId]
+  );
 
   const [mascotaSearch, setMascotaSearch] = useState('');
   const [selectedMascota, setSelectedMascota] = useState(mascotaSeleccionada);
@@ -50,6 +55,18 @@ export default function NuevaConsultaPage() {
   const [detalles, setDetalles] = useState<DetalleConsulta[]>([]);
   
   const [showProductDialog, setShowProductDialog] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      const data = await mascotaCtrl.getAll();
+      setMascotas(data);
+    };
+    void load();
+  }, [mascotaCtrl]);
+
+  useEffect(() => {
+    if (mascotaSeleccionada) setSelectedMascota(mascotaSeleccionada);
+  }, [mascotaSeleccionada]);
 
   const mascotasFiltradas = mascotaSearch 
     ? mascotas.filter(m => 
@@ -96,7 +113,7 @@ export default function NuevaConsultaPage() {
   const handleSubmit = () => {
     if (!selectedMascota || !motivo || !diagnostico) return;
 
-    crearConsulta({
+    void crearConsulta({
       mascotaId: selectedMascota.id,
       motivo,
       sintomas,
@@ -107,7 +124,6 @@ export default function NuevaConsultaPage() {
       detalles,
       total
     });
-
     navigate('/recepcion');
   };
 

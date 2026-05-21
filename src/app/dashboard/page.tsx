@@ -1,15 +1,18 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { dashboardStats, mascotas, expedientes } from '@/data/mockData';
+import { MascotaController } from '@/controllers/mascota.controller';
+import { ConsultaController } from '@/controllers/consulta.controller';
 import {
-  eventosIniciales, colorEvento,
-  consultasPorSemana, consultasPorMes,
-  serviciosFrecuentes, medicamentosFrecuentes,
+  colorEvento,
   type Evento, type TipoEvento
 } from '@/data/eventosData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/atoms/ui/card';
 import { Badge } from '@/components/atoms/ui/badge';
 import { Button } from '@/components/atoms/ui/button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/atoms/ui/dialog';
+import { Input } from '@/components/atoms/ui/input';
+import { Label } from '@/components/atoms/ui/label';
+import { Textarea } from '@/components/atoms/ui/textarea';
 import {
   BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell
@@ -23,9 +26,10 @@ import {
 import { Link } from 'react-router-dom';
 import {
   format, startOfMonth, endOfMonth, eachDayOfInterval,
-  isSameDay, addMonths, subMonths, getDay
+  isSameDay, addMonths, subMonths, getDay, subDays, isWithinInterval
 } from 'date-fns';
 import { es } from 'date-fns/locale';
+import type { Consulta } from '@/types';
 
 // ── Leyenda colores calendario ────────────────────────────────────────────────
 const tiposEvento: { tipo: TipoEvento; icon: React.ElementType }[] = [
@@ -53,17 +57,152 @@ const formVacio: FormEvento = {
 // ── Componente principal ───────────────────────────────────────────────────────
 export default function DashboardPage() {
   const { user } = useAuth();
+  const mascotaCtrl = MascotaController.getInstance();
+  const consultaCtrl = ConsultaController.getInstance();
+  const [mascotas, setMascotas] = useState<any[]>([]);
+  const [consultas, setConsultas] = useState<Consulta[]>([]);
+  const [expedientes, setExpedientes] = useState<any[]>([]);
+  const [dashboardStats, setDashboardStats] = useState({
+    pacientesHoy: 0,
+    pacientesEspera: 0,
+    ingresosHoy: 0,
+    consultasPendientes: 0,
+  });
+
+  useEffect(() => {
+    const load = async () => {
+      const mascotasData = await mascotaCtrl.getAll();
+      const expedientesData = await Promise.all(
+        mascotasData.map(m => mascotaCtrl.getExpedienteById(m.id))
+      );
+      const consultasData = await consultaCtrl.getAll();
+      const hoy = new Date().toISOString().slice(0, 10);
+      const consultasHoy = consultasData.filter(c => c.fecha?.slice(0, 10) === hoy);
+      const pendientes = consultasData.filter(c => c.estado === 'pendiente');
+
+      setMascotas(mascotasData);
+      setConsultas(consultasData);
+      setExpedientes(expedientesData.filter(Boolean));
+      setDashboardStats({
+        pacientesHoy: consultasHoy.length,
+        pacientesEspera: pendientes.length,
+        ingresosHoy: consultasHoy.reduce((acc, c) => acc + c.total, 0),
+        consultasPendientes: pendientes.length,
+      });
+    };
+    void load();
+  }, [mascotaCtrl, consultaCtrl]);
 
   // ── Calendario ──────────────────────────────────────────────────────────────
   const [mesActual, setMesActual] = useState(new Date());
   const [diaSeleccionado, setDiaSeleccionado] = useState<Date | null>(new Date());
-  const [eventos, setEventos] = useState<Evento[]>(eventosIniciales);
+  const [eventos, setEventos] = useState<Evento[]>([]);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [formEvento, setFormEvento] = useState<FormEvento>(formVacio);
 
   // ── Gráficas ────────────────────────────────────────────────────────────────
   const [periodoGrafica, setPeriodoGrafica] = useState<'semana' | 'mes'>('semana');
-  const datosGrafica = periodoGrafica === 'semana' ? consultasPorSemana : consultasPorMes;
+
+  const inferirTipoEvento = (consulta: Consulta): TipoEvento => {
+    const base = `${consulta.motivo} ${consulta.diagnostico} ${consulta.tratamiento}`.toLowerCase();
+    if (base.includes('urgenc')) return 'urgencia';
+    if (base.includes('cirug')) return 'cirugia';
+    if (base.includes('vacun')) return 'vacuna';
+    if (base.includes('control')) return 'control';
+    return 'cita';
+  };
+
+  useEffect(() => {
+    const mascotasMap = new Map(mascotas.map(m => [m.id, m]));
+    const eventosDb: Evento[] = consultas.map(c => {
+      const mascota = mascotasMap.get(c.mascotaId);
+      const fecha = new Date(c.fecha);
+      return {
+        id: c.id,
+        fecha: format(fecha, 'yyyy-MM-dd'),
+        hora: format(fecha, 'HH:mm'),
+        titulo: c.motivo || 'Consulta',
+        mascota: mascota?.nombre ?? 'Mascota',
+        propietario: mascota?.propietario?.nombre ?? 'Propietario',
+        tipo: inferirTipoEvento(c),
+        notas: c.notas,
+      };
+    });
+    setEventos(eventosDb);
+  }, [consultas, mascotas]);
+
+  const datosGrafica = useMemo(() => {
+    if (periodoGrafica === 'semana') {
+      const dias = Array.from({ length: 7 }, (_, i) => subDays(new Date(), 6 - i));
+      return dias.map((dia) => {
+        const key = format(dia, 'yyyy-MM-dd');
+        const consultasDia = consultas.filter(c => c.fecha.slice(0, 10) === key);
+        return {
+          dia: format(dia, 'EEE', { locale: es }),
+          consultas: consultasDia.length,
+          ingresos: consultasDia.reduce((sum, c) => sum + c.total, 0),
+        };
+      });
+    }
+
+    const inicio = startOfMonth(mesActual);
+    const fin = endOfMonth(mesActual);
+    const diasMes = eachDayOfInterval({ start: inicio, end: fin });
+
+    return diasMes.map((dia) => {
+      const key = format(dia, 'yyyy-MM-dd');
+      const consultasDia = consultas.filter(c => c.fecha.slice(0, 10) === key);
+      return {
+        dia: format(dia, 'd'),
+        consultas: consultasDia.length,
+        ingresos: consultasDia.reduce((sum, c) => sum + c.total, 0),
+      };
+    });
+  }, [consultas, periodoGrafica, mesActual]);
+
+  const serviciosFrecuentes = useMemo(() => {
+    const inicio = startOfMonth(mesActual);
+    const fin = endOfMonth(mesActual);
+    const agregados = new Map<string, { nombre: string; cantidad: number; ingresos: number }>();
+
+    consultas
+      .filter(c => isWithinInterval(new Date(c.fecha), { start: inicio, end: fin }))
+      .flatMap(c => c.detalles)
+      .filter(d =>
+        ['servicio', 'vacuna', 'laboratorio', 'peluqueria'].includes(d.producto.categoria)
+      )
+      .forEach(d => {
+        const actual = agregados.get(d.producto.nombre) ?? { nombre: d.producto.nombre, cantidad: 0, ingresos: 0 };
+        actual.cantidad += d.cantidad;
+        actual.ingresos += d.subtotal;
+        agregados.set(d.producto.nombre, actual);
+      });
+
+    return Array.from(agregados.values())
+      .sort((a, b) => b.cantidad - a.cantidad)
+      .slice(0, 6);
+  }, [consultas, mesActual]);
+
+  const medicamentosFrecuentes = useMemo(() => {
+    const inicio = startOfMonth(mesActual);
+    const fin = endOfMonth(mesActual);
+    const agregados = new Map<string, { nombre: string; cantidad: number; ingresos: number }>();
+
+    consultas
+      .filter(c => isWithinInterval(new Date(c.fecha), { start: inicio, end: fin }))
+      .flatMap(c => c.detalles)
+      .filter(d => d.producto.categoria === 'medicamento')
+      .forEach(d => {
+        const actual = agregados.get(d.producto.nombre) ?? { nombre: d.producto.nombre, cantidad: 0, ingresos: 0 };
+        actual.cantidad += d.cantidad;
+        actual.ingresos += d.subtotal;
+        agregados.set(d.producto.nombre, actual);
+      });
+
+    return Array.from(agregados.values())
+      .sort((a, b) => b.cantidad - a.cantidad)
+      .slice(0, 6);
+  }, [consultas, mesActual]);
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
   const getGreeting = () => {
@@ -251,6 +390,10 @@ export default function DashboardPage() {
             `}</style>
           </div>
 
+          {!consultas.length && (
+            <p className="text-xs text-muted-foreground px-2">Sin datos suficientes aún para calendario y gráficas.</p>
+          )}
+
           {/* Pacientes Recientes */}
           <div className="bg-card rounded-2xl shadow-soft px-4 py-3">
             <div className="flex items-center justify-between mb-3">
@@ -392,38 +535,90 @@ export default function DashboardPage() {
                 </>
               )}
 
-              {/* Formulario nuevo evento */}
-              {mostrarForm && (
-                <div className="mt-2 p-3 rounded-xl border border-purpura-200 bg-purpura-50/60 space-y-2">
-                  <p className="text-xs font-bold text-purpura-700">Nuevo evento</p>
-                  <input className="w-full text-xs border rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-purpura-400"
-                    placeholder="Título" value={formEvento.titulo}
-                    onChange={e => setFormEvento(f => ({ ...f, titulo: e.target.value }))} />
-                  <div className="grid grid-cols-2 gap-2">
-                    <input type="time" className="text-xs border rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-purpura-400"
-                      value={formEvento.hora} onChange={e => setFormEvento(f => ({ ...f, hora: e.target.value }))} />
-                    <select className="text-xs border rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-purpura-400"
-                      value={formEvento.tipo} onChange={e => setFormEvento(f => ({ ...f, tipo: e.target.value as TipoEvento }))}>
-                      {tiposEvento.map(({ tipo }) => <option key={tipo} value={tipo}>{colorEvento[tipo].label}</option>)}
-                    </select>
-                  </div>
-                  <input className="w-full text-xs border rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-purpura-400"
-                    placeholder="Mascota" value={formEvento.mascota}
-                    onChange={e => setFormEvento(f => ({ ...f, mascota: e.target.value }))} />
-                  <input className="w-full text-xs border rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-purpura-400"
-                    placeholder="Propietario" value={formEvento.propietario}
-                    onChange={e => setFormEvento(f => ({ ...f, propietario: e.target.value }))} />
-                  <div className="flex gap-2">
-                    <Button size="sm" className="flex-1 h-7 text-xs bg-purpura-500 hover:bg-purpura-600" onClick={agregarEvento}>Guardar</Button>
-                    <Button size="sm" variant="ghost" className="flex-1 h-7 text-xs"
-                      onClick={() => { setMostrarForm(false); setFormEvento(formVacio); }}>Cancelar</Button>
-                  </div>
-                </div>
-              )}
             </div>
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={mostrarForm} onOpenChange={setMostrarForm}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Nuevo evento</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Título</Label>
+              <Input
+                placeholder="Ej. Control general"
+                value={formEvento.titulo}
+                onChange={(e) => setFormEvento(f => ({ ...f, titulo: e.target.value }))}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label>Hora</Label>
+                <Input
+                  type="time"
+                  value={formEvento.hora}
+                  onChange={(e) => setFormEvento(f => ({ ...f, hora: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label>Tipo</Label>
+                <select
+                  className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                  value={formEvento.tipo}
+                  onChange={(e) => setFormEvento(f => ({ ...f, tipo: e.target.value as TipoEvento }))}
+                >
+                  {tiposEvento.map(({ tipo }) => (
+                    <option key={tipo} value={tipo}>
+                      {colorEvento[tipo].label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div>
+              <Label>Mascota</Label>
+              <Input
+                placeholder="Nombre de la mascota"
+                value={formEvento.mascota}
+                onChange={(e) => setFormEvento(f => ({ ...f, mascota: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label>Propietario</Label>
+              <Input
+                placeholder="Nombre del propietario"
+                value={formEvento.propietario}
+                onChange={(e) => setFormEvento(f => ({ ...f, propietario: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label>Notas</Label>
+              <Textarea
+                placeholder="Notas opcionales"
+                value={formEvento.notas}
+                onChange={(e) => setFormEvento(f => ({ ...f, notas: e.target.value }))}
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setMostrarForm(false);
+                setFormEvento(formVacio);
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button className="bg-purpura-500 hover:bg-purpura-600" onClick={agregarEvento}>
+              Guardar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Gráficas de actividad ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

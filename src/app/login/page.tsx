@@ -5,13 +5,14 @@ import { Button } from '@/components/atoms/ui/button';
 import { Input } from '@/components/atoms/ui/input';
 import { Label } from '@/components/atoms/ui/label';
 import { Alert, AlertDescription } from '@/components/atoms/ui/alert';
-import { Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { AuthBackground } from '@/components/molecules/AuthBackground';
 import { BrandPanel } from '@/components/molecules/BrandPanel';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const { login, isLoading, error, user } = useAuth();
   const navigate = useNavigate();
 
@@ -63,15 +64,25 @@ export default function LoginPage() {
 
               <div>
                 <Label htmlFor="password">Contraseña</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="mt-1 h-11"
-                />
+                <div className="relative mt-1">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="h-11 pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(v => !v)}
+                    className="absolute inset-y-0 right-0 px-3 text-muted-foreground hover:text-foreground"
+                    aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
 
               <div className="flex justify-center pt-1">

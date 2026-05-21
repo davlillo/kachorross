@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import Layout from '@/components/organisms/Layout';
 import LoginPage from '@/app/login/page';
-import RegistroPage from '@/app/registro/page';
 import DashboardPage from '@/app/dashboard/page';
 import ExpedientesPage from '@/app/expedientes/page';
 import NuevoExpedientePage from '@/app/expedientes/nuevo/page';
@@ -12,6 +11,7 @@ import RecepcionPage from '@/app/recepcion/page';
 import CatalogoPage from '@/app/admin/catalogo/page';
 import ConfiguracionPage from '@/app/configuracion/page';
 import UsuariosPage from '@/app/admin/usuarios/page';
+import PerfilPage from '@/app/perfil/page';
 import { Toaster } from '@/components/atoms/ui/sonner';
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) {
@@ -44,7 +44,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login"    element={<PublicRoute><LoginPage /></PublicRoute>} />
-      <Route path="/registro" element={<PublicRoute><RegistroPage /></PublicRoute>} />
+      <Route path="/registro" element={<Navigate to="/login" replace />} />
 
       {/* Raíz → redirige según rol */}
       <Route path="/" element={
@@ -102,6 +102,12 @@ function AppRoutes() {
       <Route path="/configuracion" element={
         <ProtectedRoute allowedRoles={['recepcion', 'admin', 'doctora']}>
           <Layout><ConfiguracionPage /></Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/perfil" element={
+        <ProtectedRoute allowedRoles={['recepcion', 'admin', 'doctora']}>
+          <Layout><PerfilPage /></Layout>
         </ProtectedRoute>
       } />
 

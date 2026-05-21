@@ -39,9 +39,10 @@ export default function UsuariosPage() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [busqueda, setBusqueda] = useState('');
   const [error, setError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
-  const cargar = () => setUsuarios(authCtrl.listarUsuarios());
-  useEffect(() => { cargar(); }, []);
+  const cargar = async () => setUsuarios(await authCtrl.listarUsuarios());
+  useEffect(() => { void cargar(); }, []);
 
   const usuariosFiltrados = usuarios.filter(u => {
     const q = busqueda.toLowerCase();
@@ -62,7 +63,7 @@ export default function UsuariosPage() {
     setShowForm(true);
   };
 
-  const guardar = () => {
+  const guardar = async () => {
     if (!form.nombre.trim() || !form.email.trim()) {
       setError('El nombre y el correo son obligatorios.');
       return;
@@ -72,19 +73,29 @@ export default function UsuariosPage() {
     );
     if (emailDuplicado) { setError('Ese correo ya está en uso.'); return; }
 
-    if (editTarget) {
-      authCtrl.actualizarUsuario(editTarget.id, form);
-    } else {
-      authCtrl.crearUsuario(form);
+    try {
+      setIsSaving(true);
+      setError('');
+
+      if (editTarget) {
+        await authCtrl.actualizarUsuario(editTarget.id, form);
+      } else {
+        await authCtrl.crearUsuario(form);
+      }
+
+      await cargar();
+      setShowForm(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudo guardar la cuenta.');
+    } finally {
+      setIsSaving(false);
     }
-    cargar();
-    setShowForm(false);
   };
 
-  const confirmarEliminar = () => {
+  const confirmarEliminar = async () => {
     if (!deleteTarget) return;
-    authCtrl.eliminarUsuario(deleteTarget.id);
-    cargar();
+    await authCtrl.eliminarUsuario(deleteTarget.id);
+    await cargar();
     setDeleteTarget(null);
   };
 
@@ -128,7 +139,7 @@ export default function UsuariosPage() {
       <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200">
         <KeyRound className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
         <p className="text-xs text-amber-800">
-          <strong>Contraseña por defecto:</strong> todas las cuentas nuevas usan <code className="bg-amber-100 px-1 rounded font-mono">123456</code>. El usuario puede cambiarla tras iniciar sesión (función disponible próximamente).
+          <strong>Contraseña por defecto:</strong> las cuentas nuevas se crean con <code className="bg-amber-100 px-1 rounded font-mono">123456</code>. Cada usuario debe cambiarla en <strong>Perfil</strong> después de iniciar sesión.
         </p>
       </div>
 
@@ -298,8 +309,11 @@ export default function UsuariosPage() {
             <Button
               className="bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700"
               onClick={guardar}
+              disabled={isSaving}
             >
-              {editTarget ? 'Guardar cambios' : 'Crear cuenta'}
+              {isSaving
+                ? (editTarget ? 'Guardando...' : 'Creando...')
+                : (editTarget ? 'Guardar cambios' : 'Crear cuenta')}
             </Button>
           </DialogFooter>
         </DialogContent>

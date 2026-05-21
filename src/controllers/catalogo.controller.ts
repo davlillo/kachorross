@@ -1,52 +1,111 @@
+import { supabase } from '@/supabase/client'
 import type { Producto } from '@/types'
-import { catalogo as mockCatalogo } from '@/data/mockData'
 
 let instance: CatalogoController | null = null
 
+type CatalogoRow = {
+  id: string
+  codigo: string
+  nombre: string
+  descripcion: string | null
+  categoria: string
+  precio: number | string | null
+  activo: boolean | null
+}
+
 export class CatalogoController {
-  private data: Producto[]
-
-  private constructor() {
-    this.data = [...mockCatalogo]
-  }
-
   static getInstance(): CatalogoController {
     if (!instance) instance = new CatalogoController()
     return instance
   }
 
-  getAll(): Producto[] {
-    return this.data
+  private mapRow(row: CatalogoRow): Producto {
+    return {
+      id: row.id,
+      codigo: row.codigo,
+      nombre: row.nombre,
+      descripcion: row.descripcion ?? '',
+      categoria: row.categoria as Producto['categoria'],
+      precio: Number(row.precio ?? 0),
+      activo: row.activo ?? true,
+    }
   }
 
-  getByCategoria(categoria: string): Producto[] {
-    return this.data.filter(p => p.categoria === categoria && p.activo)
+  async getAll(): Promise<Producto[]> {
+    const { data, error } = await supabase
+      .from('catalogo')
+      .select('id,codigo,nombre,descripcion,categoria,precio,activo')
+      .order('nombre', { ascending: true })
+
+    if (error) throw new Error(`No se pudo cargar catálogo: ${error.message}`)
+    return (data ?? []).map(row => this.mapRow(row as CatalogoRow))
   }
 
-  buscar(query: string): Producto[] {
-    const lower = query.toLowerCase()
-    return this.data.filter(
-      p =>
-        p.activo &&
-        (p.nombre.toLowerCase().includes(lower) ||
-          p.codigo.toLowerCase().includes(lower) ||
-          p.descripcion.toLowerCase().includes(lower))
-    )
+  async getByCategoria(categoria: string): Promise<Producto[]> {
+    const { data, error } = await supabase
+      .from('catalogo')
+      .select('id,codigo,nombre,descripcion,categoria,precio,activo')
+      .eq('categoria', categoria)
+      .eq('activo', true)
+      .order('nombre', { ascending: true })
+
+    if (error) throw new Error(`No se pudo filtrar catálogo: ${error.message}`)
+    return (data ?? []).map(row => this.mapRow(row as CatalogoRow))
   }
 
-  actualizar(id: string, data: Partial<Producto>): void {
-    const idx = this.data.findIndex(p => p.id === id)
-    if (idx >= 0) this.data[idx] = { ...this.data[idx], ...data }
+  async buscar(query: string): Promise<Producto[]> {
+    const q = query.trim()
+    if (!q) return this.getAll()
+
+    const { data, error } = await supabase
+      .from('catalogo')
+      .select('id,codigo,nombre,descripcion,categoria,precio,activo')
+      .eq('activo', true)
+      .or(`nombre.ilike.%${q}%,codigo.ilike.%${q}%,descripcion.ilike.%${q}%`)
+      .order('nombre', { ascending: true })
+
+    if (error) throw new Error(`No se pudo buscar en catálogo: ${error.message}`)
+    return (data ?? []).map(row => this.mapRow(row as CatalogoRow))
   }
 
-  crear(data: Omit<Producto, 'id'>): Producto {
-    const nuevo: Producto = { ...data, id: `prod${Date.now()}` }
-    this.data.push(nuevo)
-    return nuevo
+  async actualizar(id: string, data: Partial<Producto>): Promise<void> {
+    const payload: Record<string, unknown> = {}
+    if (data.codigo !== undefined) payload.codigo = data.codigo
+    if (data.nombre !== undefined) payload.nombre = data.nombre
+    if (data.descripcion !== undefined) payload.descripcion = data.descripcion
+    if (data.categoria !== undefined) payload.categoria = data.categoria
+    if (data.precio !== undefined) payload.precio = data.precio
+    if (data.activo !== undefined) payload.activo = data.activo
+    payload.updated_at = new Date().toISOString()
+
+    const { error } = await supabase.from('catalogo').update(payload).eq('id', id)
+    if (error) throw new Error(`No se pudo actualizar producto: ${error.message}`)
   }
 
-  eliminar(id: string): void {
-    const idx = this.data.findIndex(p => p.id === id)
-    if (idx >= 0) this.data[idx].activo = false
+  async crear(data: Omit<Producto, 'id'>): Promise<Producto> {
+    const { data: inserted, error } = await supabase
+      .from('catalogo')
+      .insert({
+        codigo: data.codigo,
+        nombre: data.nombre,
+        descripcion: data.descripcion,
+        categoria: data.categoria,
+        precio: data.precio,
+        activo: data.activo,
+      })
+      .select('id,codigo,nombre,descripcion,categoria,precio,activo')
+      .single()
+
+    if (error) throw new Error(`No se pudo crear producto: ${error.message}`)
+    return this.mapRow(inserted as CatalogoRow)
+  }
+
+  async eliminar(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('catalogo')
+      .update({ activo: false, updated_at: new Date().toISOString() })
+      .eq('id', id)
+
+    if (error) throw new Error(`No se pudo eliminar producto: ${error.message}`)
   }
 }

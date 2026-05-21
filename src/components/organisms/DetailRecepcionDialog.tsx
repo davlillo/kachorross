@@ -10,13 +10,13 @@ import {
   CheckCircle, X, PawPrint, User, Phone, Clock, FileText,
   Stethoscope, Pill, Syringe, ShoppingBag, FlaskConical,
 } from 'lucide-react'
-import type { Consulta } from '@/types'
-import { mascotas } from '@/data/mockData'
+import type { Consulta, Mascota } from '@/types'
 
 interface DetailRecepcionDialogProps {
   open: boolean
   onOpenChange: (v: boolean) => void
   consulta: Consulta | undefined
+  mascota?: Mascota
   onTerminado?: (consultaId: string) => void
 }
 
@@ -29,10 +29,9 @@ const categoriaConfig: Record<string, { icon: React.ElementType; color: string; 
 }
 
 export function DetailRecepcionDialog({
-  open, onOpenChange, consulta, onTerminado,
+  open, onOpenChange, consulta, mascota, onTerminado,
 }: DetailRecepcionDialogProps) {
   const [confirmando, setConfirmando] = useState(false)
-  const mascota = consulta ? mascotas.find(m => m.id === consulta.mascotaId) : undefined
 
   const handleClose = () => {
     setConfirmando(false)

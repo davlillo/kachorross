@@ -62,7 +62,6 @@ const navItems: NavItem[] = [
     href: '/recepcion',
     icon: ClipboardList,
     roles: ['recepcion', 'admin'],
-    badge: 3,
   },
   {
     label: 'Catálogo',
@@ -93,7 +92,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   );
 
   const handleLogout = () => {
-    logout();
+    void logout();
     navigate('/login');
   };
 
@@ -187,7 +186,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/perfil')}>
                 <User className="w-4 h-4 mr-2" />
                 Perfil
               </DropdownMenuItem>
@@ -228,12 +227,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Button
               variant="ghost"
               size="icon"
-              className="relative"
             >
               <Bell className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-neon-pink text-white text-[10px] rounded-full flex items-center justify-center">
-                3
-              </span>
             </Button>
             <Button
               variant="ghost"

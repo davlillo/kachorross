@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { expedientes, buscarExpedientes } from '@/data/mockData';
+import { MascotaController } from '@/controllers/mascota.controller';
 import { Card } from '@/components/atoms/ui/card';
 import { Button } from '@/components/atoms/ui/button';
 import { Badge } from '@/components/atoms/ui/badge';
@@ -46,12 +46,28 @@ const filtrosEspecie = [
 ];
 
 export default function ExpedientesPage() {
+  const ctrl = MascotaController.getInstance();
   const [searchQuery, setSearchQuery] = useState('');
   const [filtroEspecie, setFiltroEspecie] = useState<string>('todos');
+  const [expedientes, setExpedientes] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const expedientesFiltrados = searchQuery
-    ? buscarExpedientes(searchQuery)
-    : expedientes;
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      const data = searchQuery
+        ? await ctrl.buscarExpedientes(searchQuery)
+        : await ctrl.buscarExpedientes('');
+      setExpedientes(data);
+      setIsLoading(false);
+    };
+    void load();
+  }, [ctrl, searchQuery]);
+
+  const expedientesFiltrados = useMemo(
+    () => expedientes,
+    [expedientes]
+  );
 
   const expedientesPorEspecie = filtroEspecie === 'todos'
     ? expedientesFiltrados
@@ -66,7 +82,7 @@ export default function ExpedientesPage() {
         badge={
           <Badge variant="outline" className="px-3 py-1 ml-2">
             <PawPrint className="w-3 h-3 mr-1" />
-            {expedientes.length} pacientes registrados
+            {isLoading ? '...' : `${expedientes.length} pacientes registrados`}
           </Badge>
         }
         actions={

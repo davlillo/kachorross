@@ -1,65 +1,194 @@
-import type { Consulta, DetalleConsulta, MonitorSalida } from '@/types'
-import { consultasPendientes, consultasHistoricas, mascotas } from '@/data/mockData'
+import { supabase } from '@/supabase/client'
+import type { Consulta, DetalleConsulta, MonitorSalida, Producto } from '@/types'
+import { MascotaController } from './mascota.controller'
 
 let instance: ConsultaController | null = null
 
+type ConsultaRow = {
+  id: string
+  mascota_id: string
+  fecha: string | null
+  motivo: string
+  sintomas: string | null
+  diagnostico: string
+  tratamiento: string | null
+  notas: string | null
+  doctora_id: string | null
+  estado: string | null
+  total: number | string | null
+  proxima_cita: string | null
+}
+
+type DetalleRow = {
+  id: string
+  consulta_id: string
+  producto_id: string | null
+  nombre_personalizado: string | null
+  cantidad: number
+  precio_aplicado: number | string
+  subtotal: number | string | null
+  catalogo: {
+    id: string
+    codigo: string
+    nombre: string
+    descripcion: string | null
+    categoria: string
+    precio: number | string | null
+    activo: boolean | null
+  } | null
+}
+
 export class ConsultaController {
-  private data: Consulta[]
-
-  private constructor() {
-    this.data = [...consultasPendientes, ...consultasHistoricas]
-  }
-
   static getInstance(): ConsultaController {
     if (!instance) instance = new ConsultaController()
     return instance
   }
 
-  getAll(): Consulta[] {
-    return this.data
+  private mapProducto(row: DetalleRow['catalogo'], fallbackName?: string | null): Producto {
+    return {
+      id: row?.id ?? '',
+      codigo: row?.codigo ?? 'MANUAL',
+      nombre: row?.nombre ?? fallbackName ?? 'Item sin catálogo',
+      descripcion: row?.descripcion ?? '',
+      categoria: (row?.categoria as Producto['categoria']) ?? 'servicio',
+      precio: Number(row?.precio ?? 0),
+      activo: row?.activo ?? true,
+    }
   }
 
-  getPendientes(): Consulta[] {
-    return this.data.filter(c => c.estado === 'pendiente')
+  private mapDetalle(row: DetalleRow): DetalleConsulta {
+    return {
+      id: row.id,
+      consultaId: row.consulta_id,
+      productoId: row.producto_id ?? '',
+      producto: this.mapProducto(row.catalogo, row.nombre_personalizado),
+      cantidad: row.cantidad,
+      precioAplicado: Number(row.precio_aplicado),
+      subtotal: Number(row.subtotal ?? Number(row.precio_aplicado) * row.cantidad),
+    }
   }
 
-  getByMascota(mascotaId: string): Consulta[] {
-    return this.data
+  private async fetchDetalles(consultaIds: string[]): Promise<Record<string, DetalleConsulta[]>> {
+    if (consultaIds.length === 0) return {}
+
+    const { data, error } = await supabase
+      .from('detalles_consulta')
+      .select(
+        'id,consulta_id,producto_id,nombre_personalizado,cantidad,precio_aplicado,subtotal,catalogo(id,codigo,nombre,descripcion,categoria,precio,activo)'
+      )
+      .in('consulta_id', consultaIds)
+
+    if (error) throw new Error(`No se pudieron cargar detalles: ${error.message}`)
+
+    const grouped: Record<string, DetalleConsulta[]> = {}
+    for (const row of (data ?? []) as unknown as DetalleRow[]) {
+      const detail = this.mapDetalle(row)
+      grouped[detail.consultaId] = grouped[detail.consultaId] ?? []
+      grouped[detail.consultaId].push(detail)
+    }
+    return grouped
+  }
+
+  private mapConsulta(row: ConsultaRow, detalles: DetalleConsulta[]): Consulta {
+    return {
+      id: row.id,
+      mascotaId: row.mascota_id,
+      fecha: row.fecha ?? new Date().toISOString(),
+      motivo: row.motivo,
+      sintomas: row.sintomas ?? '',
+      diagnostico: row.diagnostico,
+      tratamiento: row.tratamiento ?? '',
+      notas: row.notas ?? '',
+      doctora: 'Doctora',
+      estado: row.estado === 'finalizado' ? 'finalizado' : 'pendiente',
+      total: Number(row.total ?? 0),
+      detalles,
+      proximaCita: row.proxima_cita ?? undefined,
+    }
+  }
+
+  async getAll(): Promise<Consulta[]> {
+    const { data, error } = await supabase
+      .from('consultas')
+      .select('id,mascota_id,fecha,motivo,sintomas,diagnostico,tratamiento,notas,doctora_id,estado,total,proxima_cita')
+      .order('fecha', { ascending: false })
+
+    if (error) throw new Error(`No se pudieron cargar consultas: ${error.message}`)
+
+    const rows = (data ?? []) as ConsultaRow[]
+    const ids = rows.map(c => c.id)
+    const detallesByConsulta = await this.fetchDetalles(ids)
+    return rows.map(row => this.mapConsulta(row, detallesByConsulta[row.id] ?? []))
+  }
+
+  async getPendientes(): Promise<Consulta[]> {
+    const all = await this.getAll()
+    return all.filter(c => c.estado === 'pendiente')
+  }
+
+  async getByMascota(mascotaId: string): Promise<Consulta[]> {
+    const all = await this.getAll()
+    return all
       .filter(c => c.mascotaId === mascotaId)
       .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
   }
 
-  crear(data: Partial<Consulta>): Consulta {
-    const nueva: Consulta = {
-      id: `c${Date.now()}`,
-      mascotaId: data.mascotaId || '',
-      fecha: new Date().toISOString(),
+  async crear(data: Partial<Consulta>): Promise<Consulta> {
+    const payload = {
+      mascota_id: data.mascotaId || '',
       motivo: data.motivo || '',
-      sintomas: data.sintomas || '',
+      sintomas: data.sintomas || null,
       diagnostico: data.diagnostico || '',
-      tratamiento: data.tratamiento || '',
-      notas: data.notas || '',
-      doctora: 'Dra. Maritza López',
+      tratamiento: data.tratamiento || null,
+      notas: data.notas || null,
       estado: 'pendiente',
       total: data.total || 0,
-      detalles: data.detalles || [],
-      proximaCita: data.proximaCita,
+      proxima_cita: data.proximaCita || null,
     }
-    this.data.unshift(nueva)
-    return nueva
+
+    const { data: inserted, error } = await supabase
+      .from('consultas')
+      .insert(payload)
+      .select('id,mascota_id,fecha,motivo,sintomas,diagnostico,tratamiento,notas,doctora_id,estado,total,proxima_cita')
+      .single()
+
+    if (error) throw new Error(`No se pudo crear consulta: ${error.message}`)
+
+    const consultaRow = inserted as ConsultaRow
+    const detalles = data.detalles ?? []
+    if (detalles.length > 0) {
+      const insertDetalles = detalles.map(det => ({
+        consulta_id: consultaRow.id,
+        producto_id: det.productoId || null,
+        nombre_personalizado: det.producto?.nombre ?? null,
+        cantidad: det.cantidad,
+        precio_aplicado: det.precioAplicado,
+      }))
+
+      const { error: detError } = await supabase.from('detalles_consulta').insert(insertDetalles)
+      if (detError) throw new Error(`Consulta creada pero fallaron detalles: ${detError.message}`)
+    }
+
+    return this.mapConsulta(consultaRow, detalles)
   }
 
-  finalizar(id: string): void {
-    const idx = this.data.findIndex(c => c.id === id)
-    if (idx >= 0) this.data[idx].estado = 'finalizado'
+  async finalizar(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('consultas')
+      .update({ estado: 'finalizado', updated_at: new Date().toISOString() })
+      .eq('id', id)
+
+    if (error) throw new Error(`No se pudo finalizar consulta: ${error.message}`)
   }
 
   calcularTotal(detalles: DetalleConsulta[]): number {
     return detalles.reduce((sum, d) => sum + d.subtotal, 0)
   }
 
-  getMonitorSalida(): MonitorSalida[] {
-    const pendientes = this.getPendientes().slice(0, 3)
+  async getMonitorSalida(): Promise<MonitorSalida[]> {
+    const pendientes = (await this.getPendientes()).slice(0, 3)
+    const mascotaCtrl = MascotaController.getInstance()
+    const mascotas = await mascotaCtrl.getAll()
     return pendientes.map((c, i) => ({
       consultaId: c.id,
       mascota: mascotas.find(m => m.id === c.mascotaId)!,
