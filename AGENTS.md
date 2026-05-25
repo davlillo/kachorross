@@ -18,22 +18,28 @@ Aplicación web para gestión de clínica veterinaria "Kachorros". Sistema de hi
 ### ⚠️ Áreas de Atención
 
 1. **Seguridad (Desarrollo)**
-   - `AuthContext.tsx:30` - Password hardcodeada '123456' (solo demo)
-   - Mensaje de error expone credenciales: línea 35
-   - Sin validación real de email/password
+ - `AuthContext.tsx:30` - Password hardcodeada '123456' (solo demo)
+ - Mensaje de error expone credenciales: línea 35
+ - Sin validación real de email/password
 
 2. **Datos (Demo)**
-   - `mockData.ts` inicializa datos cada vez que se recarga - cambios no persisten
-   - La integración con Supabase está planeada (existe `supabase_schema.sql`) pero no implementada
-   - Hook `useConsultas` copia arrays de datos iniciales - puede causar inconsistencias si se modifica el array original
+ - `mockData.ts` inicializa datos cada vez que se recarga - cambios no persisten
+ - La integración con Supabase está planeada (existe `supabase_schema.sql`) pero no implementada
+ - Hook `useConsultas` copia arrays de datos iniciales - puede causar inconsistencias si se modifica el array original
 
 3. **Rutas**
-   - `App.tsx` - Todas las rutas definidas manualmente
-   - Falta implementar protección robusta en cliente (soloredirect)
+ - `App.tsx` - Todas las rutas definidas manualmente
+ - Falta implementar protección robusta en cliente (soloredirect)
 
 4. **UI**
-   - Componentes shadcn/ui completos en `src/components/ui/`
-   - Algunos archivos duplicados en `src/app/login/page.tsx` (fuera de estándar)
+ - Componentes shadcn/ui completos en `src/components/ui/`
+ - Algunos archivos duplicados en `src/app/login/page.tsx` (fuera de estándar)
+
+5. **Multi-tenancy (SaaS)**
+ - El sistema soporta múltiples clínicas mediante la tabla `veterinarias`.
+ - Existe un rol `super_admin` con acceso a un panel dedicado (`/super-admin`) para gestionar clínicas y sus administradores.
+ - La creación de usuarios administradores se maneja a través de la Edge Function `admin-create-user`.
+ - La auto-creación de perfiles al registrarse está respaldada por un trigger en base de datos y un fallback en el frontend (`AuthController`).
 
 ## Convenciones
 

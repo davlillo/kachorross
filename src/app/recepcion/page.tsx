@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useConsultas } from '@/hooks/useConsultas';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/atoms/ui/card';
 import { Badge } from '@/components/atoms/ui/badge';
@@ -8,8 +8,7 @@ import { EmptyState } from '@/components/molecules/EmptyState';
 import { MonitorCard } from '@/components/organisms/MonitorCard';
 import { DetailRecepcionDialog } from '@/components/organisms/DetailRecepcionDialog';
 
-import {
-  ClipboardList,
+import { fechaLocalClave, hoyLocalClave } from '@/lib/utils';
   CheckCircle,
   Clock,
   Stethoscope,
@@ -21,8 +20,17 @@ export default function RecepcionPage() {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [consultaTerminada, setConsultaTerminada] = useState<string | null>(null);
 
-  const consultasPendientes = consultas.filter(c => c.estado === 'pendiente');
-  const consultaSeleccionada = consultasPendientes.find(c => c.id === selectedConsulta);
+  const hoy = hoyLocalClave();
+
+  const consultasDelDia = useMemo(
+    () =>
+      consultas
+        .filter(c => c.estado === 'finalizado' && c.fecha && fechaLocalClave(c.fecha) === hoy)
+        .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()),
+    [consultas, hoy],
+  );
+
+  const consultaSeleccionada = consultas.find(c => c.id === selectedConsulta);
 
   const handleVerDetalle = (consultaId: string) => {
     setSelectedConsulta(consultaId);
@@ -58,7 +66,7 @@ export default function RecepcionPage() {
           </TabsTrigger>
           <TabsTrigger value="consultas" className="flex items-center gap-2">
             <Stethoscope className="w-4 h-4" />
-            Consultas del Día ({isLoading ? '...' : consultasPendientes.length})
+            Consultas del Día ({isLoading ? '...' : consultasDelDia.length})
           </TabsTrigger>
         </TabsList>
 
@@ -90,33 +98,41 @@ export default function RecepcionPage() {
         <TabsContent value="consultas" className="mt-4">
           <Card className="border-0 shadow-soft">
             <CardHeader>
-              <CardTitle>Consultas Pendientes de Hoy</CardTitle>
+              <CardTitle>Consultas Procesadas Hoy</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {consultasPendientes.map((consulta) => (
-                  <div key={consulta.id} className="flex items-center gap-4 p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purpura-100 to-purpura-200 flex items-center justify-center">
-                      <Stethoscope className="w-5 h-5 text-purpura-600" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-semibold">{consulta.motivo}</h4>
-                        <Badge variant="secondary" className="bg-amber-gold text-amber-900">
-                          Pendiente
-                        </Badge>
+              {consultasDelDia.length === 0 ? (
+                <EmptyState
+                  icon={Stethoscope}
+                  title="Sin consultas procesadas hoy"
+                  message="Al marcar una prefactura como terminada, aparecerá aquí"
+                />
+              ) : (
+                <div className="space-y-3">
+                  {consultasDelDia.map((consulta) => (
+                    <div key={consulta.id} className="flex items-center gap-4 p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purpura-100 to-purpura-200 flex items-center justify-center">
+                        <Stethoscope className="w-5 h-5 text-purpura-600" />
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(consulta.fecha).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} • {consulta.doctora}
-                      </p>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-semibold">{consulta.motivo}</h4>
+                          <Badge className="bg-purpura-500 text-white">
+                            Procesada
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(consulta.fecha).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} • {consulta.doctora}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-lg">${consulta.total.toFixed(2)}</p>
+                        <p className="text-xs text-muted-foreground">{consulta.detalles.length} items</p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-lg">${consulta.total.toFixed(2)}</p>
-                      <p className="text-xs text-muted-foreground">{consulta.detalles.length} items</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

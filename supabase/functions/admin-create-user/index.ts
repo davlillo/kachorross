@@ -40,14 +40,14 @@ Deno.serve(async (req) => {
       .eq('id', caller.id)
       .maybeSingle()
 
-    if (callerPerfilError || !callerPerfil || callerPerfil.rol !== 'admin') {
+    if (callerPerfilError || !callerPerfil || (callerPerfil.rol !== 'admin' && callerPerfil.rol !== 'super_admin')) {
       return new Response(JSON.stringify({ error: 'Sin permisos de administrador' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    const { nombre, email, rol, password } = await req.json()
+    const { nombre, email, rol, password, veterinaria_id } = await req.json()
     if (!nombre || !email || !rol || !password) {
       return new Response(JSON.stringify({ error: 'Payload incompleto' }), {
         status: 400,
@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
       email,
       password,
       email_confirm: true,
-      user_metadata: { nombre, rol },
+      user_metadata: { nombre, rol, veterinaria_id },
     })
 
     if (createError || !created.user) {
@@ -80,10 +80,11 @@ Deno.serve(async (req) => {
           email,
           rol,
           avatar,
+          veterinaria_id: veterinaria_id || null,
         },
         { onConflict: 'id' }
       )
-      .select('id,nombre,email,rol,avatar')
+      .select('id,nombre,email,rol,avatar,veterinaria_id')
       .single()
 
     if (perfilError) {

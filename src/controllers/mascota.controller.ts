@@ -3,6 +3,7 @@ import type {
   Consulta,
   DetalleConsulta,
   Expediente,
+  ExpedienteResumen,
   FotoEvolucion,
   Mascota,
   Producto,
@@ -10,6 +11,7 @@ import type {
   RegistrarExpedienteDTO,
   Vacuna,
 } from '@/types'
+import { AuthController } from './auth.controller'
 
 let instance: MascotaController | null = null
 
@@ -22,6 +24,7 @@ export class MascotaController {
   private mapMascota(row: any): Mascota {
     const propietario: Propietario = {
       id: row.propietarios?.id ?? '',
+      veterinariaId: row.propietarios?.veterinaria_id ?? '',
       nombre: row.propietarios?.nombre ?? '',
       telefono: row.propietarios?.telefono ?? '',
       email: row.propietarios?.email ?? undefined,
@@ -30,6 +33,7 @@ export class MascotaController {
 
     return {
       id: row.id,
+      veterinariaId: row.veterinaria_id ?? '',
       nombre: row.nombre,
       especie: row.especie as Mascota['especie'],
       raza: row.raza,
@@ -70,6 +74,7 @@ export class MascotaController {
   private mapConsulta(row: any, detalles: DetalleConsulta[]): Consulta {
     return {
       id: row.id,
+      veterinariaId: row.veterinaria_id ?? '',
       mascotaId: row.mascota_id,
       fecha: row.fecha,
       motivo: row.motivo,
@@ -85,10 +90,20 @@ export class MascotaController {
     }
   }
 
+  private async getVeterinariaId(): Promise<string | null> {
+    const auth = AuthController.getInstance()
+    const currentUser = await auth.resolveUser()
+    return currentUser?.veterinariaId ?? null
+  }
+
   async getAll(): Promise<Mascota[]> {
+    const veterinariaId = await this.getVeterinariaId()
+    if (!veterinariaId) return []
+
     const { data, error } = await supabase
       .from('mascotas')
-      .select('id,nombre,especie,raza,fecha_nacimiento,sexo,color,peso,foto,alergias,notas_especiales,fecha_registro,activo,propietarios(id,nombre,telefono,email,direccion)')
+      .select('id,nombre,especie,raza,fecha_nacimiento,sexo,color,peso,foto,alergias,notas_especiales,fecha_registro,activo,veterinaria_id,propietarios(id,nombre,telefono,email,direccion,veterinaria_id)')
+      .eq('veterinaria_id', veterinariaId)
       .eq('activo', true)
       .order('created_at', { ascending: false })
 
@@ -96,11 +111,32 @@ export class MascotaController {
     return (data ?? []).map(row => this.mapMascota(row))
   }
 
-  async getById(id: string): Promise<Mascota | undefined> {
+  async getByIds(ids: string[]): Promise<Mascota[]> {
+    if (ids.length === 0) return []
+
+    const veterinariaId = await this.getVeterinariaId()
+    if (!veterinariaId) return []
+
     const { data, error } = await supabase
       .from('mascotas')
-      .select('id,nombre,especie,raza,fecha_nacimiento,sexo,color,peso,foto,alergias,notas_especiales,fecha_registro,propietarios(id,nombre,telefono,email,direccion)')
+      .select('id,nombre,especie,raza,fecha_nacimiento,sexo,color,peso,foto,alergias,notas_especiales,fecha_registro,veterinaria_id,propietarios(id,nombre,telefono,email,direccion,veterinaria_id)')
+      .in('id', ids)
+      .eq('veterinaria_id', veterinariaId)
+      .eq('activo', true)
+
+    if (error) throw new Error(`No se pudieron cargar mascotas: ${error.message}`)
+    return (data ?? []).map(row => this.mapMascota(row))
+  }
+
+  async getById(id: string): Promise<Mascota | undefined> {
+    const veterinariaId = await this.getVeterinariaId()
+    if (!veterinariaId) return undefined
+
+    const { data, error } = await supabase
+      .from('mascotas')
+      .select('id,nombre,especie,raza,fecha_nacimiento,sexo,color,peso,foto,alergias,notas_especiales,fecha_registro,veterinaria_id,propietarios(id,nombre,telefono,email,direccion,veterinaria_id)')
       .eq('id', id)
+      .eq('veterinaria_id', veterinariaId)
       .maybeSingle()
 
     if (error) throw new Error(`No se pudo cargar mascota: ${error.message}`)
@@ -108,27 +144,67 @@ export class MascotaController {
   }
 
   async buscar(query: string): Promise<Mascota[]> {
-    const q = query.trim().toLowerCase()
-    const mascotas = await this.getAll()
-    if (!q) return mascotas
+    const q = query.trim()
+    const veterinariaId = await this.getVeterinariaId()
+    if (!veterinariaId) return []
 
-    return mascotas.filter(
-      m =>
-        m.nombre.toLowerCase().includes(q) ||
-        m.propietario.nombre.toLowerCase().includes(q) ||
-        m.propietario.telefono.includes(q) ||
-        m.raza.toLowerCase().includes(q)
-    )
+    let request = supabase
+      .from('mascotas')
+      .select('id,nombre,especie,raza,fecha_nacimiento,sexo,color,peso,foto,alergias,notas_especiales,fecha_registro,activo,veterinaria_id,propietarios(id,nombre,telefono,email,direccion,veterinaria_id)')
+      .eq('veterinaria_id', veterinariaId)
+      .eq('activo', true)
+      .order('created_at', { ascending: false })
+
+    if (q) {
+      request = request.or(
+        `nombre.ilike.%${q}%,raza.ilike.%${q}%,propietarios.nombre.ilike.%${q}%,propietarios.telefono.ilike.%${q}%`
+      )
+    }
+
+    const { data, error } = await request
+    if (error) throw new Error(`No se pudieron buscar mascotas: ${error.message}`)
+    return (data ?? []).map(row => this.mapMascota(row))
+  }
+
+  async listarExpedientesResumen(query = ''): Promise<ExpedienteResumen[]> {
+    const mascotas = await this.buscar(query)
+    if (mascotas.length === 0) return []
+
+    const mascotaIds = mascotas.map(m => m.id)
+    const { data: consultasData, error: consultasError } = await supabase
+      .from('consultas')
+      .select('mascota_id')
+      .in('mascota_id', mascotaIds)
+
+    if (consultasError) {
+      throw new Error(`No se pudieron contar consultas: ${consultasError.message}`)
+    }
+
+    const counts = new Map<string, number>()
+    for (const row of consultasData ?? []) {
+      counts.set(row.mascota_id, (counts.get(row.mascota_id) ?? 0) + 1)
+    }
+
+    return mascotas.map(mascota => ({
+      id: `exp-${mascota.id}`,
+      mascotaId: mascota.id,
+      mascota,
+      consultasCount: counts.get(mascota.id) ?? 0,
+    }))
   }
 
   async getExpedienteById(id: string): Promise<Expediente | undefined> {
+    const veterinariaId = await this.getVeterinariaId()
+    if (!veterinariaId) return undefined
+
     const mascota =
       (await this.getById(id)) ??
       (await (async () => {
         const { data, error } = await supabase
           .from('mascotas')
-          .select('id,nombre,especie,raza,fecha_nacimiento,sexo,color,peso,foto,alergias,notas_especiales,fecha_registro,propietarios(id,nombre,telefono,email,direccion)')
+          .select('id,nombre,especie,raza,fecha_nacimiento,sexo,color,peso,foto,alergias,notas_especiales,fecha_registro,veterinaria_id,propietarios(id,nombre,telefono,email,direccion,veterinaria_id)')
           .eq('id', id.replace('exp-', ''))
+          .eq('veterinaria_id', veterinariaId)
           .maybeSingle()
         if (error) throw new Error(`No se pudo cargar expediente: ${error.message}`)
         return data ? this.mapMascota(data) : undefined
@@ -140,18 +216,21 @@ export class MascotaController {
       await Promise.all([
         supabase
           .from('consultas')
-          .select('id,mascota_id,fecha,motivo,sintomas,diagnostico,tratamiento,notas,estado,total,proxima_cita,doctora:perfiles(nombre)')
+          .select('id,mascota_id,fecha,motivo,sintomas,diagnostico,tratamiento,notas,estado,total,proxima_cita,veterinaria_id,doctora:perfiles(nombre)')
           .eq('mascota_id', mascota.id)
+          .eq('veterinaria_id', veterinariaId)
           .order('fecha', { ascending: false }),
         supabase
           .from('vacunas')
-          .select('id,mascota_id,nombre,fecha_aplicacion,dosis,lote,fecha_proxima_dosis')
+          .select('id,mascota_id,nombre,fecha_aplicacion,dosis,lote,fecha_proxima_dosis,veterinaria_id')
           .eq('mascota_id', mascota.id)
+          .eq('veterinaria_id', veterinariaId)
           .order('fecha_aplicacion', { ascending: false }),
         supabase
           .from('fotos_evolucion')
-          .select('id,mascota_id,url,fecha,descripcion')
+          .select('id,mascota_id,url,fecha,descripcion,veterinaria_id')
           .eq('mascota_id', mascota.id)
+          .eq('veterinaria_id', veterinariaId)
           .order('fecha', { ascending: false }),
       ])
 
@@ -208,12 +287,6 @@ export class MascotaController {
     }
   }
 
-  async buscarExpedientes(query: string): Promise<Expediente[]> {
-    const mascotas = await this.buscar(query)
-    const expedientes = await Promise.all(mascotas.map(m => this.getExpedienteById(m.id)))
-    return expedientes.filter(Boolean) as Expediente[]
-  }
-
   async actualizar(id: string, data: {
     mascota?: Partial<Pick<Mascota, 'nombre' | 'especie' | 'raza' | 'fechaNacimiento' | 'sexo' | 'color' | 'peso' | 'foto' | 'alergias' | 'notasEspeciales'>>;
     propietario?: Partial<Pick<Propietario, 'nombre' | 'telefono' | 'email' | 'direccion'>>;
@@ -262,6 +335,85 @@ export class MascotaController {
     return this.getById(id)
   }
 
+  async subirFotoPerfil(mascotaId: string, file: File): Promise<string> {
+    const veterinariaId = await this.getVeterinariaId()
+    if (!veterinariaId) throw new Error('No hay veterinaria activa')
+
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
+    const filePath = `${veterinariaId}/${mascotaId}/${crypto.randomUUID()}.${ext}`
+    const contentType = file.type || `image/${ext}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('mascotas')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType,
+      })
+
+    if (uploadError) throw new Error(`No se pudo subir la foto: ${uploadError.message}`)
+
+    const { data: urlData } = supabase.storage.from('mascotas').getPublicUrl(filePath)
+    const fotoUrl = urlData.publicUrl
+
+    const { error: updateError } = await supabase
+      .from('mascotas')
+      .update({ foto: fotoUrl, updated_at: new Date().toISOString() })
+      .eq('id', mascotaId)
+
+    if (updateError) throw new Error(`No se pudo actualizar la foto de perfil: ${updateError.message}`)
+
+    return fotoUrl
+  }
+
+  async subirFotoEvolucion(
+    mascotaId: string,
+    file: File,
+    descripcion?: string,
+    consultaId?: string
+  ): Promise<FotoEvolucion> {
+    const veterinariaId = await this.getVeterinariaId()
+    if (!veterinariaId) throw new Error('No hay veterinaria activa')
+
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
+    const filePath = `${veterinariaId}/${mascotaId}/${crypto.randomUUID()}.${ext}`
+    const contentType = file.type || `image/${ext}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('fotos_evolucion')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType,
+      })
+
+    if (uploadError) throw new Error(`No se pudo subir la foto: ${uploadError.message}`)
+
+    const { data: urlData } = supabase.storage.from('fotos_evolucion').getPublicUrl(filePath)
+
+    const { data: row, error: insertError } = await supabase
+      .from('fotos_evolucion')
+      .insert({
+        veterinaria_id: veterinariaId,
+        mascota_id: mascotaId,
+        consulta_id: consultaId ?? null,
+        url: urlData.publicUrl,
+        descripcion: descripcion?.trim() || null,
+      })
+      .select('id,mascota_id,url,fecha,descripcion,veterinaria_id')
+      .single()
+
+    if (insertError) throw new Error(`No se pudo registrar la foto de evolución: ${insertError.message}`)
+
+    return {
+      id: row.id,
+      expedienteId: `exp-${mascotaId}`,
+      url: row.url,
+      fecha: row.fecha,
+      descripcion: row.descripcion ?? 'Sin descripción',
+    }
+  }
+
   async eliminar(id: string): Promise<boolean> {
     const { error } = await supabase
       .from('mascotas')
@@ -273,9 +425,14 @@ export class MascotaController {
   }
 
   async registrar(data: RegistrarExpedienteDTO): Promise<Expediente> {
+    const auth = AuthController.getInstance()
+    const currentUser = await auth.resolveUser()
+    if (!currentUser?.veterinariaId) throw new Error('No hay veterinaria activa')
+
     const { data: propietarioRow, error: propietarioError } = await supabase
       .from('propietarios')
       .insert({
+        veterinaria_id: currentUser.veterinariaId,
         nombre: data.propietario.nombre,
         telefono: data.propietario.telefono,
         email: data.propietario.email,
@@ -289,6 +446,7 @@ export class MascotaController {
     const { data: mascotaRow, error: mascotaError } = await supabase
       .from('mascotas')
       .insert({
+        veterinaria_id: currentUser.veterinariaId,
         nombre: data.mascota.nombre,
         especie: data.mascota.especie,
         raza: data.mascota.raza,

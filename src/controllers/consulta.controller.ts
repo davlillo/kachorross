@@ -1,6 +1,7 @@
 import { supabase } from '@/supabase/client'
 import type { Consulta, DetalleConsulta, MonitorSalida, Producto } from '@/types'
 import { MascotaController } from './mascota.controller'
+import { AuthController } from './auth.controller'
 
 let instance: ConsultaController | null = null
 
@@ -92,6 +93,7 @@ export class ConsultaController {
   private mapConsulta(row: ConsultaRow, detalles: DetalleConsulta[]): Consulta {
     return {
       id: row.id,
+      veterinariaId: (row as any).veterinaria_id ?? '',
       mascotaId: row.mascota_id,
       fecha: row.fecha ?? new Date().toISOString(),
       motivo: row.motivo,
@@ -107,12 +109,29 @@ export class ConsultaController {
     }
   }
 
-  async getAll(): Promise<Consulta[]> {
-    const { data, error } = await supabase
+  private async getVeterinariaId(): Promise<string | null> {
+    const auth = AuthController.getInstance()
+    const currentUser = await auth.resolveUser()
+    return currentUser?.veterinariaId ?? null
+  }
+
+  private async fetchConsultas(
+    filters: { estado?: string; mascotaId?: string; limit?: number } = {}
+  ): Promise<Consulta[]> {
+    const veterinariaId = await this.getVeterinariaId()
+    if (!veterinariaId) return []
+
+    let query = supabase
       .from('consultas')
-      .select('id,mascota_id,fecha,motivo,sintomas,diagnostico,tratamiento,notas,doctora_id,estado,total,proxima_cita')
+      .select('id,mascota_id,fecha,motivo,sintomas,diagnostico,tratamiento,notas,doctora_id,estado,total,proxima_cita,veterinaria_id')
+      .eq('veterinaria_id', veterinariaId)
       .order('fecha', { ascending: false })
 
+    if (filters.estado) query = query.eq('estado', filters.estado)
+    if (filters.mascotaId) query = query.eq('mascota_id', filters.mascotaId)
+    if (filters.limit) query = query.limit(filters.limit)
+
+    const { data, error } = await query
     if (error) throw new Error(`No se pudieron cargar consultas: ${error.message}`)
 
     const rows = (data ?? []) as ConsultaRow[]
@@ -121,20 +140,25 @@ export class ConsultaController {
     return rows.map(row => this.mapConsulta(row, detallesByConsulta[row.id] ?? []))
   }
 
-  async getPendientes(): Promise<Consulta[]> {
-    const all = await this.getAll()
-    return all.filter(c => c.estado === 'pendiente')
+  async getAll(): Promise<Consulta[]> {
+    return this.fetchConsultas()
+  }
+
+  async getPendientes(limit?: number): Promise<Consulta[]> {
+    return this.fetchConsultas({ estado: 'pendiente', limit })
   }
 
   async getByMascota(mascotaId: string): Promise<Consulta[]> {
-    const all = await this.getAll()
-    return all
-      .filter(c => c.mascotaId === mascotaId)
-      .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
+    return this.fetchConsultas({ mascotaId })
   }
 
   async crear(data: Partial<Consulta>): Promise<Consulta> {
+    const auth = AuthController.getInstance()
+    const currentUser = await auth.resolveUser()
+    if (!currentUser?.veterinariaId) throw new Error('No hay veterinaria activa')
+
     const payload = {
+      veterinaria_id: currentUser.veterinariaId,
       mascota_id: data.mascotaId || '',
       motivo: data.motivo || '',
       sintomas: data.sintomas || null,
@@ -149,7 +173,7 @@ export class ConsultaController {
     const { data: inserted, error } = await supabase
       .from('consultas')
       .insert(payload)
-      .select('id,mascota_id,fecha,motivo,sintomas,diagnostico,tratamiento,notas,doctora_id,estado,total,proxima_cita')
+      .select('id,mascota_id,fecha,motivo,sintomas,diagnostico,tratamiento,notas,doctora_id,estado,total,proxima_cita,veterinaria_id')
       .single()
 
     if (error) throw new Error(`No se pudo crear consulta: ${error.message}`)
@@ -186,15 +210,26 @@ export class ConsultaController {
   }
 
   async getMonitorSalida(): Promise<MonitorSalida[]> {
-    const pendientes = (await this.getPendientes()).slice(0, 3)
+    const pendientes = await this.getPendientes(3)
+    if (pendientes.length === 0) return []
+
+    const mascotaIds = [...new Set(pendientes.map(c => c.mascotaId))]
     const mascotaCtrl = MascotaController.getInstance()
-    const mascotas = await mascotaCtrl.getAll()
-    return pendientes.map((c, i) => ({
-      consultaId: c.id,
-      mascota: mascotas.find(m => m.id === c.mascotaId)!,
-      horaTermino: new Date(Date.now() - (i + 1) * 15 * 60000).toISOString(),
-      total: c.total,
-      estado: (i === 2 ? 'pagando' : 'listo') as MonitorSalida['estado'],
-    }))
+    const mascotas = await mascotaCtrl.getByIds(mascotaIds)
+    const mascotasById = new Map(mascotas.map(m => [m.id, m]))
+
+    return pendientes
+      .map((c, i) => {
+        const mascota = mascotasById.get(c.mascotaId)
+        if (!mascota) return null
+        return {
+          consultaId: c.id,
+          mascota,
+          horaTermino: new Date(Date.now() - (i + 1) * 15 * 60000).toISOString(),
+          total: c.total,
+          estado: (i === 2 ? 'pagando' : 'listo') as MonitorSalida['estado'],
+        }
+      })
+      .filter(Boolean) as MonitorSalida[]
   }
 }

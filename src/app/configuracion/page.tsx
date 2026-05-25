@@ -1,238 +1,227 @@
-import { useEffect, useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/atoms/ui/card';
-import { Badge } from '@/components/atoms/ui/badge';
-import { Input } from '@/components/atoms/ui/input';
+import { useState, useRef } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { VeterinariaController } from '@/controllers/veterinaria.controller';
 import { PageHeader } from '@/components/molecules/PageHeader';
-import { ConsultaController } from '@/controllers/consulta.controller';
-import { MascotaController } from '@/controllers/mascota.controller';
-import {
-  Settings, History, Search, TrendingUp, DollarSign,
-  Calendar, Receipt, ChevronRight, Stethoscope, Pill,
-  Syringe, ShoppingBag, FlaskConical,
-} from 'lucide-react';
-
-const categoriaIcon: Record<string, React.ElementType> = {
-  servicio: Stethoscope,
-  medicamento: Pill,
-  vacuna: Syringe,
-  petshop: ShoppingBag,
-  laboratorio: FlaskConical,
-};
-
-const categoriaColor: Record<string, string> = {
-  servicio:    'text-blue-600 bg-blue-50',
-  medicamento: 'text-amber-600 bg-amber-50',
-  vacuna:      'text-violet-600 bg-violet-50',
-  petshop:     'text-pink-600 bg-pink-50',
-  laboratorio: 'text-purple-600 bg-purple-50',
-};
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/atoms/ui/card';
+import { Button } from '@/components/atoms/ui/button';
+import { Input } from '@/components/atoms/ui/input';
+import { Label } from '@/components/atoms/ui/label';
+import { Settings, Upload, Building, Mail, Phone, MapPin, Loader2, PawPrint } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function ConfiguracionPage() {
-  const consultaCtrl = ConsultaController.getInstance();
-  const mascotaCtrl = MascotaController.getInstance();
-  const [busqueda, setBusqueda] = useState('');
-  const [expandido, setExpandido] = useState<string | null>(null);
-  const [mascotas, setMascotas] = useState<any[]>([]);
-  const [todasLasConsultas, setTodasLasConsultas] = useState<any[]>([]);
+  const { veterinaria, refreshVeterinaria } = useAuth();
+  const vetCtrl = VeterinariaController.getInstance();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    const load = async () => {
-      const [consultas, mascotasData] = await Promise.all([
-        consultaCtrl.getAll(),
-        mascotaCtrl.getAll(),
-      ]);
-      setMascotas(mascotasData);
-      setTodasLasConsultas(consultas.filter(c => c.estado === 'finalizado'));
-    };
-    void load();
-  }, [consultaCtrl, mascotaCtrl]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [formData, setFormData] = useState({
+    nombre: veterinaria?.nombre || '',
+    email: veterinaria?.email || '',
+    telefono: veterinaria?.telefono || '',
+    direccion: veterinaria?.direccion || '',
+  });
 
-  const consultasFiltradas = useMemo(() => {
-    const q = busqueda.toLowerCase();
-    return todasLasConsultas.filter(c => {
-      const mascota = mascotas.find(m => m.id === c.mascotaId);
-      return (
-        !q ||
-        mascota?.nombre.toLowerCase().includes(q) ||
-        mascota?.propietario.nombre.toLowerCase().includes(q) ||
-        c.motivo.toLowerCase().includes(q) ||
-        c.detalles.some(d => d.producto.codigo.toLowerCase().includes(q) || d.producto.nombre.toLowerCase().includes(q))
-      );
-    }).sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
-  }, [busqueda]);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
-  const totalIngresos = consultasFiltradas.reduce((acc, c) => acc + c.total, 0);
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!veterinaria) return;
+
+    setIsLoading(true);
+    try {
+      await vetCtrl.actualizar(veterinaria.id, formData);
+      await refreshVeterinaria();
+      toast.success('Configuración actualizada correctamente');
+    } catch (error: any) {
+      toast.error(error.message || 'Error al actualizar configuración');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !veterinaria) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Por favor, selecciona una imagen válida');
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('La imagen no debe superar los 2MB');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      await vetCtrl.subirLogo(veterinaria.id, file);
+      await refreshVeterinaria();
+      toast.success('Logo actualizado correctamente');
+    } catch (error: any) {
+      toast.error(error.message || 'Error al subir el logo');
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  if (!veterinaria) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">No se encontró información de la clínica.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
+    <div className="space-y-6 animate-fade-in-up max-w-4xl mx-auto">
       <PageHeader
-        title="Historial de Ventas"
-        description="Registro completo de consultas facturadas"
-        icon={History}
-        badge={
-          <Badge variant="outline" className="px-3 py-1 text-purpura-600 border-purpura-200">
-            <Receipt className="w-3 h-3 mr-1" />
-            {consultasFiltradas.length} registros
-          </Badge>
-        }
+        title="Configuración de la Clínica"
+        description="Gestiona la información pública y el branding de tu veterinaria"
+        icon={Settings}
       />
 
-      {/* Resumen */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-0 shadow-soft bg-gradient-to-br from-purpura-500 to-violet-600 text-white">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
-              <DollarSign className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-xs text-white/70 font-medium uppercase tracking-wide">Total Facturado</p>
-              <p className="text-2xl font-black">${totalIngresos.toFixed(2)}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-soft bg-gradient-to-br from-azure-blue to-blue-600 text-white">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
-              <TrendingUp className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-xs text-white/70 font-medium uppercase tracking-wide">Consultas</p>
-              <p className="text-2xl font-black">{consultasFiltradas.length}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-soft bg-gradient-to-br from-amber-400 to-amber-600 text-white">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
-              <Calendar className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-xs text-white/70 font-medium uppercase tracking-wide">Promedio</p>
-              <p className="text-2xl font-black">
-                ${consultasFiltradas.length > 0 ? (totalIngresos / consultasFiltradas.length).toFixed(2) : '0.00'}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Columna Izquierda: Logo */}
+        <div className="md:col-span-1 space-y-6">
+          <Card className="border-0 shadow-soft">
+            <CardHeader>
+              <CardTitle className="text-base">Logo de la Clínica</CardTitle>
+              <CardDescription>Aparecerá en el menú lateral y en los documentos impresos.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center text-center">
+              <div className="w-32 h-32 rounded-xl border-2 border-dashed border-border flex items-center justify-center bg-white overflow-hidden mb-4 relative group shadow-sm">
+                {veterinaria.logoUrl ? (
+                  <img 
+                    src={veterinaria.logoUrl} 
+                    alt="Logo" 
+                    className="w-full h-full object-contain p-2" 
+                  />
+                ) : (
+                  <PawPrint className="w-12 h-12 text-purpura-300" />
+                )}
+                
+                <div className={`absolute inset-0 bg-black/50 flex items-center justify-center transition-opacity ${isUploading ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                  {isUploading ? (
+                    <Loader2 className="w-6 h-6 text-white animate-spin" />
+                  ) : (
+                    <Upload className="w-6 h-6 text-white" />
+                  )}
+                </div>
+              </div>
+              
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                className="hidden" 
+                accept="image/*"
+                onChange={handleLogoUpload}
+                disabled={isUploading}
+              />
+              
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+              >
+                {isUploading ? 'Subiendo...' : 'Cambiar Logo'}
+              </Button>
+              <p className="text-[10px] text-muted-foreground mt-2">
+                Recomendado: PNG o JPG cuadrado, máx 2MB.
               </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Buscador */}
-      <Card className="border-0 shadow-soft">
-        <CardContent className="p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              className="pl-9"
-              placeholder="Buscar por paciente, propietario, código de producto..."
-              value={busqueda}
-              onChange={e => setBusqueda(e.target.value)}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Lista de ventas */}
-      <Card className="border-0 shadow-soft">
-        <CardHeader className="pb-0">
-          <CardTitle className="text-base flex items-center gap-2">
-            <History className="w-4 h-4 text-purpura-500" />
-            Registros
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-4">
-          {consultasFiltradas.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Receipt className="w-10 h-10 mx-auto mb-3 opacity-30" />
-              <p className="text-sm">No se encontraron registros</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {consultasFiltradas.map(consulta => {
-                const mascota = mascotas.find(m => m.id === consulta.mascotaId);
-                const isOpen = expandido === consulta.id;
-                return (
-                  <div key={consulta.id} className="rounded-xl border border-border overflow-hidden">
-                    {/* Fila resumen */}
-                    <button
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/40 transition-colors text-left"
-                      onClick={() => setExpandido(isOpen ? null : consulta.id)}
-                    >
-                      <div className="w-9 h-9 rounded-full bg-purpura-100 flex items-center justify-center shrink-0">
-                        <Stethoscope className="w-4 h-4 text-purpura-600" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-semibold text-sm">{mascota?.nombre ?? '—'}</span>
-                          <span className="text-xs text-muted-foreground">•</span>
-                          <span className="text-xs text-muted-foreground truncate">{mascota?.propietario.nombre}</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground truncate">{consulta.motivo}</p>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="font-bold text-purpura-600">${consulta.total.toFixed(2)}</p>
-                        <p className="text-[10px] text-muted-foreground">
-                          {new Date(consulta.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
-                        </p>
-                      </div>
-                      <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform shrink-0 ${isOpen ? 'rotate-90' : ''}`} />
-                    </button>
-
-                    {/* Detalle expandible */}
-                    {isOpen && (
-                      <div className="border-t border-border bg-muted/20 px-4 py-3">
-                        <div className="rounded-lg overflow-hidden border border-border">
-                          <div className="grid grid-cols-12 bg-muted px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                            <div className="col-span-3">Código</div>
-                            <div className="col-span-5">Producto</div>
-                            <div className="col-span-2 text-center">Cant.</div>
-                            <div className="col-span-2 text-right">Total</div>
-                          </div>
-                          {consulta.detalles.map((d, i) => {
-                            const CatIcon = categoriaIcon[d.producto.categoria] ?? Stethoscope;
-                            const colorClass = categoriaColor[d.producto.categoria] ?? categoriaColor.servicio;
-                            return (
-                              <div
-                                key={d.id}
-                                className={`grid grid-cols-12 items-center px-3 py-2 border-t border-border text-sm ${i % 2 === 0 ? 'bg-white' : 'bg-muted/10'}`}
-                              >
-                                <div className="col-span-3">
-                                  <span className={`inline-flex items-center gap-1 text-xs font-black font-mono px-2 py-0.5 rounded-md ${colorClass}`}>
-                                    <CatIcon className="w-3 h-3" />{d.producto.codigo}
-                                  </span>
-                                </div>
-                                <div className="col-span-5 text-xs font-medium truncate pr-2">{d.producto.nombre}</div>
-                                <div className="col-span-2 text-center text-xs font-bold">{d.cantidad}</div>
-                                <div className="col-span-2 text-right text-xs font-bold">${d.subtotal.toFixed(2)}</div>
-                              </div>
-                            );
-                          })}
-                          <div className="grid grid-cols-12 px-3 py-2 border-t border-border bg-purpura-50">
-                            <div className="col-span-10 text-xs font-semibold text-purpura-700">Total</div>
-                            <div className="col-span-2 text-right text-sm font-black text-purpura-700">${consulta.total.toFixed(2)}</div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+        {/* Columna Derecha: Formulario */}
+        <div className="md:col-span-2">
+          <Card className="border-0 shadow-soft">
+            <CardHeader>
+              <CardTitle className="text-base">Información General</CardTitle>
+              <CardDescription>Actualiza los datos de contacto de tu clínica.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSave} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="nombre">Nombre de la Clínica</Label>
+                  <div className="relative">
+                    <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="nombre"
+                      name="nombre"
+                      className="pl-9"
+                      value={formData.nombre}
+                      onChange={handleInputChange}
+                      required
+                    />
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                </div>
 
-      {/* Ícono de configuración general (placeholder para futuras opciones) */}
-      <Card className="border-0 shadow-soft opacity-60">
-        <CardContent className="p-4 flex items-center gap-3">
-          <Settings className="w-5 h-5 text-muted-foreground" />
-          <div>
-            <p className="text-sm font-medium">Configuración del sistema</p>
-            <p className="text-xs text-muted-foreground">Próximamente: preferencias y ajustes adicionales</p>
-          </div>
-        </CardContent>
-      </Card>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Correo Electrónico</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        className="pl-9"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="telefono">Teléfono</Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        id="telefono"
+                        name="telefono"
+                        className="pl-9"
+                        value={formData.telefono}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="direccion">Dirección Física</Label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="direccion"
+                      name="direccion"
+                      className="pl-9"
+                      value={formData.direccion}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-4 flex justify-end">
+                  <Button type="submit" disabled={isLoading} className="bg-purpura-600 hover:bg-purpura-700">
+                    {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                    Guardar Cambios
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

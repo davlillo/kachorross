@@ -1,7 +1,8 @@
+import { useRef } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/atoms/ui/card'
 import { Badge } from '@/components/atoms/ui/badge'
 import { Separator } from '@/components/atoms/ui/separator'
-import { PawPrint, Camera, Weight, Calendar, Clock, User, Phone, MapPin, AlertCircle, FileText } from 'lucide-react'
+import { PawPrint, Camera, Weight, Calendar, Clock, User, Phone, MapPin, AlertCircle, FileText, Loader2 } from 'lucide-react'
 import type { Mascota } from '@/types'
 
 function getAge(birthDate: string) {
@@ -15,9 +16,21 @@ function getAge(birthDate: string) {
 
 interface PatientInfoCardProps {
   mascota: Mascota
+  onSubirFotoPerfil?: (file: File) => void
+  subiendoFotoPerfil?: boolean
 }
 
-export function PatientInfoCard({ mascota }: PatientInfoCardProps) {
+export function PatientInfoCard({ mascota, onSubirFotoPerfil, subiendoFotoPerfil }: PatientInfoCardProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file && onSubirFotoPerfil) {
+      onSubirFotoPerfil(file)
+    }
+    e.target.value = ''
+  }
+
   return (
     <Card className="border-0 shadow-soft lg:col-span-1">
       <CardHeader className="pb-4">
@@ -30,13 +43,34 @@ export function PatientInfoCard({ mascota }: PatientInfoCardProps) {
         <div className="flex justify-center">
           <div className="relative">
             <img
-              src={mascota.foto}
+              src={mascota.foto || undefined}
               alt={mascota.nombre}
-              className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
+              className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg bg-muted"
             />
-            <button className="absolute bottom-0 right-0 w-8 h-8 bg-purpura-500 rounded-full flex items-center justify-center text-white shadow-md hover:bg-purpura-600 transition-colors">
-              <Camera className="w-4 h-4" />
-            </button>
+            {onSubirFotoPerfil && (
+              <>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+                <button
+                  type="button"
+                  disabled={subiendoFotoPerfil}
+                  onClick={() => fileInputRef.current?.click()}
+                  title="Actualizar foto de perfil"
+                  className="absolute bottom-0 right-0 w-8 h-8 bg-purpura-500 rounded-full flex items-center justify-center text-white shadow-md hover:bg-purpura-600 transition-colors disabled:opacity-60"
+                >
+                  {subiendoFotoPerfil ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Camera className="w-4 h-4" />
+                  )}
+                </button>
+              </>
+            )}
           </div>
         </div>
 

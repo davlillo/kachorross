@@ -30,6 +30,7 @@ import {
 } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { Consulta } from '@/types';
+import { fechaLocalClave, hoyLocalClave } from '@/lib/utils';
 
 // ── Leyenda colores calendario ────────────────────────────────────────────────
 const tiposEvento: { tipo: TipoEvento; icon: React.ElementType }[] = [
@@ -61,7 +62,6 @@ export default function DashboardPage() {
   const consultaCtrl = ConsultaController.getInstance();
   const [mascotas, setMascotas] = useState<any[]>([]);
   const [consultas, setConsultas] = useState<Consulta[]>([]);
-  const [expedientes, setExpedientes] = useState<any[]>([]);
   const [dashboardStats, setDashboardStats] = useState({
     pacientesHoy: 0,
     pacientesEspera: 0,
@@ -71,18 +71,16 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const load = async () => {
-      const mascotasData = await mascotaCtrl.getAll();
-      const expedientesData = await Promise.all(
-        mascotasData.map(m => mascotaCtrl.getExpedienteById(m.id))
-      );
-      const consultasData = await consultaCtrl.getAll();
-      const hoy = new Date().toISOString().slice(0, 10);
-      const consultasHoy = consultasData.filter(c => c.fecha?.slice(0, 10) === hoy);
+      const [mascotasData, consultasData] = await Promise.all([
+        mascotaCtrl.getAll(),
+        consultaCtrl.getAll(),
+      ]);
+      const hoy = hoyLocalClave();
+      const consultasHoy = consultasData.filter(c => c.fecha && fechaLocalClave(c.fecha) === hoy);
       const pendientes = consultasData.filter(c => c.estado === 'pendiente');
 
       setMascotas(mascotasData);
       setConsultas(consultasData);
-      setExpedientes(expedientesData.filter(Boolean));
       setDashboardStats({
         pacientesHoy: consultasHoy.length,
         pacientesEspera: pendientes.length,
@@ -136,7 +134,7 @@ export default function DashboardPage() {
       const dias = Array.from({ length: 7 }, (_, i) => subDays(new Date(), 6 - i));
       return dias.map((dia) => {
         const key = format(dia, 'yyyy-MM-dd');
-        const consultasDia = consultas.filter(c => c.fecha.slice(0, 10) === key);
+        const consultasDia = consultas.filter(c => c.fecha && fechaLocalClave(c.fecha) === key);
         return {
           dia: format(dia, 'EEE', { locale: es }),
           consultas: consultasDia.length,
@@ -151,7 +149,7 @@ export default function DashboardPage() {
 
     return diasMes.map((dia) => {
       const key = format(dia, 'yyyy-MM-dd');
-      const consultasDia = consultas.filter(c => c.fecha.slice(0, 10) === key);
+      const consultasDia = consultas.filter(c => c.fecha && fechaLocalClave(c.fecha) === key);
       return {
         dia: format(dia, 'd'),
         consultas: consultasDia.length,
@@ -218,12 +216,12 @@ export default function DashboardPage() {
 
   // ── Tipos de animales ────────────────────────────────────────────────────────
   const animalStats = [
-    { label: 'Perros',  value: expedientes.filter(e => e.mascota.especie === 'perro').length,  icon: '🐕', color: 'from-blue-400 to-blue-600',     bg: 'bg-blue-50',   text: 'text-blue-700' },
-    { label: 'Gatos',   value: expedientes.filter(e => e.mascota.especie === 'gato').length,   icon: '🐱', color: 'from-pink-400 to-pink-600',     bg: 'bg-pink-50',   text: 'text-pink-700' },
-    { label: 'Conejos', value: expedientes.filter(e => e.mascota.especie === 'conejo').length, icon: '🐰', color: 'from-amber-400 to-amber-600',   bg: 'bg-amber-50',  text: 'text-amber-700' },
-    { label: 'Aves',    value: expedientes.filter(e => e.mascota.especie === 'ave').length,    icon: '🦜', color: 'from-emerald-400 to-emerald-600',bg: 'bg-emerald-50',text: 'text-emerald-700' },
-    { label: 'Otros',   value: expedientes.filter(e => !['perro','gato','conejo','ave'].includes(e.mascota.especie)).length, icon: '🐾', color: 'from-violet-400 to-violet-600', bg: 'bg-violet-50', text: 'text-violet-700' },
-    { label: 'Total',   value: expedientes.length, icon: '📋', color: 'from-slate-400 to-slate-600', bg: 'bg-slate-50', text: 'text-slate-700' },
+    { label: 'Perros',  value: mascotas.filter(m => m.especie === 'perro').length,  icon: '🐕', color: 'from-blue-400 to-blue-600',     bg: 'bg-blue-50',   text: 'text-blue-700' },
+    { label: 'Gatos',   value: mascotas.filter(m => m.especie === 'gato').length,   icon: '🐱', color: 'from-pink-400 to-pink-600',     bg: 'bg-pink-50',   text: 'text-pink-700' },
+    { label: 'Conejos', value: mascotas.filter(m => m.especie === 'conejo').length, icon: '🐰', color: 'from-amber-400 to-amber-600',   bg: 'bg-amber-50',  text: 'text-amber-700' },
+    { label: 'Aves',    value: mascotas.filter(m => m.especie === 'ave').length,    icon: '🦜', color: 'from-emerald-400 to-emerald-600',bg: 'bg-emerald-50',text: 'text-emerald-700' },
+    { label: 'Otros',   value: mascotas.filter(m => !['perro','gato','conejo','ave'].includes(m.especie)).length, icon: '🐾', color: 'from-violet-400 to-violet-600', bg: 'bg-violet-50', text: 'text-violet-700' },
+    { label: 'Total',   value: mascotas.length, icon: '📋', color: 'from-slate-400 to-slate-600', bg: 'bg-slate-50', text: 'text-slate-700' },
   ];
 
   // ── Lógica calendario ────────────────────────────────────────────────────────
