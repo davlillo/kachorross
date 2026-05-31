@@ -11,14 +11,73 @@ export class AuthController {
     return instance
   }
 
+  getCachedUser(): Perfil | null {
+    return this.currentUser
+  }
+
+  clearCache(): void {
+    this.currentUser = null
+  }
+
   private mapPerfil(row: any): Perfil {
     return {
       id: row.id,
+      veterinariaId: row.veterinaria_id ?? undefined,
       nombre: row.nombre,
       email: row.email,
       rol: row.rol as Perfil['rol'],
       avatar: row.avatar ?? undefined,
     }
+  }
+
+  private async getOrCreatePerfil(user: any): Promise<any> {
+    const { data: existingPerfil, error: perfilError } = await supabase
+      .from('perfiles')
+      .select('id,nombre,email,rol,avatar,veterinaria_id')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    if (!perfilError && existingPerfil) {
+      return existingPerfil;
+    }
+
+    const nombreParts = user.email?.split('@') ?? ['Usuario'];
+    const defaultNombre = user.user_metadata?.nombre || nombreParts[0];
+    const defaultRol = user.user_metadata?.rol || 'recepcion';
+    const defaultVetId = user.user_metadata?.veterinaria_id || null;
+
+    const { data: newPerfil, error: createError } = await supabase
+      .from('perfiles')
+      .insert({
+        id: user.id,
+        nombre: defaultNombre,
+        email: user.email,
+        rol: defaultRol,
+        veterinaria_id: defaultVetId,
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(defaultNombre)}`,
+      })
+      .select('id,nombre,email,rol,avatar,veterinaria_id')
+      .maybeSingle()
+
+    if (createError || !newPerfil) {
+      return null;
+    }
+
+    return newPerfil;
+  }
+
+  private async checkVeterinariaSuspendida(veterinariaId: string): Promise<boolean> {
+    const { data: vetData } = await supabase
+      .from('veterinarias')
+      .select('estado')
+      .eq('id', veterinariaId)
+      .maybeSingle()
+
+    return vetData?.estado === 'suspendido'
+  }
+
+  async resolveUser(): Promise<Perfil | null> {
+    return this.getCachedUser() ?? this.getCurrentUser()
   }
 
   async login(email: string, password: string): Promise<{ user: Perfil | null; error: string | null }> {
@@ -31,19 +90,12 @@ export class AuthController {
       return { user: null, error: 'Credenciales incorrectas.' }
     }
 
-    const { data: perfilRow, error: perfilError } = await supabase
-      .from('perfiles')
-      .select('id,nombre,email,rol,avatar')
-      .eq('id', authData.user.id)
-      .maybeSingle()
-
-    if (perfilError || !perfilRow) {
-      return { user: null, error: 'Tu usuario no tiene perfil configurado.' }
+    const user = await this.getCurrentUser(true)
+    if (!user) {
+      return { user: null, error: 'Tu usuario no tiene perfil configurado o la cuenta está suspendida.' }
     }
 
-    const found = this.mapPerfil(perfilRow)
-    this.currentUser = found
-    return { user: found, error: null }
+    return { user, error: null }
   }
 
   async registrar(
@@ -80,12 +132,13 @@ export class AuthController {
     }
 
     await supabase.auth.signOut()
+    this.clearCache()
     return { ok: true, error: null }
   }
 
   async logout(): Promise<void> {
     await supabase.auth.signOut()
-    this.currentUser = null
+    this.clearCache()
   }
 
   async actualizarContrasena(nuevaContrasena: string): Promise<{ ok: boolean; error: string | null }> {
@@ -96,40 +149,72 @@ export class AuthController {
     return { ok: true, error: null }
   }
 
-  async getCurrentUser(): Promise<Perfil | null> {
+  async refreshCurrentUser(): Promise<Perfil | null> {
+    this.clearCache()
+    return this.getCurrentUser(true)
+  }
+
+  async getCurrentUser(forceRefresh = false): Promise<Perfil | null> {
+    if (!forceRefresh && this.currentUser) {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user?.id === this.currentUser.id) {
+        return this.currentUser
+      }
+    }
+
     const { data: authData } = await supabase.auth.getUser()
-    if (!authData.user) return null
+    if (!authData.user) {
+      this.clearCache()
+      return null
+    }
 
-    const { data, error } = await supabase
-      .from('perfiles')
-      .select('id,nombre,email,rol,avatar')
-      .eq('id', authData.user.id)
-      .maybeSingle()
+    const perfilRow = await this.getOrCreatePerfil(authData.user)
+    if (!perfilRow) {
+      this.clearCache()
+      return null
+    }
 
-    if (error || !data) return null
-    this.currentUser = this.mapPerfil(data)
+    if (perfilRow.veterinaria_id && await this.checkVeterinariaSuspendida(perfilRow.veterinaria_id)) {
+      await supabase.auth.signOut()
+      this.clearCache()
+      return null
+    }
+
+    this.currentUser = this.mapPerfil(perfilRow)
     return this.currentUser
   }
 
-  // ── Gestión de cuentas ─────────────────────────────────────
-
   async listarUsuarios(): Promise<Perfil[]> {
-    const { data, error } = await supabase
+    const currentUser = await this.resolveUser()
+    let query = supabase
       .from('perfiles')
-      .select('id,nombre,email,rol,avatar')
+      .select('id,nombre,email,rol,avatar,veterinaria_id')
       .order('created_at', { ascending: false })
+
+    if (currentUser?.rol !== 'super_admin') {
+      query = query.eq('veterinaria_id', currentUser?.veterinariaId)
+    }
+
+    const { data, error } = await query
 
     if (error) throw new Error(`No se pudieron listar usuarios: ${error.message}`)
     return (data ?? []).map(row => this.mapPerfil(row))
   }
 
   async crearUsuario(data: Omit<Perfil, 'id'>): Promise<Perfil> {
+    const currentUser = await this.resolveUser()
+    let vetId = data.veterinariaId;
+    if (currentUser?.rol === 'admin') {
+      vetId = currentUser.veterinariaId;
+    }
+
     const { data: fnData, error: fnError } = await supabase.functions.invoke('admin-create-user', {
       body: {
         nombre: data.nombre,
         email: data.email,
         rol: data.rol,
         password: '123456',
+        veterinaria_id: vetId,
       },
     })
 
@@ -150,7 +235,8 @@ export class AuthController {
   }
 
   async actualizarUsuario(id: string, data: Partial<Omit<Perfil, 'id'>>): Promise<Perfil | null> {
-    const payload = {
+    const currentUser = await this.resolveUser()
+    const payload: any = {
       nombre: data.nombre,
       email: data.email,
       rol: data.rol,
@@ -158,25 +244,30 @@ export class AuthController {
       updated_at: new Date().toISOString(),
     }
 
+    if (currentUser?.rol === 'super_admin' && data.veterinariaId !== undefined) {
+      payload.veterinaria_id = data.veterinariaId;
+    }
+
     const { data: updated, error } = await supabase
       .from('perfiles')
       .update(payload)
       .eq('id', id)
-      .select('id,nombre,email,rol,avatar')
+      .select('id,nombre,email,rol,avatar,veterinaria_id')
       .maybeSingle()
 
     if (error) throw new Error(`No se pudo actualizar usuario: ${error.message}`)
     if (!updated) return null
 
     const perfil = this.mapPerfil(updated)
-    if (this.currentUser?.id === id) this.currentUser = perfil
+    if (currentUser?.id === id) this.currentUser = perfil
     return perfil
   }
 
   async eliminarUsuario(id: string): Promise<boolean> {
+    const currentUser = await this.resolveUser()
     const { error } = await supabase.from('perfiles').delete().eq('id', id)
     if (error) throw new Error(`No se pudo eliminar usuario: ${error.message}`)
-    if (this.currentUser?.id === id) this.currentUser = null
+    if (currentUser?.id === id) this.clearCache()
     return true
   }
 }

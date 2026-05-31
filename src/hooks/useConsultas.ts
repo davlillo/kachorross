@@ -1,10 +1,47 @@
 import { useState, useCallback, useEffect } from 'react'
 import { ConsultaController } from '@/controllers/consulta.controller'
 import { CatalogoController } from '@/controllers/catalogo.controller'
+import { MascotaController } from '@/controllers/mascota.controller'
 import type { Consulta, DetalleConsulta, MonitorSalida, Producto } from '@/types'
 
 const consultaCtrl = ConsultaController.getInstance()
 const catalogoCtrl = CatalogoController.getInstance()
+const mascotaCtrl = MascotaController.getInstance()
+
+async function attachMascotasToMonitor(consultas: Consulta[]): Promise<MonitorSalida[]> {
+  const pendientes = consultas.filter(c => c.estado === 'pendiente').slice(0, 3)
+  if (pendientes.length === 0) return []
+
+  const mascotaIds = [...new Set(pendientes.map(c => c.mascotaId))]
+  const mascotas = await mascotaCtrl.getByIds(mascotaIds)
+  const mascotasById = new Map(mascotas.map(m => [m.id, m]))
+
+  return pendientes
+    .map((c, i) => {
+      const mascota = mascotasById.get(c.mascotaId)
+      if (!mascota) return null
+      return {
+        consultaId: c.id,
+        mascota,
+        horaTermino: new Date(Date.now() - (i + 1) * 15 * 60000).toISOString(),
+        total: c.total,
+        estado: (i === 2 ? 'pagando' : 'listo') as MonitorSalida['estado'],
+      }
+    })
+    .filter(Boolean) as MonitorSalida[]
+}
+
+export function useConsultasMutations() {
+  const crearConsulta = useCallback(async (data: Partial<Consulta>): Promise<Consulta> => {
+    return consultaCtrl.crear(data)
+  }, [])
+
+  const calcularTotal = useCallback((detalles: DetalleConsulta[]): number => {
+    return consultaCtrl.calcularTotal(detalles)
+  }, [])
+
+  return { crearConsulta, calcularTotal }
+}
 
 export function useConsultas() {
   const [consultas, setConsultas] = useState<Consulta[]>([])
@@ -16,10 +53,8 @@ export function useConsultas() {
     try {
       setIsLoading(true)
       setError(null)
-      const [all, monitor] = await Promise.all([
-        consultaCtrl.getAll(),
-        consultaCtrl.getMonitorSalida(),
-      ])
+      const all = await consultaCtrl.getAll()
+      const monitor = await attachMascotasToMonitor(all)
       setConsultas(all)
       setMonitorSalida(monitor)
     } catch (err) {

@@ -1,5 +1,6 @@
 import { supabase } from '@/supabase/client'
 import type { Producto } from '@/types'
+import { AuthController } from './auth.controller'
 
 let instance: CatalogoController | null = null
 
@@ -32,9 +33,14 @@ export class CatalogoController {
   }
 
   async getAll(): Promise<Producto[]> {
+    const auth = AuthController.getInstance()
+    const currentUser = await auth.resolveUser()
+    if (!currentUser?.veterinariaId) return []
+
     const { data, error } = await supabase
       .from('catalogo')
-      .select('id,codigo,nombre,descripcion,categoria,precio,activo')
+      .select('id,codigo,nombre,descripcion,categoria,precio,activo,veterinaria_id')
+      .eq('veterinaria_id', currentUser.veterinariaId)
       .order('nombre', { ascending: true })
 
     if (error) throw new Error(`No se pudo cargar catálogo: ${error.message}`)
@@ -42,9 +48,14 @@ export class CatalogoController {
   }
 
   async getByCategoria(categoria: string): Promise<Producto[]> {
+    const auth = AuthController.getInstance()
+    const currentUser = await auth.resolveUser()
+    if (!currentUser?.veterinariaId) return []
+
     const { data, error } = await supabase
       .from('catalogo')
-      .select('id,codigo,nombre,descripcion,categoria,precio,activo')
+      .select('id,codigo,nombre,descripcion,categoria,precio,activo,veterinaria_id')
+      .eq('veterinaria_id', currentUser.veterinariaId)
       .eq('categoria', categoria)
       .eq('activo', true)
       .order('nombre', { ascending: true })
@@ -54,12 +65,17 @@ export class CatalogoController {
   }
 
   async buscar(query: string): Promise<Producto[]> {
+    const auth = AuthController.getInstance()
+    const currentUser = await auth.resolveUser()
+    if (!currentUser?.veterinariaId) return []
+
     const q = query.trim()
     if (!q) return this.getAll()
 
     const { data, error } = await supabase
       .from('catalogo')
-      .select('id,codigo,nombre,descripcion,categoria,precio,activo')
+      .select('id,codigo,nombre,descripcion,categoria,precio,activo,veterinaria_id')
+      .eq('veterinaria_id', currentUser.veterinariaId)
       .eq('activo', true)
       .or(`nombre.ilike.%${q}%,codigo.ilike.%${q}%,descripcion.ilike.%${q}%`)
       .order('nombre', { ascending: true })
@@ -82,10 +98,15 @@ export class CatalogoController {
     if (error) throw new Error(`No se pudo actualizar producto: ${error.message}`)
   }
 
-  async crear(data: Omit<Producto, 'id'>): Promise<Producto> {
+  async crear(data: Omit<Producto, 'id' | 'veterinariaId'>): Promise<Producto> {
+    const auth = AuthController.getInstance()
+    const currentUser = await auth.resolveUser()
+    if (!currentUser?.veterinariaId) throw new Error('No hay veterinaria activa')
+
     const { data: inserted, error } = await supabase
       .from('catalogo')
       .insert({
+        veterinaria_id: currentUser.veterinariaId,
         codigo: data.codigo,
         nombre: data.nombre,
         descripcion: data.descripcion,
@@ -93,7 +114,7 @@ export class CatalogoController {
         precio: data.precio,
         activo: data.activo,
       })
-      .select('id,codigo,nombre,descripcion,categoria,precio,activo')
+      .select('id,codigo,nombre,descripcion,categoria,precio,activo,veterinaria_id')
       .single()
 
     if (error) throw new Error(`No se pudo crear producto: ${error.message}`)

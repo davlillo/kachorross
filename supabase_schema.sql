@@ -8,15 +8,101 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- =====================================================
+-- TABLA PRINCIPAL DEL SAAS (Debe crearse primero)
+-- =====================================================
+
+-- Veterinarias (Tenants)
+CREATE TABLE IF NOT EXISTS veterinarias (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    nombre VARCHAR(100) NOT NULL,
+    direccion TEXT,
+    telefono VARCHAR(20),
+    email VARCHAR(100),
+    logo_url TEXT,
+    estado VARCHAR(20) DEFAULT 'activo' CHECK (estado IN ('activo', 'suspendido')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- =====================================================
+-- MIGRACIÓN DE TABLAS EXISTENTES (Añadir veterinaria_id)
+-- =====================================================
+-- Nota: Si las tablas ya existían sin veterinaria_id, 
+-- CREATE TABLE IF NOT EXISTS no añadirá la columna.
+-- Por eso forzamos el ALTER TABLE aquí.
+
+DO $$ 
+BEGIN 
+    -- Perfiles
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='perfiles' AND column_name='veterinaria_id') THEN
+        ALTER TABLE perfiles ADD COLUMN veterinaria_id UUID REFERENCES veterinarias(id) ON DELETE CASCADE;
+    END IF;
+    
+    -- Propietarios
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='propietarios' AND column_name='veterinaria_id') THEN
+        ALTER TABLE propietarios ADD COLUMN veterinaria_id UUID REFERENCES veterinarias(id) ON DELETE CASCADE;
+    END IF;
+    
+    -- Mascotas
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='mascotas' AND column_name='veterinaria_id') THEN
+        ALTER TABLE mascotas ADD COLUMN veterinaria_id UUID REFERENCES veterinarias(id) ON DELETE CASCADE;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='mascotas' AND column_name='foto') THEN
+        ALTER TABLE mascotas ADD COLUMN foto TEXT;
+    END IF;
+    
+    -- Catalogo
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='catalogo' AND column_name='veterinaria_id') THEN
+        ALTER TABLE catalogo ADD COLUMN veterinaria_id UUID REFERENCES veterinarias(id) ON DELETE CASCADE;
+    END IF;
+    
+    -- Consultas
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='consultas' AND column_name='veterinaria_id') THEN
+        ALTER TABLE consultas ADD COLUMN veterinaria_id UUID REFERENCES veterinarias(id) ON DELETE CASCADE;
+    END IF;
+    
+    -- Fotos Evolucion
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='fotos_evolucion' AND column_name='veterinaria_id') THEN
+        ALTER TABLE fotos_evolucion ADD COLUMN veterinaria_id UUID REFERENCES veterinarias(id) ON DELETE CASCADE;
+    END IF;
+    
+    -- Vacunas
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='vacunas' AND column_name='veterinaria_id') THEN
+        ALTER TABLE vacunas ADD COLUMN veterinaria_id UUID REFERENCES veterinarias(id) ON DELETE CASCADE;
+    END IF;
+    
+    -- Desparasitaciones
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='desparasitaciones' AND column_name='veterinaria_id') THEN
+        ALTER TABLE desparasitaciones ADD COLUMN veterinaria_id UUID REFERENCES veterinarias(id) ON DELETE CASCADE;
+    END IF;
+    
+    -- Notificaciones
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='notificaciones' AND column_name='veterinaria_id') THEN
+        ALTER TABLE notificaciones ADD COLUMN veterinaria_id UUID REFERENCES veterinarias(id) ON DELETE CASCADE;
+    END IF;
+    
+    -- Hospedajes
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='hospedajes' AND column_name='veterinaria_id') THEN
+        ALTER TABLE hospedajes ADD COLUMN veterinaria_id UUID REFERENCES veterinarias(id) ON DELETE CASCADE;
+    END IF;
+-- Eventos
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='eventos' AND column_name='veterinaria_id') THEN
+        ALTER TABLE eventos ADD COLUMN veterinaria_id UUID REFERENCES veterinarias(id) ON DELETE CASCADE;
+    END IF;
+END $$;
+
+-- =====================================================
 -- TABLAS PRINCIPALES
 -- =====================================================
 
 -- Perfiles de usuario (extiende auth.users de Supabase)
 CREATE TABLE IF NOT EXISTS perfiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    veterinaria_id UUID REFERENCES veterinarias(id) ON DELETE CASCADE,
     nombre VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
-    rol VARCHAR(20) NOT NULL CHECK (rol IN ('doctora', 'recepcion', 'admin')),
+    rol VARCHAR(20) NOT NULL CHECK (rol IN ('doctora', 'recepcion', 'admin', 'super_admin')),
     avatar TEXT,
     activo BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -26,6 +112,7 @@ CREATE TABLE IF NOT EXISTS perfiles (
 -- Propietarios de mascotas
 CREATE TABLE IF NOT EXISTS propietarios (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    veterinaria_id UUID NOT NULL REFERENCES veterinarias(id) ON DELETE CASCADE,
     nombre VARCHAR(100) NOT NULL,
     telefono VARCHAR(20) NOT NULL,
     email VARCHAR(100),
@@ -37,6 +124,7 @@ CREATE TABLE IF NOT EXISTS propietarios (
 -- Mascotas (pacientes)
 CREATE TABLE IF NOT EXISTS mascotas (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    veterinaria_id UUID NOT NULL REFERENCES veterinarias(id) ON DELETE CASCADE,
     nombre VARCHAR(50) NOT NULL,
     especie VARCHAR(20) NOT NULL CHECK (especie IN ('perro', 'gato', 'ave', 'conejo', 'otro')),
     raza VARCHAR(50) NOT NULL,
@@ -57,19 +145,22 @@ CREATE TABLE IF NOT EXISTS mascotas (
 -- Catálogo de productos y servicios
 CREATE TABLE IF NOT EXISTS catalogo (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    codigo VARCHAR(20) UNIQUE NOT NULL,
+    veterinaria_id UUID NOT NULL REFERENCES veterinarias(id) ON DELETE CASCADE,
+    codigo VARCHAR(20) NOT NULL,
     nombre VARCHAR(100) NOT NULL,
     descripcion TEXT,
     categoria VARCHAR(20) NOT NULL CHECK (categoria IN ('servicio', 'vacuna', 'medicamento', 'petshop', 'laboratorio', 'peluqueria')),
     precio DECIMAL(10,2) DEFAULT 0,
     activo BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(veterinaria_id, codigo)
 );
 
 -- Consultas médicas
 CREATE TABLE IF NOT EXISTS consultas (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    veterinaria_id UUID NOT NULL REFERENCES veterinarias(id) ON DELETE CASCADE,
     mascota_id UUID NOT NULL REFERENCES mascotas(id) ON DELETE CASCADE,
     fecha TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     motivo VARCHAR(200) NOT NULL,
@@ -101,6 +192,7 @@ CREATE TABLE IF NOT EXISTS detalles_consulta (
 -- Fotos de evolución del paciente
 CREATE TABLE IF NOT EXISTS fotos_evolucion (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    veterinaria_id UUID NOT NULL REFERENCES veterinarias(id) ON DELETE CASCADE,
     mascota_id UUID NOT NULL REFERENCES mascotas(id) ON DELETE CASCADE,
     consulta_id UUID REFERENCES consultas(id) ON DELETE SET NULL,
     url TEXT NOT NULL,
@@ -112,6 +204,7 @@ CREATE TABLE IF NOT EXISTS fotos_evolucion (
 -- Registro de vacunas
 CREATE TABLE IF NOT EXISTS vacunas (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    veterinaria_id UUID NOT NULL REFERENCES veterinarias(id) ON DELETE CASCADE,
     mascota_id UUID NOT NULL REFERENCES mascotas(id) ON DELETE CASCADE,
     nombre VARCHAR(100) NOT NULL,
     fecha_aplicacion DATE NOT NULL,
@@ -125,6 +218,7 @@ CREATE TABLE IF NOT EXISTS vacunas (
 -- Registro de desparasitaciones (HU-05)
 CREATE TABLE IF NOT EXISTS desparasitaciones (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    veterinaria_id UUID NOT NULL REFERENCES veterinarias(id) ON DELETE CASCADE,
     mascota_id UUID NOT NULL REFERENCES mascotas(id) ON DELETE CASCADE,
     tipo VARCHAR(100) NOT NULL,
     via_administracion VARCHAR(50) NOT NULL,
@@ -137,6 +231,7 @@ CREATE TABLE IF NOT EXISTS desparasitaciones (
 -- Registro de notificaciones enviadas (HU-19, HU-20, HU-21)
 CREATE TABLE IF NOT EXISTS notificaciones (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    veterinaria_id UUID NOT NULL REFERENCES veterinarias(id) ON DELETE CASCADE,
     consulta_id UUID REFERENCES consultas(id) ON DELETE SET NULL,
     mascota_id UUID REFERENCES mascotas(id) ON DELETE SET NULL,
     destinatario_email VARCHAR(100) NOT NULL,
@@ -150,6 +245,7 @@ CREATE TABLE IF NOT EXISTS notificaciones (
 -- Servicio de hospedaje de mascotas (HU-25, HU-26)
 CREATE TABLE IF NOT EXISTS hospedajes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    veterinaria_id UUID NOT NULL REFERENCES veterinarias(id) ON DELETE CASCADE,
     mascota_id UUID NOT NULL REFERENCES mascotas(id) ON DELETE CASCADE,
     fecha_ingreso DATE NOT NULL DEFAULT CURRENT_DATE,
     fecha_salida_estimada DATE NOT NULL,
@@ -167,29 +263,77 @@ CREATE TABLE IF NOT EXISTS hospedajes (
 -- TRIGGER: CREAR PERFIL AUTOMÁTICAMENTE AL REGISTRARSE
 -- =====================================================
 
-CREATE OR REPLACE FUNCTION handle_new_user()
-RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = public
+AS $$
+DECLARE
+  v_nombre text;
+  v_rol text;
+  v_vet_id uuid;
 BEGIN
-    INSERT INTO perfiles (id, nombre, email, rol)
-    VALUES (
-        NEW.id,
-        COALESCE(NEW.raw_user_meta_data->>'nombre', SPLIT_PART(NEW.email, '@', 1)),
-        NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'rol', 'recepcion')
-    )
+  -- 1. Asignar valores por defecto súper seguros
+  v_nombre := SPLIT_PART(NEW.email, '@', 1);
+  v_rol := 'recepcion';
+  v_vet_id := NULL;
+
+  -- 2. Intentar extraer metadatos solo si existen
+  IF NEW.raw_user_meta_data IS NOT NULL THEN
+    IF NEW.raw_user_meta_data->>'nombre' IS NOT NULL THEN
+      v_nombre := NEW.raw_user_meta_data->>'nombre';
+    END IF;
+    
+    IF NEW.raw_user_meta_data->>'rol' IS NOT NULL THEN
+      v_rol := NEW.raw_user_meta_data->>'rol';
+    END IF;
+    
+    IF NEW.raw_user_meta_data->>'veterinaria_id' IS NOT NULL AND NEW.raw_user_meta_data->>'veterinaria_id' != '' THEN
+      BEGIN
+        v_vet_id := (NEW.raw_user_meta_data->>'veterinaria_id')::uuid;
+      EXCEPTION WHEN OTHERS THEN
+        v_vet_id := NULL; -- Si el UUID es inválido, lo ignoramos
+      END;
+    END IF;
+  END IF;
+
+  -- 3. Insertar el perfil
+  INSERT INTO public.perfiles (id, nombre, email, rol, veterinaria_id)
+  VALUES (NEW.id, v_nombre, NEW.email, v_rol, v_vet_id)
+  ON CONFLICT (id) DO NOTHING;
+
+  RETURN NEW;
+EXCEPTION
+  WHEN OTHERS THEN
+    -- 4. CHALECO ANTIBALAS: Si TODO lo de arriba falla por algún motivo extraño, 
+    -- creamos el perfil con lo mínimo indispensable para no bloquear el registro.
+    INSERT INTO public.perfiles (id, nombre, email, rol)
+    VALUES (NEW.id, SPLIT_PART(NEW.email, '@', 1), NEW.email, 'recepcion')
     ON CONFLICT (id) DO NOTHING;
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
-    FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+    FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- =====================================================
 -- ÍNDICES PARA MEJORAR RENDIMIENTO
 -- =====================================================
+
+CREATE INDEX IF NOT EXISTS idx_perfiles_veterinaria ON perfiles(veterinaria_id);
+CREATE INDEX IF NOT EXISTS idx_propietarios_veterinaria ON propietarios(veterinaria_id);
+CREATE INDEX IF NOT EXISTS idx_mascotas_veterinaria ON mascotas(veterinaria_id);
+CREATE INDEX IF NOT EXISTS idx_catalogo_veterinaria ON catalogo(veterinaria_id);
+CREATE INDEX IF NOT EXISTS idx_consultas_veterinaria ON consultas(veterinaria_id);
+CREATE INDEX IF NOT EXISTS idx_fotos_veterinaria ON fotos_evolucion(veterinaria_id);
+CREATE INDEX IF NOT EXISTS idx_vacunas_veterinaria ON vacunas(veterinaria_id);
+CREATE INDEX IF NOT EXISTS idx_desparasitaciones_veterinaria ON desparasitaciones(veterinaria_id);
+CREATE INDEX IF NOT EXISTS idx_notificaciones_veterinaria ON notificaciones(veterinaria_id);
+CREATE INDEX IF NOT EXISTS idx_hospedajes_veterinaria ON hospedajes(veterinaria_id);
+CREATE INDEX IF NOT EXISTS idx_eventos_veterinaria ON eventos(veterinaria_id);
 
 CREATE INDEX IF NOT EXISTS idx_mascotas_propietario ON mascotas(propietario_id);
 CREATE INDEX IF NOT EXISTS idx_mascotas_nombre ON mascotas(nombre);
@@ -207,7 +351,10 @@ CREATE INDEX IF NOT EXISTS idx_notificaciones_fecha ON notificaciones(fecha_envi
 CREATE INDEX IF NOT EXISTS idx_hospedajes_mascota ON hospedajes(mascota_id);
 CREATE INDEX IF NOT EXISTS idx_hospedajes_estado ON hospedajes(estado);
 CREATE INDEX IF NOT EXISTS idx_fotos_mascota ON fotos_evolucion(mascota_id);
-CREATE INDEX IF NOT EXISTS idx_fotos_consulta ON fotos_evolucion(consulta_id);
+CREATE INDEX IF NOT EXISTS idx_consultas_vet_estado ON consultas(veterinaria_id, estado);
+CREATE INDEX IF NOT EXISTS idx_consultas_vet_mascota ON consultas(veterinaria_id, mascota_id);
+CREATE INDEX IF NOT EXISTS idx_mascotas_vet_activo ON mascotas(veterinaria_id, activo);
+CREATE INDEX IF NOT EXISTS idx_catalogo_vet_activo ON catalogo(veterinaria_id, activo);
 
 -- =====================================================
 -- FUNCIONES PARA TRIGGERS
@@ -224,6 +371,10 @@ $$ language 'plpgsql';
 -- =====================================================
 -- TRIGGERS PARA ACTUALIZAR TIMESTAMPS
 -- =====================================================
+
+DROP TRIGGER IF EXISTS update_veterinarias_updated_at ON veterinarias;
+CREATE TRIGGER update_veterinarias_updated_at BEFORE UPDATE ON veterinarias
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 DROP TRIGGER IF EXISTS update_perfiles_updated_at ON perfiles;
 CREATE TRIGGER update_perfiles_updated_at BEFORE UPDATE ON perfiles
@@ -697,6 +848,7 @@ ON CONFLICT (codigo) DO NOTHING;
 -- =====================================================
 
 -- Habilitar RLS en todas las tablas
+ALTER TABLE veterinarias ENABLE ROW LEVEL SECURITY;
 ALTER TABLE perfiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE propietarios ENABLE ROW LEVEL SECURITY;
 ALTER TABLE mascotas ENABLE ROW LEVEL SECURITY;
@@ -708,131 +860,221 @@ ALTER TABLE vacunas ENABLE ROW LEVEL SECURITY;
 ALTER TABLE desparasitaciones ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notificaciones ENABLE ROW LEVEL SECURITY;
 ALTER TABLE hospedajes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE eventos ENABLE ROW LEVEL SECURITY;
+
+-- Veterinarias
+DROP POLICY IF EXISTS "Veterinarias visibles para todos" ON veterinarias;
+CREATE POLICY "Veterinarias visibles para todos" ON veterinarias
+    FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Veterinarias modificables por super_admin" ON veterinarias;
+CREATE POLICY "Veterinarias modificables por super_admin" ON veterinarias
+    FOR ALL TO authenticated USING (
+        EXISTS (SELECT 1 FROM perfiles WHERE id = auth.uid() AND rol = 'super_admin')
+    );
+
+DROP POLICY IF EXISTS "Veterinarias actualizables por admin de la misma clínica" ON veterinarias;
+CREATE POLICY "Veterinarias actualizables por admin de la misma clínica" ON veterinarias
+    FOR UPDATE TO authenticated USING (
+        id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid() AND rol = 'admin')
+    )
+    WITH CHECK (
+        id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid() AND rol = 'admin')
+    );
 
 -- Perfiles
-DROP POLICY IF EXISTS "Perfiles visibles para usuarios autenticados" ON perfiles;
-CREATE POLICY "Perfiles visibles para usuarios autenticados" ON perfiles
-    FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Perfiles visibles para usuarios de la misma veterinaria o super_admin" ON perfiles;
+CREATE POLICY "Perfiles visibles para usuarios de la misma veterinaria o super_admin" ON perfiles
+    FOR SELECT TO authenticated USING (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid()) OR
+        EXISTS (SELECT 1 FROM perfiles WHERE id = auth.uid() AND rol = 'super_admin')
+    );
+
+DROP POLICY IF EXISTS "Perfiles modificables por super_admin" ON perfiles;
+CREATE POLICY "Perfiles modificables por super_admin" ON perfiles
+    FOR ALL TO authenticated USING (
+        EXISTS (SELECT 1 FROM perfiles WHERE id = auth.uid() AND rol = 'super_admin')
+    );
 
 -- Propietarios
-DROP POLICY IF EXISTS "Propietarios visibles para usuarios autenticados" ON propietarios;
-CREATE POLICY "Propietarios visibles para usuarios autenticados" ON propietarios
-    FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Propietarios visibles para usuarios de la misma veterinaria" ON propietarios;
+CREATE POLICY "Propietarios visibles para usuarios de la misma veterinaria" ON propietarios
+    FOR SELECT TO authenticated USING (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid())
+    );
 
-DROP POLICY IF EXISTS "Propietarios insertables para usuarios autenticados" ON propietarios;
-CREATE POLICY "Propietarios insertables para usuarios autenticados" ON propietarios
-    FOR INSERT TO authenticated WITH CHECK (true);
+DROP POLICY IF EXISTS "Propietarios insertables para usuarios de la misma veterinaria" ON propietarios;
+CREATE POLICY "Propietarios insertables para usuarios de la misma veterinaria" ON propietarios
+    FOR INSERT TO authenticated WITH CHECK (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid())
+    );
 
-DROP POLICY IF EXISTS "Propietarios actualizables para usuarios autenticados" ON propietarios;
-CREATE POLICY "Propietarios actualizables para usuarios autenticados" ON propietarios
-    FOR UPDATE TO authenticated USING (true);
+DROP POLICY IF EXISTS "Propietarios actualizables para usuarios de la misma veterinaria" ON propietarios;
+CREATE POLICY "Propietarios actualizables para usuarios de la misma veterinaria" ON propietarios
+    FOR UPDATE TO authenticated USING (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid())
+    );
 
 -- Mascotas
-DROP POLICY IF EXISTS "Mascotas visibles para usuarios autenticados" ON mascotas;
-CREATE POLICY "Mascotas visibles para usuarios autenticados" ON mascotas
-    FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Mascotas visibles para usuarios de la misma veterinaria" ON mascotas;
+CREATE POLICY "Mascotas visibles para usuarios de la misma veterinaria" ON mascotas
+    FOR SELECT TO authenticated USING (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid())
+    );
 
-DROP POLICY IF EXISTS "Mascotas insertables para usuarios autenticados" ON mascotas;
-CREATE POLICY "Mascotas insertables para usuarios autenticados" ON mascotas
-    FOR INSERT TO authenticated WITH CHECK (true);
+DROP POLICY IF EXISTS "Mascotas insertables para usuarios de la misma veterinaria" ON mascotas;
+CREATE POLICY "Mascotas insertables para usuarios de la misma veterinaria" ON mascotas
+    FOR INSERT TO authenticated WITH CHECK (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid())
+    );
 
-DROP POLICY IF EXISTS "Mascotas actualizables para usuarios autenticados" ON mascotas;
-CREATE POLICY "Mascotas actualizables para usuarios autenticados" ON mascotas
-    FOR UPDATE TO authenticated USING (true);
+DROP POLICY IF EXISTS "Mascotas actualizables para usuarios de la misma veterinaria" ON mascotas;
+CREATE POLICY "Mascotas actualizables para usuarios de la misma veterinaria" ON mascotas
+    FOR UPDATE TO authenticated USING (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid())
+    );
 
 -- Catálogo
-DROP POLICY IF EXISTS "Catálogo visible para todos" ON catalogo;
-CREATE POLICY "Catálogo visible para todos" ON catalogo
-    FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Catálogo visible para usuarios de la misma veterinaria" ON catalogo;
+CREATE POLICY "Catálogo visible para usuarios de la misma veterinaria" ON catalogo
+    FOR SELECT TO authenticated USING (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid())
+    );
 
-DROP POLICY IF EXISTS "Catálogo modificable por doctora y admin" ON catalogo;
-CREATE POLICY "Catálogo modificable por doctora y admin" ON catalogo
+DROP POLICY IF EXISTS "Catálogo modificable por doctora y admin de la misma veterinaria" ON catalogo;
+CREATE POLICY "Catálogo modificable por doctora y admin de la misma veterinaria" ON catalogo
     FOR ALL TO authenticated USING (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid()) AND
         EXISTS (SELECT 1 FROM perfiles WHERE id = auth.uid() AND rol IN ('doctora', 'admin'))
     );
 
 -- Consultas
-DROP POLICY IF EXISTS "Consultas visibles para usuarios autenticados" ON consultas;
-CREATE POLICY "Consultas visibles para usuarios autenticados" ON consultas
-    FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Consultas visibles para usuarios de la misma veterinaria" ON consultas;
+CREATE POLICY "Consultas visibles para usuarios de la misma veterinaria" ON consultas
+    FOR SELECT TO authenticated USING (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid())
+    );
 
-DROP POLICY IF EXISTS "Consultas insertables para doctora" ON consultas;
-CREATE POLICY "Consultas insertables para doctora" ON consultas
+DROP POLICY IF EXISTS "Consultas insertables para doctora de la misma veterinaria" ON consultas;
+CREATE POLICY "Consultas insertables para doctora de la misma veterinaria" ON consultas
     FOR INSERT TO authenticated WITH CHECK (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid()) AND
         EXISTS (SELECT 1 FROM perfiles WHERE id = auth.uid() AND rol = 'doctora')
     );
 
-DROP POLICY IF EXISTS "Consultas actualizables para usuarios autenticados" ON consultas;
-CREATE POLICY "Consultas actualizables para usuarios autenticados" ON consultas
-    FOR UPDATE TO authenticated USING (true);
+DROP POLICY IF EXISTS "Consultas actualizables para usuarios de la misma veterinaria" ON consultas;
+CREATE POLICY "Consultas actualizables para usuarios de la misma veterinaria" ON consultas
+    FOR UPDATE TO authenticated USING (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid())
+    );
 
 -- Detalles de consulta
-DROP POLICY IF EXISTS "Detalles visibles para usuarios autenticados" ON detalles_consulta;
-CREATE POLICY "Detalles visibles para usuarios autenticados" ON detalles_consulta
-    FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Detalles visibles para usuarios de la misma veterinaria" ON detalles_consulta;
+CREATE POLICY "Detalles visibles para usuarios de la misma veterinaria" ON detalles_consulta
+    FOR SELECT TO authenticated USING (
+        EXISTS (SELECT 1 FROM consultas WHERE id = detalles_consulta.consulta_id AND veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid()))
+    );
 
-DROP POLICY IF EXISTS "Detalles insertables para doctora" ON detalles_consulta;
-CREATE POLICY "Detalles insertables para doctora" ON detalles_consulta
+DROP POLICY IF EXISTS "Detalles insertables para doctora de la misma veterinaria" ON detalles_consulta;
+CREATE POLICY "Detalles insertables para doctora de la misma veterinaria" ON detalles_consulta
     FOR INSERT TO authenticated WITH CHECK (
+        EXISTS (SELECT 1 FROM consultas WHERE id = detalles_consulta.consulta_id AND veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid())) AND
         EXISTS (SELECT 1 FROM perfiles WHERE id = auth.uid() AND rol = 'doctora')
     );
 
 -- Fotos
-DROP POLICY IF EXISTS "Fotos visibles para usuarios autenticados" ON fotos_evolucion;
-CREATE POLICY "Fotos visibles para usuarios autenticados" ON fotos_evolucion
-    FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Fotos visibles para usuarios de la misma veterinaria" ON fotos_evolucion;
+CREATE POLICY "Fotos visibles para usuarios de la misma veterinaria" ON fotos_evolucion
+    FOR SELECT TO authenticated USING (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid())
+    );
 
-DROP POLICY IF EXISTS "Fotos insertables para doctora" ON fotos_evolucion;
-CREATE POLICY "Fotos insertables para doctora" ON fotos_evolucion
+DROP POLICY IF EXISTS "Fotos insertables para doctora de la misma veterinaria" ON fotos_evolucion;
+CREATE POLICY "Fotos insertables para doctora y admin de la misma veterinaria" ON fotos_evolucion
     FOR INSERT TO authenticated WITH CHECK (
-        EXISTS (SELECT 1 FROM perfiles WHERE id = auth.uid() AND rol = 'doctora')
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid()) AND
+        EXISTS (SELECT 1 FROM perfiles WHERE id = auth.uid() AND rol IN ('doctora', 'admin'))
     );
 
 -- Vacunas
-DROP POLICY IF EXISTS "Vacunas visibles para usuarios autenticados" ON vacunas;
-CREATE POLICY "Vacunas visibles para usuarios autenticados" ON vacunas
-    FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Vacunas visibles para usuarios de la misma veterinaria" ON vacunas;
+CREATE POLICY "Vacunas visibles para usuarios de la misma veterinaria" ON vacunas
+    FOR SELECT TO authenticated USING (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid())
+    );
 
-DROP POLICY IF EXISTS "Vacunas insertables para doctora" ON vacunas;
-CREATE POLICY "Vacunas insertables para doctora" ON vacunas
+DROP POLICY IF EXISTS "Vacunas insertables para doctora de la misma veterinaria" ON vacunas;
+CREATE POLICY "Vacunas insertables para doctora de la misma veterinaria" ON vacunas
     FOR INSERT TO authenticated WITH CHECK (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid()) AND
         EXISTS (SELECT 1 FROM perfiles WHERE id = auth.uid() AND rol = 'doctora')
     );
 
 -- Desparasitaciones
-DROP POLICY IF EXISTS "Desparasitaciones visibles para usuarios autenticados" ON desparasitaciones;
-CREATE POLICY "Desparasitaciones visibles para usuarios autenticados" ON desparasitaciones
-    FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Desparasitaciones visibles para usuarios de la misma veterinaria" ON desparasitaciones;
+CREATE POLICY "Desparasitaciones visibles para usuarios de la misma veterinaria" ON desparasitaciones
+    FOR SELECT TO authenticated USING (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid())
+    );
 
-DROP POLICY IF EXISTS "Desparasitaciones insertables para doctora" ON desparasitaciones;
-CREATE POLICY "Desparasitaciones insertables para doctora" ON desparasitaciones
+DROP POLICY IF EXISTS "Desparasitaciones insertables para doctora de la misma veterinaria" ON desparasitaciones;
+CREATE POLICY "Desparasitaciones insertables para doctora de la misma veterinaria" ON desparasitaciones
     FOR INSERT TO authenticated WITH CHECK (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid()) AND
         EXISTS (SELECT 1 FROM perfiles WHERE id = auth.uid() AND rol = 'doctora')
     );
 
 -- Notificaciones
-DROP POLICY IF EXISTS "Notificaciones visibles para admin y doctora" ON notificaciones;
-CREATE POLICY "Notificaciones visibles para admin y doctora" ON notificaciones
+DROP POLICY IF EXISTS "Notificaciones visibles para admin y doctora de la misma veterinaria" ON notificaciones;
+CREATE POLICY "Notificaciones visibles para admin y doctora de la misma veterinaria" ON notificaciones
     FOR SELECT TO authenticated USING (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid()) AND
         EXISTS (SELECT 1 FROM perfiles WHERE id = auth.uid() AND rol IN ('admin', 'doctora'))
     );
 
 DROP POLICY IF EXISTS "Notificaciones insertables por el sistema" ON notificaciones;
 CREATE POLICY "Notificaciones insertables por el sistema" ON notificaciones
-    FOR INSERT TO authenticated WITH CHECK (true);
+    FOR INSERT TO authenticated WITH CHECK (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid())
+    );
 
 -- Hospedajes
-DROP POLICY IF EXISTS "Hospedajes visibles para usuarios autenticados" ON hospedajes;
-CREATE POLICY "Hospedajes visibles para usuarios autenticados" ON hospedajes
-    FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Hospedajes visibles para usuarios de la misma veterinaria" ON hospedajes;
+CREATE POLICY "Hospedajes visibles para usuarios de la misma veterinaria" ON hospedajes
+    FOR SELECT TO authenticated USING (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid())
+    );
 
-DROP POLICY IF EXISTS "Hospedajes insertables para usuarios autenticados" ON hospedajes;
-CREATE POLICY "Hospedajes insertables para usuarios autenticados" ON hospedajes
-    FOR INSERT TO authenticated WITH CHECK (true);
+DROP POLICY IF EXISTS "Hospedajes insertables para usuarios de la misma veterinaria" ON hospedajes;
+CREATE POLICY "Hospedajes insertables para usuarios de la misma veterinaria" ON hospedajes
+    FOR INSERT TO authenticated WITH CHECK (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid())
+    );
 
-DROP POLICY IF EXISTS "Hospedajes actualizables para usuarios autenticados" ON hospedajes;
-CREATE POLICY "Hospedajes actualizables para usuarios autenticados" ON hospedajes
-    FOR UPDATE TO authenticated USING (true);
+DROP POLICY IF EXISTS "Hospedajes actualizables para usuarios de la misma veterinaria" ON hospedajes;
+CREATE POLICY "Hospedajes actualizables para usuarios de la misma veterinaria" ON hospedajes
+    FOR UPDATE TO authenticated USING (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid())
+    );
+
+-- Eventos
+DROP POLICY IF EXISTS "Eventos visibles para usuarios de la misma veterinaria" ON eventos;
+CREATE POLICY "Eventos visibles para usuarios de la misma veterinaria" ON eventos
+    FOR SELECT TO authenticated USING (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid())
+    );
+
+DROP POLICY IF EXISTS "Eventos insertables para usuarios de la misma veterinaria" ON eventos;
+CREATE POLICY "Eventos insertables para usuarios de la misma veterinaria" ON eventos
+    FOR INSERT TO authenticated WITH CHECK (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid())
+    );
+
+DROP POLICY IF EXISTS "Eventos actualizables para usuarios de la misma veterinaria" ON eventos;
+CREATE POLICY "Eventos actualizables para usuarios de la misma veterinaria" ON eventos
+    FOR UPDATE TO authenticated USING (
+        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid())
+    );
 
 -- =====================================================
 -- FUNCIONES AUXILIARES

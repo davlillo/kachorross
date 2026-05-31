@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { MascotaController } from '@/controllers/mascota.controller';
-import { useConsultas } from '@/hooks/useConsultas';
+import { useConsultasMutations } from '@/hooks/useConsultas';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/atoms/ui/card';
 import { Button } from '@/components/atoms/ui/button';
 import { Input } from '@/components/atoms/ui/input';
@@ -33,7 +33,7 @@ export default function NuevaConsultaPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const mascotaCtrl = MascotaController.getInstance();
-  const { crearConsulta, calcularTotal } = useConsultas();
+  const { crearConsulta, calcularTotal } = useConsultasMutations();
   const [mascotas, setMascotas] = useState<any[]>([]);
   
   const mascotaId = searchParams.get('mascota');

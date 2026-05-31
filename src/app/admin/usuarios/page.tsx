@@ -31,7 +31,7 @@ const rolConfig: Record<string, { label: string; icon: React.ElementType; color:
 const EMPTY_FORM = { nombre: '', email: '', rol: 'recepcion' as Perfil['rol'] };
 
 export default function UsuariosPage() {
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, refreshUser } = useAuth();
   const [usuarios, setUsuarios] = useState<Perfil[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editTarget, setEditTarget] = useState<Perfil | null>(null);
@@ -79,6 +79,9 @@ export default function UsuariosPage() {
 
       if (editTarget) {
         await authCtrl.actualizarUsuario(editTarget.id, form);
+        if (editTarget.id === currentUser?.id) {
+          await refreshUser();
+        }
       } else {
         await authCtrl.crearUsuario(form);
       }

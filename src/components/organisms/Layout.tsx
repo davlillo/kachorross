@@ -1,6 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import logo from '@/media/logo.png';
 import { Button } from '@/components/atoms/ui/button';
 import {
   DropdownMenu,
@@ -27,6 +26,7 @@ import {
   ChevronDown,
   Users,
   Shield,
+  History,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -78,7 +78,7 @@ const navItems: NavItem[] = [
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const { user, logout } = useAuth();
+  const { user, veterinaria, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -104,10 +104,20 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     const labels: Record<string, string> = {
       doctora: 'Doctora Veterinaria',
       recepcion: 'Recepción',
-      admin: 'Administrador'
+      admin: 'Administrador',
+      super_admin: 'Super Administrador'
     };
     return labels[rol] || rol;
   };
+
+  // Branding dinámico
+  const brandName = user.rol === 'super_admin' 
+    ? 'Panel Super Admin' 
+    : (veterinaria?.nombre || "Vet. Kachorro's");
+  
+  // Usamos el logo de la veterinaria si existe, si no, usamos el ícono de PawPrint (huella) en el JSX
+  const hasCustomLogo = user.rol !== 'super_admin' && !!veterinaria?.logoUrl;
+  const customLogoUrl = veterinaria?.logoUrl;
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -115,14 +125,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <aside className="hidden lg:flex flex-col w-64 bg-card border-r border-border fixed h-full">
         {/* Logo */}
         <div className="p-6 border-b border-border">
-          <Link to={user.rol === 'recepcion' ? '/recepcion' : '/dashboard'} className="flex items-center gap-3">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-brw-lg mb-4">
-            <img src={logo} alt="Logo" className="w-full h-full object-contain" />
-          </div>
+          <Link to={user.rol === 'recepcion' ? '/recepcion' : (user.rol === 'super_admin' ? '/super-admin' : '/dashboard')} className="flex items-center gap-3">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-white rounded-lg mb-4 overflow-hidden shadow-sm border border-border/50">
+              {hasCustomLogo ? (
+                <img src={customLogoUrl} alt="Logo" className="w-full h-full object-contain p-1" />
+              ) : (
+                <PawPrint className="w-7 h-7 text-purpura-500" />
+              )}
+            </div>
             <div>
-              <h1 className="font-bold text-lg leading-tight">
-                <span className="text-azure-blue">Vet.</span>{' '}
-                <span className="text-blue-violet">Kachorro's</span>
+              <h1 className="font-bold text-base leading-tight text-blue-violet line-clamp-2">
+                {brandName}
               </h1>
             </div>
           </Link>
@@ -190,17 +203,23 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <User className="w-4 h-4 mr-2" />
                 Perfil
               </DropdownMenuItem>
-              {user.rol !== 'recepcion' && (
-                <DropdownMenuItem onClick={() => navigate('/configuracion')}>
-                  <Settings className="w-4 h-4 mr-2" />
+              {user.rol !== 'recepcion' && user.rol !== 'super_admin' && (
+                <DropdownMenuItem onClick={() => navigate('/historial-ventas')}>
+                  <History className="w-4 h-4 mr-2" />
                   Historial de Ventas
                 </DropdownMenuItem>
               )}
               {user.rol === 'admin' && (
-                <DropdownMenuItem onClick={() => navigate('/admin/usuarios')}>
-                  <Users className="w-4 h-4 mr-2" />
-                  Gestión de Usuarios
-                </DropdownMenuItem>
+                <>
+                  <DropdownMenuItem onClick={() => navigate('/admin/usuarios')}>
+                    <Users className="w-4 h-4 mr-2" />
+                    Gestión de Usuarios
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/configuracion')}>
+                    <Settings className="w-4 h-4 mr-2" />
+                    Configuración
+                  </DropdownMenuItem>
+                </>
               )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-destructive">
@@ -215,11 +234,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border">
         <div className="flex items-center justify-between p-4">
-          <Link to={user.rol === 'recepcion' ? '/recepcion' : '/dashboard'} className="flex items-center gap-2">
-            <img src={logo} alt="Logo" className="w-8 h-8 object-contain" />
-            <span className="font-bold text-sm">
-              <span className="text-azure-blue">Vet.</span>{' '}
-              <span className="text-blue-violet">Kachorro's</span>
+          <Link to={user.rol === 'recepcion' ? '/recepcion' : (user.rol === 'super_admin' ? '/super-admin' : '/dashboard')} className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-white rounded-md overflow-hidden shadow-sm flex items-center justify-center border border-border/50">
+              {hasCustomLogo ? (
+                <img src={customLogoUrl} alt="Logo" className="w-full h-full object-contain p-0.5" />
+              ) : (
+                <PawPrint className="w-5 h-5 text-purpura-500" />
+              )}
+            </div>
+            <span className="font-bold text-sm text-blue-violet truncate max-w-[150px]">
+              {brandName}
             </span>
           </Link>
 

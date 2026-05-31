@@ -1,15 +1,28 @@
 // Tipos principales del sistema veterinario
 
-export interface Perfil {
+export interface Veterinaria {
   id: string;
   nombre: string;
+  direccion?: string;
+  telefono?: string;
+  email?: string;
+  logoUrl?: string;
+  estado: 'activo' | 'suspendido';
+  createdAt: string;
+}
+
+export interface Perfil {
+  id: string;
+  veterinariaId?: string;
+  nombre: string;
   email: string;
-  rol: 'doctora' | 'recepcion' | 'admin';
+  rol: 'doctora' | 'recepcion' | 'admin' | 'super_admin';
   avatar?: string;
 }
 
 export interface Mascota {
   id: string;
+  veterinariaId: string;
   nombre: string;
   especie: 'perro' | 'gato' | 'ave' | 'conejo' | 'otro';
   raza: string;
@@ -26,6 +39,7 @@ export interface Mascota {
 
 export interface Propietario {
   id: string;
+  veterinariaId: string;
   nombre: string;
   telefono: string;
   email?: string;
@@ -41,8 +55,16 @@ export interface Expediente {
   vacunas: Vacuna[];
 }
 
+export interface ExpedienteResumen {
+  id: string;
+  mascotaId: string;
+  mascota: Mascota;
+  consultasCount: number;
+}
+
 export interface Consulta {
   id: string;
+  veterinariaId: string;
   mascotaId: string;
   fecha: string;
   motivo: string;
@@ -69,6 +91,7 @@ export interface DetalleConsulta {
 
 export interface Producto {
   id: string;
+  veterinariaId: string;
   codigo: string;
   nombre: string;
   descripcion: string;

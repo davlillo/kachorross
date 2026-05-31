@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { MascotaController } from '@/controllers/mascota.controller';
+import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/atoms/ui/card';
 import { Button } from '@/components/atoms/ui/button';
 import { Badge } from '@/components/atoms/ui/badge';
@@ -33,7 +34,9 @@ const especies: { value: Mascota['especie']; label: string }[] = [
 export default function ExpedienteDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const ctrl = MascotaController.getInstance();
+  const evolucionInputRef = useRef<HTMLInputElement>(null);
 
   // ── Datos reactivos desde el controller ─────────────────────────────────────
   const [refresh, setRefresh] = useState(0);
@@ -68,6 +71,16 @@ export default function ExpedienteDetailPage() {
   // ── Diálogos ─────────────────────────────────────────────────────────────────
   const [editOpen,   setEditOpen]   = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [fotoOpen, setFotoOpen] = useState(false);
+  const [fotoModo, setFotoModo] = useState<'perfil' | 'evolucion'>('evolucion');
+
+  // ── Subida de fotos ────────────────────────────────────────────────────────────
+  const [fotoPendiente, setFotoPendiente] = useState<File | null>(null);
+  const [fotoDescripcion, setFotoDescripcion] = useState('');
+  const [subiendoFoto, setSubiendoFoto] = useState(false);
+  const [fotoError, setFotoError] = useState<string | null>(null);
+
+  const puedeSubirEvolucion = user?.rol === 'doctora' || user?.rol === 'admin';
 
   // ── Estado form edición ──────────────────────────────────────────────────────
   const [editNombre,    setEditNombre]    = useState('');
@@ -174,6 +187,44 @@ export default function ExpedienteDetailPage() {
     navigate('/expedientes');
   };
 
+  const abrirDialogoFoto = (file: File, modo: 'perfil' | 'evolucion') => {
+    setFotoModo(modo);
+    setFotoPendiente(file);
+    setFotoDescripcion('');
+    setFotoError(null);
+    setFotoOpen(true);
+  };
+
+  const seleccionarFotoPerfil = (file: File) => abrirDialogoFoto(file, 'perfil');
+  const seleccionarFotoEvolucion = (file: File) => abrirDialogoFoto(file, 'evolucion');
+
+  const confirmarSubirFoto = async () => {
+    if (!mascota?.id || !fotoPendiente) return;
+    try {
+      setSubiendoFoto(true);
+      setFotoError(null);
+      if (fotoModo === 'perfil') {
+        await ctrl.subirFotoPerfil(mascota.id, fotoPendiente);
+      } else {
+        await ctrl.subirFotoEvolucion(mascota.id, fotoPendiente, fotoDescripcion.trim() || undefined);
+      }
+      setFotoOpen(false);
+      setFotoPendiente(null);
+      setFotoDescripcion('');
+      setRefresh(r => r + 1);
+    } catch (error) {
+      setFotoError(error instanceof Error ? error.message : 'No se pudo subir la foto');
+    } finally {
+      setSubiendoFoto(false);
+    }
+  };
+
+  const handleEvolucionFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) seleccionarFotoEvolucion(file);
+    e.target.value = '';
+  };
+
   // ── Not found ────────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
@@ -233,7 +284,12 @@ export default function ExpedienteDetailPage() {
 
       {/* ── Cuerpo ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <PatientInfoCard mascota={mascota} key={refresh} />
+        <PatientInfoCard
+          mascota={mascota}
+          key={refresh}
+          onSubirFotoPerfil={seleccionarFotoPerfil}
+          subiendoFotoPerfil={subiendoFoto && fotoModo === 'perfil'}
+        />
 
         <div className="lg:col-span-2">
           <Tabs defaultValue="historial" className="w-full">
@@ -406,7 +462,30 @@ export default function ExpedienteDetailPage() {
             <TabsContent value="fotos" className="mt-4">
               <Card className="border-0 shadow-soft">
                 <CardHeader>
-                  <CardTitle className="text-lg">Evolución del Paciente</CardTitle>
+                  <div className="flex items-center justify-between gap-3">
+                    <CardTitle className="text-lg">Evolución del Paciente</CardTitle>
+                    {puedeSubirEvolucion && (
+                      <>
+                        <input
+                          ref={evolucionInputRef}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleEvolucionFileChange}
+                        />
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-purpura-200 text-purpura-600 hover:bg-purpura-50"
+                          disabled={subiendoFoto}
+                          onClick={() => evolucionInputRef.current?.click()}
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Agregar foto
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent>
                   {expediente.fotosEvolucion.length === 0 ? (
@@ -528,6 +607,69 @@ export default function ExpedienteDetailPage() {
               className="bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700"
             >
               <Pencil className="w-4 h-4 mr-2" />Guardar Cambios
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Dialog: Subir foto (perfil o evolución) ── */}
+      <Dialog open={fotoOpen} onOpenChange={open => {
+        if (!subiendoFoto) {
+          setFotoOpen(open);
+          if (!open) {
+            setFotoPendiente(null);
+            setFotoDescripcion('');
+            setFotoError(null);
+          }
+        }
+      }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Camera className="w-5 h-5 text-purpura-500" />
+              {fotoModo === 'perfil' ? 'Actualizar foto de perfil' : 'Nueva foto de evolución'}
+            </DialogTitle>
+            <DialogDescription>
+              {fotoModo === 'perfil'
+                ? 'Esta foto se mostrará en la ficha del paciente y en los listados.'
+                : 'Registra el estado actual del paciente para el seguimiento clínico.'}
+            </DialogDescription>
+          </DialogHeader>
+          {fotoPendiente && (
+            <img
+              src={URL.createObjectURL(fotoPendiente)}
+              alt="Vista previa"
+              className={`w-full max-h-48 object-cover rounded-xl ${fotoModo === 'perfil' ? 'aspect-square max-w-48 mx-auto' : ''}`}
+            />
+          )}
+          {fotoModo === 'evolucion' && (
+            <div className="space-y-1">
+              <Label>Descripción (opcional)</Label>
+              <Textarea
+                value={fotoDescripcion}
+                onChange={e => setFotoDescripcion(e.target.value)}
+                placeholder="Ej. Herida en pata trasera, día 3 de tratamiento"
+                className="min-h-[70px]"
+              />
+            </div>
+          )}
+          {fotoError && (
+            <p className="text-sm text-red-600">{fotoError}</p>
+          )}
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setFotoOpen(false)} disabled={subiendoFoto}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={confirmarSubirFoto}
+              disabled={!fotoPendiente || subiendoFoto}
+              className="bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700"
+            >
+              {subiendoFoto
+                ? 'Subiendo...'
+                : fotoModo === 'perfil'
+                  ? 'Guardar foto de perfil'
+                  : 'Guardar en evolución'}
             </Button>
           </DialogFooter>
         </DialogContent>

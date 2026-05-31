@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { getHomeRouteForRole } from '@/lib/auth-routes';
 import { Button } from '@/components/atoms/ui/button';
 import { Input } from '@/components/atoms/ui/input';
 import { Label } from '@/components/atoms/ui/label';
@@ -14,20 +15,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const { login, isLoading, error, user } = useAuth();
-  const navigate = useNavigate();
-
-  if (user) {
-    navigate('/dashboard');
-    return null;
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await login(email, password);
-    if (success) {
-      navigate('/dashboard');
-    }
+    await login(email, password);
   };
+
+  if (user) {
+    return <Navigate to={getHomeRouteForRole(user.rol)} replace />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-6 relative overflow-hidden">

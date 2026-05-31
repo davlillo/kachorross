@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MascotaController } from '@/controllers/mascota.controller';
+import type { ExpedienteResumen } from '@/types';
 import { Card } from '@/components/atoms/ui/card';
 import { Button } from '@/components/atoms/ui/button';
 import { Badge } from '@/components/atoms/ui/badge';
@@ -48,30 +49,30 @@ const filtrosEspecie = [
 export default function ExpedientesPage() {
   const ctrl = MascotaController.getInstance();
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [filtroEspecie, setFiltroEspecie] = useState<string>('todos');
-  const [expedientes, setExpedientes] = useState<any[]>([]);
+  const [expedientes, setExpedientes] = useState<ExpedienteResumen[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(searchQuery), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
     const load = async () => {
       setIsLoading(true);
-      const data = searchQuery
-        ? await ctrl.buscarExpedientes(searchQuery)
-        : await ctrl.buscarExpedientes('');
+      const data = await ctrl.listarExpedientesResumen(debouncedQuery);
       setExpedientes(data);
       setIsLoading(false);
     };
     void load();
-  }, [ctrl, searchQuery]);
+  }, [ctrl, debouncedQuery]);
 
-  const expedientesFiltrados = useMemo(
-    () => expedientes,
-    [expedientes]
-  );
-
-  const expedientesPorEspecie = filtroEspecie === 'todos'
-    ? expedientesFiltrados
-    : expedientesFiltrados.filter(exp => exp.mascota.especie === filtroEspecie);
+  const expedientesPorEspecie = useMemo(() => {
+    if (filtroEspecie === 'todos') return expedientes;
+    return expedientes.filter(exp => exp.mascota.especie === filtroEspecie);
+  }, [expedientes, filtroEspecie]);
 
   return (
     <div className="space-y-6 animate-fade-in-up">
@@ -165,7 +166,7 @@ export default function ExpedientesPage() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Stethoscope className="w-4 h-4 text-purpura-500" />
-                        <span className="font-medium">{expediente.consultas.length}</span>
+                        <span className="font-medium">{expediente.consultasCount}</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
