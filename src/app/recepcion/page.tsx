@@ -9,10 +9,7 @@ import { MonitorCard } from '@/components/organisms/MonitorCard';
 import { DetailRecepcionDialog } from '@/components/organisms/DetailRecepcionDialog';
 
 import { fechaLocalClave, hoyLocalClave } from '@/lib/utils';
-  CheckCircle,
-  Clock,
-  Stethoscope,
-} from 'lucide-react';
+import { CheckCircle, ClipboardList, Clock, Stethoscope } from 'lucide-react';
 
 export default function RecepcionPage() {
   const { consultas, monitorSalida, finalizarConsulta, isLoading } = useConsultas();
