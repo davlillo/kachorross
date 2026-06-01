@@ -8,9 +8,11 @@ import { Badge } from '@/components/atoms/ui/badge'
 import { cn } from '@/lib/utils'
 import {
   CheckCircle, X, PawPrint, User, Phone, Clock, FileText,
-  Stethoscope, Pill, Syringe, ShoppingBag, FlaskConical,
+  Stethoscope, Pill, Syringe, ShoppingBag, FlaskConical, Printer,
 } from 'lucide-react'
 import type { Consulta, Mascota } from '@/types'
+import { useAuth } from '@/context/AuthContext'
+import { imprimirTratamiento } from '@/lib/printTratamiento'
 
 interface DetailRecepcionDialogProps {
   open: boolean
@@ -32,6 +34,7 @@ export function DetailRecepcionDialog({
   open, onOpenChange, consulta, mascota, onTerminado,
 }: DetailRecepcionDialogProps) {
   const [confirmando, setConfirmando] = useState(false)
+  const { veterinaria } = useAuth()
 
   const handleClose = () => {
     setConfirmando(false)
@@ -206,9 +209,17 @@ export function DetailRecepcionDialog({
             )}
           </div>
 
-          {/* ── Footer — botón Terminado ── */}
+          {/* ── Footer — botones ── */}
           {consulta && (
-            <div className="px-5 pb-5">
+            <div className="px-5 pb-5 space-y-2">
+              <Button
+                variant="outline"
+                className="w-full h-11 text-sm font-semibold border-purpura-300 text-purpura-600 hover:bg-purpura-50"
+                onClick={() => imprimirTratamiento(consulta.tratamiento, veterinaria?.logoUrl)}
+              >
+                <Printer className="w-4 h-4 mr-2" />
+                Imprimir tratamiento
+              </Button>
               {confirmando ? (
                 <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-3">
                   <p className="text-sm font-semibold text-amber-800 text-center">
