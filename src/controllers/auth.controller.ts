@@ -208,13 +208,15 @@ export class AuthController {
       vetId = currentUser.veterinariaId;
     }
 
+    const redirectTo = typeof window !== 'undefined' ? window.location.origin : '';
+
     const { data: fnData, error: fnError } = await supabase.functions.invoke('admin-create-user', {
       body: {
         nombre: data.nombre,
         email: data.email,
         rol: data.rol,
-        password: '123456',
         veterinaria_id: vetId,
+        redirectTo,
       },
     })
 
@@ -236,38 +238,75 @@ export class AuthController {
 
   async actualizarUsuario(id: string, data: Partial<Omit<Perfil, 'id'>>): Promise<Perfil | null> {
     const currentUser = await this.resolveUser()
-    const payload: any = {
-      nombre: data.nombre,
-      email: data.email,
-      rol: data.rol,
-      avatar: data.avatar,
-      updated_at: new Date().toISOString(),
+
+    const { data: fnData, error: fnError } = await supabase.functions.invoke('admin-create-user', {
+      body: {
+        action: 'update',
+        userId: id,
+        nombre: data.nombre,
+        email: data.email,
+        rol: data.rol,
+        avatar: data.avatar,
+        veterinaria_id: data.veterinariaId,
+      },
+    })
+
+    if (fnError) {
+      const msg = fnError.message?.toLowerCase() ?? ''
+      if (msg.includes('not found') || msg.includes('404')) {
+        throw new Error('La función admin-create-user no está desplegada en Supabase.')
+      }
+      throw new Error(fnError.message || 'No se pudo actualizar usuario.')
     }
 
-    if (currentUser?.rol === 'super_admin' && data.veterinariaId !== undefined) {
-      payload.veterinaria_id = data.veterinariaId;
+    if (!fnData || typeof fnData !== 'object' || !('perfil' in fnData)) {
+      throw new Error('Respuesta inválida de admin-create-user.')
     }
 
-    const { data: updated, error } = await supabase
-      .from('perfiles')
-      .update(payload)
-      .eq('id', id)
-      .select('id,nombre,email,rol,avatar,veterinaria_id')
-      .maybeSingle()
-
-    if (error) throw new Error(`No se pudo actualizar usuario: ${error.message}`)
-    if (!updated) return null
-
-    const perfil = this.mapPerfil(updated)
+    const perfil = this.mapPerfil((fnData as { perfil: any }).perfil)
     if (currentUser?.id === id) this.currentUser = perfil
     return perfil
   }
 
   async eliminarUsuario(id: string): Promise<boolean> {
     const currentUser = await this.resolveUser()
-    const { error } = await supabase.from('perfiles').delete().eq('id', id)
-    if (error) throw new Error(`No se pudo eliminar usuario: ${error.message}`)
+
+    const { error: fnError } = await supabase.functions.invoke('admin-create-user', {
+      body: {
+        action: 'delete',
+        userId: id,
+      },
+    })
+
+    if (fnError) {
+      const msg = fnError.message?.toLowerCase() ?? ''
+      if (msg.includes('not found') || msg.includes('404')) {
+        throw new Error('La función admin-create-user no está desplegada en Supabase.')
+      }
+      throw new Error(fnError.message || 'No se pudo eliminar usuario.')
+    }
+
     if (currentUser?.id === id) this.clearCache()
     return true
+  }
+
+  async reenviarInvitacion(userId: string): Promise<void> {
+    const redirectTo = typeof window !== 'undefined' ? window.location.origin : ''
+
+    const { error: fnError } = await supabase.functions.invoke('admin-create-user', {
+      body: {
+        action: 'resend-invite',
+        userId,
+        redirectTo,
+      },
+    })
+
+    if (fnError) {
+      const msg = fnError.message?.toLowerCase() ?? ''
+      if (msg.includes('not found') || msg.includes('404')) {
+        throw new Error('La función admin-create-user no está desplegada en Supabase.')
+      }
+      throw new Error(fnError.message || 'No se pudo reenviar la invitación.')
+    }
   }
 }

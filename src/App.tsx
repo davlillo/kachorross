@@ -26,7 +26,9 @@ import HistorialVentasPage from '@/app/historial-ventas/page';
 
 import ConfiguracionPage from '@/app/configuracion/page';
 
-import UsuariosPage from '@/app/admin/usuarios/page';
+import SeguridadUsuariosPage from '@/app/admin/seguridad/usuarios/page';
+
+import EstablecerContrasenaPage from '@/app/establecer-contrasena/page';
 
 import SuperAdminPage from '@/app/super-admin/page';
 
@@ -246,17 +248,23 @@ function AppRoutes() {
 
 
 
-      <Route path="/admin/usuarios" element={
+      <Route path="/admin/usuarios" element={<Navigate to="/admin/seguridad/usuarios" replace />} />
+
+
+
+      <Route path="/admin/seguridad/usuarios" element={
 
         <ProtectedRoute allowedRoles={['admin']}>
 
-          <Layout><UsuariosPage /></Layout>
+          <Layout><SeguridadUsuariosPage /></Layout>
 
         </ProtectedRoute>
 
       } />
 
 
+
+      <Route path="/establecer-contrasena" element={<EstablecerContrasenaPage />} />
 
       <Route path="/configuracion" element={
 

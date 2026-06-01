@@ -159,3 +159,27 @@ export interface RegistrarExpedienteDTO {
   propietario: CrearPropietarioDTO;
   mascota: CrearMascotaDTO;
 }
+
+export interface EmailConfig {
+  id: string;
+  veterinariaId: string;
+  smtpHost: string;
+  smtpPort: number;
+  smtpUser: string;
+  smtpPass: string;
+  fromName?: string;
+  fromEmail?: string;
+  activo: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RegistroEnvio {
+  id: string;
+  veterinariaId: string;
+  destinatarioEmail: string;
+  tipoNotificacion: 'invitacion' | 'receta' | 'recordatorio' | 'confirmacion' | 'personalizado';
+  fechaEnvio: string;
+  estado: 'enviado' | 'entregado' | 'fallido' | 'pendiente';
+  codigoError?: string;
+}

@@ -91,7 +91,7 @@ export default function SuperAdminPage() {
       });
 
       toast.success('Veterinaria creada exitosamente', {
-        description: 'Se ha creado la cuenta de administrador con la contraseña por defecto (123456).'
+        description: 'Se ha enviado un correo de invitación al administrador.'
       });
       
       setIsDialogOpen(false);
@@ -119,7 +119,7 @@ export default function SuperAdminPage() {
       });
 
       toast.success('Super Admin creado exitosamente', {
-        description: 'Contraseña por defecto: 123456'
+        description: 'Se ha enviado un correo de invitación.'
       });
       
       setIsSuperAdminDialogOpen(false);
