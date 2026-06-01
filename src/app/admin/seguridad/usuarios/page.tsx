@@ -14,9 +14,11 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/atoms/ui/dialog';
 import { PageHeader } from '@/components/molecules/PageHeader';
+import { Alert, AlertDescription } from '@/components/atoms/ui/alert';
+import { toast } from 'sonner';
 import {
   Users, Plus, Pencil, Trash2, Shield, Stethoscope,
-  ClipboardList, AlertTriangle, KeyRound, Mail, UserCircle,
+  ClipboardList, AlertTriangle, Mail, UserCircle, Send,
 } from 'lucide-react';
 import type { Perfil } from '@/types';
 
@@ -30,8 +32,8 @@ const rolConfig: Record<string, { label: string; icon: React.ElementType; color:
 
 const EMPTY_FORM = { nombre: '', email: '', rol: 'recepcion' as Perfil['rol'] };
 
-export default function UsuariosPage() {
-  const { user: currentUser, refreshUser } = useAuth();
+export default function SeguridadUsuariosPage() {
+  const { user: currentUser, refreshUser, veterinaria } = useAuth();
   const [usuarios, setUsuarios] = useState<Perfil[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editTarget, setEditTarget] = useState<Perfil | null>(null);
@@ -40,6 +42,7 @@ export default function UsuariosPage() {
   const [busqueda, setBusqueda] = useState('');
   const [error, setError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [enviandoInvitacion, setEnviandoInvitacion] = useState<string | null>(null);
 
   const cargar = async () => setUsuarios(await authCtrl.listarUsuarios());
   useEffect(() => { void cargar(); }, []);
@@ -105,6 +108,20 @@ export default function UsuariosPage() {
   const getInitials = (name: string) =>
     name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
+  const reenviarInvitacion = async (userId: string) => {
+    setEnviandoInvitacion(userId);
+    try {
+      await authCtrl.reenviarInvitacion(userId);
+      toast.success('Invitación reenviada correctamente');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Error al reenviar invitación');
+    } finally {
+      setEnviandoInvitacion(null);
+    }
+  };
+
+  const tieneEmailConfig = !!veterinaria?.email;
+
   return (
     <div className="space-y-6 animate-fade-in-up">
       <PageHeader
@@ -118,6 +135,16 @@ export default function UsuariosPage() {
           </Badge>
         }
       />
+
+      {!tieneEmailConfig && (
+        <Alert className="bg-amber-50 border-amber-200">
+          <AlertTriangle className="w-4 h-4 text-amber-600" />
+          <AlertDescription className="text-xs text-amber-800">
+            Antes de crear cuentas, configura el correo SMTP en{' '}
+            <strong>Seguridad → Configuración de Correo</strong> para que los nuevos usuarios reciban su invitación.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Acciones superiores */}
       <div className="flex flex-col sm:flex-row gap-3">
@@ -138,14 +165,6 @@ export default function UsuariosPage() {
         </Button>
       </div>
 
-      {/* Nota de contraseña */}
-      <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200">
-        <KeyRound className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-        <p className="text-xs text-amber-800">
-          <strong>Contraseña por defecto:</strong> las cuentas nuevas se crean con <code className="bg-amber-100 px-1 rounded font-mono">123456</code>. Cada usuario debe cambiarla en <strong>Perfil</strong> después de iniciar sesión.
-        </p>
-      </div>
-
       {/* Grid de usuarios */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {usuariosFiltrados.map(u => {
@@ -156,7 +175,6 @@ export default function UsuariosPage() {
           return (
             <Card key={u.id} className={`border-0 shadow-soft hover:shadow-lg transition-all ${esTuCuenta ? 'ring-2 ring-purpura-400' : ''}`}>
               <CardContent className="p-5">
-                {/* Avatar + nombre */}
                 <div className="flex items-center gap-3 mb-4">
                   <Avatar className="w-14 h-14 border-2 border-white shadow-md">
                     <AvatarImage src={u.avatar} alt={u.nombre} />
@@ -180,7 +198,6 @@ export default function UsuariosPage() {
                   </div>
                 </div>
 
-                {/* Rol */}
                 <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${cfg.bg} ${cfg.border} border mb-4`}>
                   <RolIcon className={`w-4 h-4 ${cfg.color}`} />
                   <span className={`text-xs font-semibold ${cfg.color}`}>{cfg.label}</span>
@@ -189,7 +206,6 @@ export default function UsuariosPage() {
                   )}
                 </div>
 
-                {/* Acciones */}
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
@@ -198,6 +214,16 @@ export default function UsuariosPage() {
                     onClick={() => abrirEditar(u)}
                   >
                     <Pencil className="w-3 h-3 mr-1" />Editar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs text-purpura-600 hover:bg-purpura-50 hover:border-purpura-300"
+                    disabled={enviandoInvitacion === u.id}
+                    onClick={() => reenviarInvitacion(u.id)}
+                    title="Reenviar invitación"
+                  >
+                    <Send className="w-3 h-3" />
                   </Button>
                   <Button
                     variant="outline"
@@ -298,10 +324,10 @@ export default function UsuariosPage() {
             </div>
 
             {!editTarget && (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 border border-border">
-                <KeyRound className="w-4 h-4 text-muted-foreground shrink-0" />
-                <p className="text-xs text-muted-foreground">
-                  Contraseña inicial: <code className="font-mono bg-muted px-1 rounded">123456</code>
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-blue-50 border border-blue-200">
+                <Send className="w-4 h-4 text-blue-600 shrink-0" />
+                <p className="text-xs text-blue-800">
+                  Se enviará un correo de invitación para que el usuario establezca su propia contraseña.
                 </p>
               </div>
             )}
