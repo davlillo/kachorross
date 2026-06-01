@@ -333,7 +333,7 @@ Deno.serve(async (req) => {
             body: JSON.stringify({
               veterinariaId: vetId,
               to: email,
-              subject: 'Has sido invitado a Veterinaria Kachorros',
+              subject: `Has sido invitado a ${vetNombre}`,
               html: invitationHtml,
             }),
           })

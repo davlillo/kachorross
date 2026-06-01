@@ -96,7 +96,7 @@ export class EmailController {
       body: {
         veterinariaId,
         to: config.smtpUser,
-        subject: 'Prueba de conexión - Kachorros',
+        subject: 'Prueba de conexión SMTP',
         html: '<p>Si recibes este correo, la configuración SMTP funciona correctamente.</p>',
       },
     })

@@ -27,7 +27,6 @@ import {
   Users,
   Shield,
   History,
-  Mail,
 } from 'lucide-react';
 import { useState } from 'react';
 import type { Perfil } from '@/types';
@@ -75,12 +74,6 @@ const navItems: NavItem[] = [
     label: 'Usuarios',
     href: '/admin/seguridad/usuarios',
     icon: Users,
-    roles: ['admin'],
-  },
-  {
-    label: 'Config. Correo',
-    href: '/admin/seguridad/correo',
-    icon: Mail,
     roles: ['admin'],
   },
 ];
