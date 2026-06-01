@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from '@/components/atoms/ui/dialog';
 import { PageHeader } from '@/components/molecules/PageHeader';
+import { TratamientoHoja } from '@/components/molecules';
 import { ProductSelectorDialog } from '@/components/organisms/ProductSelectorDialog';
 
 import {
@@ -229,16 +230,7 @@ export default function NuevaConsultaPage() {
                 />
               </div>
 
-              <div>
-                <Label htmlFor="tratamiento">Tratamiento</Label>
-                <Textarea
-                  id="tratamiento"
-                  placeholder="Describa el tratamiento indicado..."
-                  value={tratamiento}
-                  onChange={(e) => setTratamiento(e.target.value)}
-                  className="mt-1 min-h-[80px]"
-                />
-              </div>
+              <TratamientoHoja value={tratamiento} onChange={setTratamiento} />
 
               <div>
                 <Label htmlFor="notas">Notas Adicionales</Label>
