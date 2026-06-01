@@ -28,8 +28,6 @@ import ConfiguracionPage from '@/app/configuracion/page';
 
 import SeguridadUsuariosPage from '@/app/admin/seguridad/usuarios/page';
 
-import SeguridadCorreoPage from '@/app/admin/seguridad/correo/page';
-
 import EstablecerContrasenaPage from '@/app/establecer-contrasena/page';
 
 import SuperAdminPage from '@/app/super-admin/page';
@@ -266,21 +264,7 @@ function AppRoutes() {
 
 
 
-      <Route path="/admin/seguridad/correo" element={
-
-        <ProtectedRoute allowedRoles={['admin']}>
-
-          <Layout><SeguridadCorreoPage /></Layout>
-
-        </ProtectedRoute>
-
-      } />
-
-
-
       <Route path="/establecer-contrasena" element={<EstablecerContrasenaPage />} />
-
-
 
       <Route path="/configuracion" element={
 

@@ -160,3 +160,14 @@
 .animate-fade-in-up {
   animation: fade-in-up 0.4s ease-out;
 }
+
+/* Ocultar reveal nativo cuando hay toggle propio */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+input[type="password"]::-webkit-password-reveal-button {
+  display: none;
+  -webkit-appearance: none;
+}

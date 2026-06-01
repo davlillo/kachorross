@@ -74,6 +74,15 @@ Deno.serve(async (req) => {
       })
     }
 
+    // Obtener nombre de la veterinaria como respaldo
+    const { data: vetData } = await admin
+      .from('veterinarias')
+      .select('nombre')
+      .eq('id', veterinariaId)
+      .maybeSingle()
+
+    const fromName = emailConfig.from_name || vetData?.nombre || 'Mi Veterinaria'
+
     // Enviar email vía Gmail SMTP con nodemailer
     const { createTransport } = await import('npm:nodemailer@6.9.16')
 
@@ -88,7 +97,7 @@ Deno.serve(async (req) => {
     })
 
     await transporter.sendMail({
-      from: `"${emailConfig.from_name || 'Veterinaria Kachorros'}" <${emailConfig.from_email || emailConfig.smtp_user}>`,
+      from: `"${fromName}" <${emailConfig.from_email || emailConfig.smtp_user}>`,
       to,
       subject,
       html,
