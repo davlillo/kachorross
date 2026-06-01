@@ -1,21 +1,23 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import { VeterinariaController } from '@/controllers/veterinaria.controller';
 import { AuthController } from '@/controllers/auth.controller';
-import type { Veterinaria } from '@/types';
+import type { Veterinaria, Perfil } from '@/types';
 import { Button } from '@/components/atoms/ui/button';
 import { Input } from '@/components/atoms/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/atoms/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/atoms/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/atoms/ui/dialog';
 import { Label } from '@/components/atoms/ui/label';
 import { Badge } from '@/components/atoms/ui/badge';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/atoms/ui/tabs';
-import { Building2, Plus, Power, PowerOff, ShieldAlert, UserCog } from 'lucide-react';
+import { Building2, Plus, Power, PowerOff, ShieldAlert, UserCog, Copy, Check, Trash2, AlertTriangle } from 'lucide-react';
 
 const vetCtrl = VeterinariaController.getInstance();
 const authCtrl = AuthController.getInstance();
 
 export default function SuperAdminPage() {
+  const { user: currentUser } = useAuth();
   const [veterinarias, setVeterinarias] = useState<Veterinaria[]>([]);
   const [superAdmins, setSuperAdmins] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,6 +40,14 @@ export default function SuperAdminPage() {
     nombre: '',
     email: '',
   });
+
+  const [recoveryLink, setRecoveryLink] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  // Delete state
+  const [deleteVetTarget, setDeleteVetTarget] = useState<Veterinaria | null>(null);
+  const [deleteSaTarget, setDeleteSaTarget] = useState<Perfil | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const loadData = async () => {
     try {
@@ -110,18 +120,20 @@ export default function SuperAdminPage() {
     e.preventDefault();
     try {
       setIsSubmitting(true);
-      
-      await authCtrl.crearUsuario({
+
+      const result = await authCtrl.crearUsuario({
         nombre: saFormData.nombre,
         email: saFormData.email,
         rol: 'super_admin',
-        // veterinariaId es undefined para super_admins
       });
 
-      toast.success('Super Admin creado exitosamente', {
-        description: 'Se ha enviado un correo de invitación.'
-      });
-      
+      toast.success('Super Admin creado exitosamente');
+
+      if (result.recoveryLink) {
+        setRecoveryLink(result.recoveryLink);
+        setLinkCopied(false);
+      }
+
       setIsSuperAdminDialogOpen(false);
       setSaFormData({ nombre: '', email: '' });
       loadData();
@@ -129,6 +141,14 @@ export default function SuperAdminPage() {
       toast.error('Error al crear Super Admin', { description: error.message });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const copyLink = () => {
+    if (recoveryLink) {
+      navigator.clipboard.writeText(recoveryLink);
+      setLinkCopied(true);
+      toast.success('Enlace copiado al portapapeles');
     }
   };
 
@@ -144,6 +164,36 @@ export default function SuperAdminPage() {
       loadData();
     } catch (error: any) {
       toast.error('Error al cambiar estado', { description: error.message });
+    }
+  };
+
+  const confirmDeleteVet = async () => {
+    if (!deleteVetTarget) return;
+    setIsDeleting(true);
+    try {
+      await vetCtrl.eliminar(deleteVetTarget.id);
+      toast.success(`Veterinaria ${deleteVetTarget.nombre} eliminada`);
+      setDeleteVetTarget(null);
+      loadData();
+    } catch (error: any) {
+      toast.error('Error al eliminar', { description: error.message });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const confirmDeleteSa = async () => {
+    if (!deleteSaTarget) return;
+    setIsDeleting(true);
+    try {
+      await authCtrl.eliminarUsuario(deleteSaTarget.id);
+      toast.success(`${deleteSaTarget.nombre} eliminado`);
+      setDeleteSaTarget(null);
+      loadData();
+    } catch (error: any) {
+      toast.error('Error al eliminar', { description: error.message });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -268,18 +318,28 @@ export default function SuperAdminPage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button 
-                          variant={vet.estado === 'activo' ? 'outline' : 'default'} 
-                          size="sm"
-                          onClick={() => toggleEstado(vet)}
-                          className={vet.estado === 'activo' ? 'text-destructive hover:text-destructive' : ''}
-                        >
-                          {vet.estado === 'activo' ? (
-                            <><PowerOff className="h-4 w-4 mr-1" /> Suspender</>
-                          ) : (
-                            <><Power className="h-4 w-4 mr-1" /> Activar</>
-                          )}
-                        </Button>
+                        <div className="flex gap-1 justify-end">
+                          <Button 
+                            variant={vet.estado === 'activo' ? 'outline' : 'default'} 
+                            size="sm"
+                            onClick={() => toggleEstado(vet)}
+                            className={vet.estado === 'activo' ? 'text-destructive hover:text-destructive' : ''}
+                          >
+                            {vet.estado === 'activo' ? (
+                              <><PowerOff className="h-4 w-4 mr-1" /> Suspender</>
+                            ) : (
+                              <><Power className="h-4 w-4 mr-1" /> Activar</>
+                            )}
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setDeleteVetTarget(vet)}
+                            className="text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -331,28 +391,41 @@ export default function SuperAdminPage() {
                   <TableHead>Nombre</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Rol</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
-                      Cargando administradores...
-                    </TableCell>
-                  </TableRow>
-                ) : superAdmins.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                  {isLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                        Cargando administradores...
+                      </TableCell>
+                    </TableRow>
+                  ) : superAdmins.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                       No hay super administradores registrados
                     </TableCell>
                   </TableRow>
                 ) : (
-                  superAdmins.map((admin) => (
+                  superAdmins.map((admin: Perfil) => (
                     <TableRow key={admin.id}>
                       <TableCell className="font-medium">{admin.nombre}</TableCell>
                       <TableCell>{admin.email}</TableCell>
                       <TableCell>
                         <Badge variant="secondary">Super Admin</Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={admin.id === currentUser?.id}
+                          onClick={() => setDeleteSaTarget(admin)}
+                          className={admin.id === currentUser?.id ? 'opacity-50' : 'text-destructive hover:bg-destructive/10'}
+                          title={admin.id === currentUser?.id ? 'No puedes eliminarte a ti mismo' : 'Eliminar'}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))
@@ -362,6 +435,98 @@ export default function SuperAdminPage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Modal confirmar eliminar veterinaria */}
+      <Dialog open={!!deleteVetTarget} onOpenChange={() => setDeleteVetTarget(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-center">¿Eliminar veterinaria?</DialogTitle>
+          </DialogHeader>
+          {deleteVetTarget && (
+            <div className="text-center py-4 space-y-3">
+              <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto">
+                <AlertTriangle className="w-8 h-8 text-red-500" />
+              </div>
+              <p className="font-semibold">{deleteVetTarget.nombre}</p>
+              <p className="text-sm text-muted-foreground">
+                Se eliminarán todos los datos asociados a esta clínica (mascotas, consultas, usuarios, etc.). Esta acción no se puede deshacer.
+              </p>
+            </div>
+          )}
+          <DialogFooter className="gap-2">
+            <Button variant="outline" className="flex-1" onClick={() => setDeleteVetTarget(null)}>Cancelar</Button>
+            <Button variant="destructive" className="flex-1" onClick={confirmDeleteVet} disabled={isDeleting}>
+              <Trash2 className="w-4 h-4 mr-1" />{isDeleting ? 'Eliminando...' : 'Eliminar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal confirmar eliminar super admin */}
+      <Dialog open={!!deleteSaTarget} onOpenChange={() => setDeleteSaTarget(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-center">¿Eliminar Super Admin?</DialogTitle>
+          </DialogHeader>
+          {deleteSaTarget && (
+            <div className="text-center py-4 space-y-3">
+              <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto">
+                <AlertTriangle className="w-8 h-8 text-red-500" />
+              </div>
+              <p className="font-semibold">{deleteSaTarget.nombre}</p>
+              <p className="text-sm text-muted-foreground">{deleteSaTarget.email}</p>
+              <p className="text-sm text-muted-foreground">
+                El usuario perderá el acceso al sistema de forma permanente.
+              </p>
+            </div>
+          )}
+          <DialogFooter className="gap-2">
+            <Button variant="outline" className="flex-1" onClick={() => setDeleteSaTarget(null)}>Cancelar</Button>
+            <Button variant="destructive" className="flex-1" onClick={confirmDeleteSa} disabled={isDeleting}>
+              <Trash2 className="w-4 h-4 mr-1" />{isDeleting ? 'Eliminando...' : 'Eliminar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal recovery link para Super Admin */}
+      <Dialog open={!!recoveryLink} onOpenChange={() => setRecoveryLink(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-green-600">
+              <Check className="w-5 h-5" />
+              Super Admin creado exitosamente
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <p className="text-sm text-muted-foreground">
+              Comparte este enlace con el nuevo Super Admin para que establezca su contraseña:
+            </p>
+            <div className="flex gap-2">
+              <Input
+                readOnly
+                value={recoveryLink || ''}
+                className="text-xs font-mono flex-1"
+                onClick={(e) => (e.target as HTMLInputElement).select()}
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={copyLink}
+                title="Copiar enlace"
+              >
+                {linkCopied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+              </Button>
+            </div>
+            <p className="text-xs text-amber-600 flex items-center gap-1">
+              ⏰ Este enlace expira en 24 horas.
+            </p>
+          </div>
+          <div className="flex justify-end">
+            <Button onClick={() => setRecoveryLink(null)}>Cerrar</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

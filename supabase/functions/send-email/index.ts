@@ -6,10 +6,11 @@ const corsHeaders = {
 }
 
 interface SendEmailPayload {
-  veterinariaId: string
+  veterinariaId?: string
   to: string
   subject: string
   html: string
+  useSystemConfig?: boolean
 }
 
 Deno.serve(async (req) => {
@@ -29,7 +30,6 @@ Deno.serve(async (req) => {
 
     const admin = createClient(supabaseUrl, serviceRoleKey)
 
-    // Verificar autenticación
     const { data: { user: caller }, error: callerError } = await client.auth.getUser()
     if (callerError || !caller) {
       return new Response(JSON.stringify({ error: 'No autenticado' }), {
@@ -38,7 +38,6 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Verificar rol (admin o super_admin)
     const { data: callerPerfil } = await admin
       .from('perfiles')
       .select('rol')
@@ -52,60 +51,80 @@ Deno.serve(async (req) => {
       })
     }
 
-    const { veterinariaId, to, subject, html }: SendEmailPayload = await req.json()
-    if (!veterinariaId || !to || !subject || !html) {
+    const { veterinariaId, to, subject, html, useSystemConfig }: SendEmailPayload = await req.json()
+    if (!to || !subject || !html) {
       return new Response(JSON.stringify({ error: 'Payload incompleto' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    // Obtener config SMTP de la veterinaria
-    const { data: emailConfig, error: configError } = await admin
-      .from('config_email')
-      .select('*')
-      .eq('veterinaria_id', veterinariaId)
-      .maybeSingle()
+    let smtpHost = 'smtp.gmail.com'
+    let smtpPort = 587
+    let smtpUser: string
+    let smtpPass: string
+    let fromName = 'Sistema'
+    let fromEmail = ''
+    let logVetId = veterinariaId || 'system'
 
-    if (configError || !emailConfig || !emailConfig.activo) {
-      return new Response(JSON.stringify({ error: 'Configuración de correo no encontrada o inactiva' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+    if (useSystemConfig || !veterinariaId) {
+      smtpUser = Deno.env.get('SYSTEM_SMTP_USER') || ''
+      smtpPass = Deno.env.get('SYSTEM_SMTP_PASS') || ''
+      fromName = Deno.env.get('SYSTEM_SMTP_FROM') || 'Sistema Veterinario'
+      fromEmail = smtpUser
+
+      if (!smtpUser || !smtpPass) {
+        return new Response(JSON.stringify({ error: 'SMTP del sistema no configurado. Agrega SYSTEM_SMTP_USER y SYSTEM_SMTP_PASS en Edge Functions secrets.' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+    } else {
+      const { data: emailConfig, error: configError } = await admin
+        .from('config_email')
+        .select('*')
+        .eq('veterinaria_id', veterinariaId)
+        .maybeSingle()
+
+      if (configError || !emailConfig || !emailConfig.activo) {
+        return new Response(JSON.stringify({ error: 'Configuración de correo no encontrada o inactiva' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      const { data: vetData } = await admin
+        .from('veterinarias')
+        .select('nombre')
+        .eq('id', veterinariaId)
+        .maybeSingle()
+
+      smtpHost = emailConfig.smtp_host
+      smtpPort = emailConfig.smtp_port
+      smtpUser = emailConfig.smtp_user
+      smtpPass = emailConfig.smtp_pass
+      fromName = emailConfig.from_name || vetData?.nombre || 'Mi Veterinaria'
+      fromEmail = emailConfig.from_email || emailConfig.smtp_user
     }
 
-    // Obtener nombre de la veterinaria como respaldo
-    const { data: vetData } = await admin
-      .from('veterinarias')
-      .select('nombre')
-      .eq('id', veterinariaId)
-      .maybeSingle()
-
-    const fromName = emailConfig.from_name || vetData?.nombre || 'Mi Veterinaria'
-
-    // Enviar email vía Gmail SMTP con nodemailer
     const { createTransport } = await import('npm:nodemailer@6.9.16')
 
     const transporter = createTransport({
-      host: emailConfig.smtp_host,
-      port: emailConfig.smtp_port,
-      secure: emailConfig.smtp_port === 465,
-      auth: {
-        user: emailConfig.smtp_user,
-        pass: emailConfig.smtp_pass,
-      },
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpPort === 465,
+      auth: { user: smtpUser, pass: smtpPass },
     })
 
     await transporter.sendMail({
-      from: `"${fromName}" <${emailConfig.from_email || emailConfig.smtp_user}>`,
+      from: `"${fromName}" <${fromEmail}>`,
       to,
       subject,
       html,
     })
 
-    // Registrar en notificaciones
     await admin.from('notificaciones').insert({
-      veterinaria_id: veterinariaId,
+      veterinaria_id: logVetId,
       destinatario_email: to,
       tipo_notificacion: 'personalizado',
       estado: 'enviado',
@@ -119,13 +138,12 @@ Deno.serve(async (req) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Error inesperado'
 
-    // Intentar registrar el fallo si es posible
     try {
       const supabaseUrl = Deno.env.get('SUPABASE_URL')!
       const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
       const fallbackClient = createClient(supabaseUrl, serviceRoleKey)
       await fallbackClient.from('notificaciones').insert({
-        veterinaria_id: 'unknown',
+        veterinaria_id: 'system',
         destinatario_email: 'unknown',
         tipo_notificacion: 'personalizado',
         estado: 'fallido',
