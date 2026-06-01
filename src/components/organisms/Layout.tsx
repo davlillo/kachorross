@@ -27,8 +27,10 @@ import {
   Users,
   Shield,
   History,
+  Mail,
 } from 'lucide-react';
 import { useState } from 'react';
+import type { Perfil } from '@/types';
 
 interface NavItem {
   label: string;
@@ -71,8 +73,14 @@ const navItems: NavItem[] = [
   },
   {
     label: 'Usuarios',
-    href: '/admin/usuarios',
+    href: '/admin/seguridad/usuarios',
     icon: Users,
+    roles: ['admin'],
+  },
+  {
+    label: 'Config. Correo',
+    href: '/admin/seguridad/correo',
+    icon: Mail,
     roles: ['admin'],
   },
 ];
@@ -88,7 +96,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }
 
   const filteredNavItems = navItems.filter(item => 
-    item.roles.includes(user.rol)
+    item.roles.includes(user.rol as 'doctora' | 'recepcion' | 'admin')
   );
 
   const handleLogout = () => {
@@ -100,7 +108,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  const getRoleLabel = (rol: string) => {
+  const getRoleLabel = (rol: Perfil['rol']) => {
     const labels: Record<string, string> = {
       doctora: 'Doctora Veterinaria',
       recepcion: 'Recepción',
