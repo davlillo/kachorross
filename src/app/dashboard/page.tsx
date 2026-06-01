@@ -167,7 +167,7 @@ export default function DashboardPage() {
       .filter(c => isWithinInterval(new Date(c.fecha), { start: inicio, end: fin }))
       .flatMap(c => c.detalles)
       .filter(d =>
-        ['servicio', 'vacuna', 'laboratorio', 'peluqueria'].includes(d.producto.categoria)
+        ['consulta', 'peluqueria'].includes(d.producto.categoria)
       )
       .forEach(d => {
         const actual = agregados.get(d.producto.nombre) ?? { nombre: d.producto.nombre, cantidad: 0, ingresos: 0 };
@@ -189,7 +189,7 @@ export default function DashboardPage() {
     consultas
       .filter(c => isWithinInterval(new Date(c.fecha), { start: inicio, end: fin }))
       .flatMap(c => c.detalles)
-      .filter(d => d.producto.categoria === 'medicamento')
+      .filter(d => d.producto.categoria === 'farmacia')
       .forEach(d => {
         const actual = agregados.get(d.producto.nombre) ?? { nombre: d.producto.nombre, cantidad: 0, ingresos: 0 };
         actual.cantidad += d.cantidad;
