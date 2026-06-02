@@ -53,6 +53,7 @@ export interface Expediente {
   consultas: Consulta[];
   fotosEvolucion: FotoEvolucion[];
   vacunas: Vacuna[];
+  desparasitaciones: Desparasitacion[];
 }
 
 export interface ExpedienteResumen {
@@ -111,11 +112,23 @@ export interface FotoEvolucion {
 
 export interface Vacuna {
   id: string;
+  mascotaId: string;
   expedienteId: string;
   nombre: string;
   fechaAplicacion: string;
+  dosis?: string;
   proximaDosis?: string;
   lote?: string;
+}
+
+export interface Desparasitacion {
+  id: string;
+  mascotaId: string;
+  expedienteId: string;
+  tipo: string;
+  viaAdministracion: string;
+  fechaAplicacion: string;
+  fechaProximoTratamiento?: string;
 }
 
 export interface MonitorSalida {

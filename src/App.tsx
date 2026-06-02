@@ -267,16 +267,10 @@ function AppRoutes() {
       <Route path="/establecer-contrasena" element={<EstablecerContrasenaPage />} />
 
       <Route path="/configuracion" element={
-
         <ProtectedRoute allowedRoles={['admin']}>
-
           <Layout><ConfiguracionPage /></Layout>
-
         </ProtectedRoute>
-
       } />
-
-
 
       <Route path="/super-admin" element={
 

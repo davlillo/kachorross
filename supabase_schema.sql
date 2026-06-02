@@ -1003,11 +1003,11 @@ CREATE POLICY "Vacunas visibles para usuarios de la misma veterinaria" ON vacuna
         veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid())
     );
 
-DROP POLICY IF EXISTS "Vacunas insertables para doctora de la misma veterinaria" ON vacunas;
-CREATE POLICY "Vacunas insertables para doctora de la misma veterinaria" ON vacunas
+DROP POLICY IF EXISTS "Vacunas insertables para usuarios de la misma veterinaria" ON vacunas;
+CREATE POLICY "Vacunas insertables para usuarios de la misma veterinaria" ON vacunas
     FOR INSERT TO authenticated WITH CHECK (
         veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid()) AND
-        EXISTS (SELECT 1 FROM perfiles WHERE id = auth.uid() AND rol = 'doctora')
+        EXISTS (SELECT 1 FROM perfiles WHERE id = auth.uid() AND rol IN ('doctora', 'admin'))
     );
 
 -- Desparasitaciones
@@ -1017,11 +1017,11 @@ CREATE POLICY "Desparasitaciones visibles para usuarios de la misma veterinaria"
         veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid())
     );
 
-DROP POLICY IF EXISTS "Desparasitaciones insertables para doctora de la misma veterinaria" ON desparasitaciones;
-CREATE POLICY "Desparasitaciones insertables para doctora de la misma veterinaria" ON desparasitaciones
+DROP POLICY IF EXISTS "Desparasitaciones insertables para usuarios de la misma veterinaria" ON desparasitaciones;
+CREATE POLICY "Desparasitaciones insertables para usuarios de la misma veterinaria" ON desparasitaciones
     FOR INSERT TO authenticated WITH CHECK (
         veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid()) AND
-        EXISTS (SELECT 1 FROM perfiles WHERE id = auth.uid() AND rol = 'doctora')
+        EXISTS (SELECT 1 FROM perfiles WHERE id = auth.uid() AND rol IN ('doctora', 'admin'))
     );
 
 -- Notificaciones
