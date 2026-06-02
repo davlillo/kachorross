@@ -259,7 +259,7 @@ export function DetailRecepcionDialog({
               <Button
                 variant="outline"
                 className="w-full h-11 text-sm font-semibold border-purpura-300 text-purpura-600 hover:bg-purpura-50"
-                onClick={() => imprimirTratamiento(consulta.tratamiento, veterinaria?.logoUrl)}
+                onClick={() => imprimirTratamiento(consulta.tratamiento, veterinaria?.logoUrl, consulta.fecha)}
               >
                 <Printer className="w-4 h-4 mr-2" />
                 Imprimir tratamiento

@@ -3,9 +3,10 @@ import { useAuth } from '@/context/AuthContext';
 interface TratamientoHojaProps {
   value: string;
   onChange: (value: string) => void;
+  fecha?: string;
 }
 
-export const TratamientoHoja: React.FC<TratamientoHojaProps> = ({ value, onChange }) => {
+export const TratamientoHoja: React.FC<TratamientoHojaProps> = ({ value, onChange, fecha }) => {
   const { veterinaria } = useAuth();
 
   return (
@@ -40,6 +41,9 @@ export const TratamientoHoja: React.FC<TratamientoHojaProps> = ({ value, onChang
                 2220 9679
               </span>
             </div>
+            <p className="text-[11px] text-gray-400 mt-1">
+              {(() => { const d = fecha ? new Date(fecha) : new Date(); return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; })()}
+            </p>
           </div>
         </div>
 
