@@ -22,6 +22,16 @@ import {
   Pencil, Trash2, AlertTriangle, Filter, X, CalendarDays,
 } from 'lucide-react';
 import type { Expediente, Mascota } from '@/types';
+import {
+  formatTelefono,
+  formatPeso,
+  isTelefonoValid,
+  isEmailValid,
+  isPesoValid,
+  TELEFONO_MAX_LENGTH,
+  TELEFONO_PLACEHOLDER,
+} from '@/lib/input-validators';
+import { cn } from '@/lib/utils';
 
 const especies: { value: Mascota['especie']; label: string }[] = [
   { value: 'perro', label: 'Perro' },
@@ -96,6 +106,33 @@ export default function ExpedienteDetailPage() {
   const [editPropTel,   setEditPropTel]   = useState('');
   const [editPropEmail, setEditPropEmail] = useState('');
   const [editPropDir,   setEditPropDir]   = useState('');
+  const [editTouched, setEditTouched] = useState({
+    telefono: false,
+    email: false,
+    peso: false,
+  });
+
+  const editTelefonoOk = isTelefonoValid(editPropTel);
+  const editEmailOk = isEmailValid(editPropEmail);
+  const editPesoOk = isPesoValid(editPeso);
+
+  const editTelefonoError = editTouched.telefono && !editTelefonoOk
+    ? 'Ingrese 8 dígitos (ej: 7777-0000)'
+    : null;
+  const editEmailError = editTouched.email && !editEmailOk
+    ? 'Ingrese un correo válido (ej: correo@ejemplo.com)'
+    : null;
+  const editPesoError = editTouched.peso && !editPesoOk
+    ? 'El peso no puede ser negativo'
+    : null;
+
+  const editFormValid =
+    editNombre.trim() &&
+    editRaza.trim() &&
+    editPropNom.trim() &&
+    editTelefonoOk &&
+    editEmailOk &&
+    editPesoOk;
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
   const getEspecieIcon = (especie: string) =>
@@ -147,15 +184,18 @@ export default function ExpedienteDetailPage() {
     setEditAlergias((mascota.alergias ?? []).join(', '));
     setEditNotas(mascota.notasEspeciales ?? '');
     setEditPropNom(mascota.propietario.nombre);
-    setEditPropTel(mascota.propietario.telefono);
+    setEditPropTel(formatTelefono(mascota.propietario.telefono));
     setEditPropEmail(mascota.propietario.email ?? '');
     setEditPropDir(mascota.propietario.direccion ?? '');
+    setEditTouched({ telefono: false, email: false, peso: false });
     setEditOpen(true);
   };
 
   // ── Guardar edición ──────────────────────────────────────────────────────────
   const guardarEdicion = async () => {
     if (!id) return;
+    setEditTouched({ telefono: true, email: true, peso: true });
+    if (!editFormValid) return;
     await ctrl.actualizar(id, {
       mascota: {
         nombre: editNombre.trim(),
@@ -534,11 +574,35 @@ export default function ExpedienteDetailPage() {
             </div>
             <div className="space-y-1">
               <Label>Teléfono *</Label>
-              <Input value={editPropTel} onChange={e => setEditPropTel(e.target.value)} />
+              <Input
+                type="tel"
+                inputMode="numeric"
+                placeholder={TELEFONO_PLACEHOLDER}
+                maxLength={TELEFONO_MAX_LENGTH}
+                value={editPropTel}
+                onChange={e => setEditPropTel(formatTelefono(e.target.value))}
+                onBlur={() => setEditTouched(t => ({ ...t, telefono: true }))}
+                className={cn(editTelefonoError && 'border-red-500 focus-visible:ring-red-500')}
+                aria-invalid={!!editTelefonoError}
+              />
+              {editTelefonoError && (
+                <p className="text-xs text-red-600">{editTelefonoError}</p>
+              )}
             </div>
             <div className="space-y-1">
               <Label>Correo</Label>
-              <Input type="email" value={editPropEmail} onChange={e => setEditPropEmail(e.target.value)} />
+              <Input
+                type="email"
+                inputMode="email"
+                value={editPropEmail}
+                onChange={e => setEditPropEmail(e.target.value)}
+                onBlur={() => setEditTouched(t => ({ ...t, email: true }))}
+                className={cn(editEmailError && 'border-red-500 focus-visible:ring-red-500')}
+                aria-invalid={!!editEmailError}
+              />
+              {editEmailError && (
+                <p className="text-xs text-red-600">{editEmailError}</p>
+              )}
             </div>
             <div className="space-y-1">
               <Label>Dirección</Label>
@@ -588,7 +652,23 @@ export default function ExpedienteDetailPage() {
             </div>
             <div className="space-y-1">
               <Label>Peso (kg)</Label>
-              <Input type="number" step="0.1" value={editPeso} onChange={e => setEditPeso(e.target.value)} />
+              <Input
+                type="text"
+                inputMode="decimal"
+                value={editPeso}
+                onChange={e => setEditPeso(formatPeso(e.target.value))}
+                onKeyDown={e => {
+                  if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E') {
+                    e.preventDefault();
+                  }
+                }}
+                onBlur={() => setEditTouched(t => ({ ...t, peso: true }))}
+                className={cn(editPesoError && 'border-red-500 focus-visible:ring-red-500')}
+                aria-invalid={!!editPesoError}
+              />
+              {editPesoError && (
+                <p className="text-xs text-red-600">{editPesoError}</p>
+              )}
             </div>
             <div className="space-y-1">
               <Label>Alergias (separadas por coma)</Label>
@@ -603,7 +683,7 @@ export default function ExpedienteDetailPage() {
             <Button variant="outline" onClick={() => setEditOpen(false)}>Cancelar</Button>
             <Button
               onClick={guardarEdicion}
-              disabled={!editNombre.trim() || !editRaza.trim() || !editPropNom.trim() || !editPropTel.trim()}
+              disabled={!editFormValid}
               className="bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700"
             >
               <Pencil className="w-4 h-4 mr-2" />Guardar Cambios

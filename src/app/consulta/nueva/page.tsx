@@ -277,10 +277,14 @@ export default function NuevaConsultaPage() {
             </CardHeader>
             <CardContent>
               {detalles.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
+                <button
+                  type="button"
+                  onClick={() => setShowProductDialog(true)}
+                  className="w-full text-center py-8 text-muted-foreground rounded-lg border-2 border-dashed border-muted hover:border-purpura-300 hover:bg-purpura-50 hover:text-purpura-600 transition-colors cursor-pointer"
+                >
                   <Plus className="w-12 h-12 mx-auto mb-2 opacity-50" />
                   <p>Agregue servicios o productos</p>
-                </div>
+                </button>
               ) : (
                 <div className="space-y-3">
                   {detalles.map((detalle) => (

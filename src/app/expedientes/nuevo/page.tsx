@@ -17,6 +17,16 @@ import {
 } from '@/components/atoms/ui/select';
 import { PawPrint, User, Save, ArrowLeft, Camera, X } from 'lucide-react';
 import type { Mascota } from '@/types';
+import {
+  formatTelefono,
+  formatPeso,
+  isTelefonoValid,
+  isEmailValid,
+  isPesoValid,
+  TELEFONO_MAX_LENGTH,
+  TELEFONO_PLACEHOLDER,
+} from '@/lib/input-validators';
+import { cn } from '@/lib/utils';
 
 const especies: { value: Mascota['especie']; label: string }[] = [
   { value: 'perro', label: 'Perro' },
@@ -48,8 +58,34 @@ export default function NuevoExpedientePage() {
   const [mascotaNotas, setMascotaNotas] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [touched, setTouched] = useState({
+    telefono: false,
+    email: false,
+    peso: false,
+  });
 
-  const isValid = propNombre.trim() && propTelefono.trim() && mascotaNombre.trim() && mascotaRaza.trim() && mascotaFechaNac.trim();
+  const telefonoOk = isTelefonoValid(propTelefono);
+  const emailOk = isEmailValid(propEmail);
+  const pesoOk = isPesoValid(mascotaPeso);
+
+  const isValid =
+    propNombre.trim() &&
+    telefonoOk &&
+    emailOk &&
+    pesoOk &&
+    mascotaNombre.trim() &&
+    mascotaRaza.trim() &&
+    mascotaFechaNac.trim();
+
+  const telefonoError = touched.telefono && !telefonoOk
+    ? 'Ingrese 8 dígitos (ej: 7777-0000)'
+    : null;
+  const emailError = touched.email && !emailOk
+    ? 'Ingrese un correo válido (ej: correo@ejemplo.com)'
+    : null;
+  const pesoError = touched.peso && !pesoOk
+    ? 'El peso no puede ser negativo'
+    : null;
 
   const subirFotoMascota = async (): Promise<string | undefined> => {
     if (!fotoFile) return undefined;
@@ -76,6 +112,7 @@ export default function NuevoExpedientePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setTouched({ telefono: true, email: true, peso: true });
     if (!isValid) return;
     setError(null);
 
@@ -153,23 +190,39 @@ export default function NuevoExpedientePage() {
                 <Label htmlFor="propTelefono">Teléfono *</Label>
                 <Input
                   id="propTelefono"
-                  placeholder="7777-0000"
+                  type="tel"
+                  inputMode="numeric"
+                  autoComplete="tel"
+                  placeholder={TELEFONO_PLACEHOLDER}
+                  maxLength={TELEFONO_MAX_LENGTH}
                   value={propTelefono}
-                  onChange={(e) => setPropTelefono(e.target.value)}
-                  className="mt-1"
+                  onChange={(e) => setPropTelefono(formatTelefono(e.target.value))}
+                  onBlur={() => setTouched(t => ({ ...t, telefono: true }))}
+                  className={cn('mt-1', telefonoError && 'border-red-500 focus-visible:ring-red-500')}
+                  aria-invalid={!!telefonoError}
                   required
                 />
+                {telefonoError && (
+                  <p className="mt-1 text-xs text-red-600">{telefonoError}</p>
+                )}
               </div>
               <div>
                 <Label htmlFor="propEmail">Correo electrónico</Label>
                 <Input
                   id="propEmail"
                   type="email"
+                  inputMode="email"
+                  autoComplete="email"
                   placeholder="correo@ejemplo.com"
                   value={propEmail}
                   onChange={(e) => setPropEmail(e.target.value)}
-                  className="mt-1"
+                  onBlur={() => setTouched(t => ({ ...t, email: true }))}
+                  className={cn('mt-1', emailError && 'border-red-500 focus-visible:ring-red-500')}
+                  aria-invalid={!!emailError}
                 />
+                {emailError && (
+                  <p className="mt-1 text-xs text-red-600">{emailError}</p>
+                )}
               </div>
               <div>
                 <Label htmlFor="propDireccion">Dirección</Label>
@@ -271,13 +324,23 @@ export default function NuevoExpedientePage() {
                   <Label htmlFor="mascotaPeso">Peso (kg)</Label>
                   <Input
                     id="mascotaPeso"
-                    type="number"
-                    step="0.1"
+                    type="text"
+                    inputMode="decimal"
                     placeholder="0.0"
                     value={mascotaPeso}
-                    onChange={(e) => setMascotaPeso(e.target.value)}
-                    className="mt-1"
+                    onChange={(e) => setMascotaPeso(formatPeso(e.target.value))}
+                    onKeyDown={(e) => {
+                      if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E') {
+                        e.preventDefault();
+                      }
+                    }}
+                    onBlur={() => setTouched(t => ({ ...t, peso: true }))}
+                    className={cn('mt-1', pesoError && 'border-red-500 focus-visible:ring-red-500')}
+                    aria-invalid={!!pesoError}
                   />
+                  {pesoError && (
+                    <p className="mt-1 text-xs text-red-600">{pesoError}</p>
+                  )}
                 </div>
                 <div>
                   <Label>Foto</Label>
