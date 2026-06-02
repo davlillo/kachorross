@@ -76,7 +76,7 @@ export function imprimirTratamiento(tratamiento: string, logoUrl?: string) {
     .print-ka-container .info .contacts { font-size: 12px; color: #6b7280; display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 4px; }
     .print-ka-container .info .contacts span { display: inline-flex; align-items: center; gap: 4px; }
     .print-ka-container .separator { height: 2px; background: #5A1846; }
-    .print-ka-container .content { flex: 1; padding: 24px; font-size: 14px; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word; color: #374151; }
+    .print-ka-container .content { flex: 1; padding: 24px; font-size: 20px; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word; color: #374151; }
     .print-ka-container .footer-sep { height: 1px; background: #5A1846; margin-bottom: 4px; }
     .print-ka-container .address { text-align: center; font-size: 10px; color: #1f2937; font-weight: 500; padding: 4px 0 8px; }
     .print-ka-container .social { background: #5A1846; color: #fff; padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 10px; }
