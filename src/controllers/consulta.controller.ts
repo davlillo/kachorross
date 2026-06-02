@@ -48,6 +48,7 @@ export class ConsultaController {
   private mapProducto(row: DetalleRow['catalogo'], fallbackName?: string | null): Producto {
     return {
       id: row?.id ?? '',
+      veterinariaId: '',
       codigo: row?.codigo ?? 'MANUAL',
       nombre: row?.nombre ?? fallbackName ?? 'Item sin catálogo',
       descripcion: row?.descripcion ?? '',

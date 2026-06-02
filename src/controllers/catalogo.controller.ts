@@ -6,6 +6,7 @@ let instance: CatalogoController | null = null
 
 type CatalogoRow = {
   id: string
+  veterinaria_id: string
   codigo: string
   nombre: string
   descripcion: string | null
@@ -23,6 +24,7 @@ export class CatalogoController {
   private mapRow(row: CatalogoRow): Producto {
     return {
       id: row.id,
+      veterinariaId: row.veterinaria_id,
       codigo: row.codigo,
       nombre: row.nombre,
       descripcion: row.descripcion ?? '',

@@ -52,6 +52,7 @@ export class MascotaController {
   private mapDetalle(row: any): DetalleConsulta {
     const producto: Producto = {
       id: row.catalogo?.id ?? '',
+      veterinariaId: '',
       codigo: row.catalogo?.codigo ?? 'MANUAL',
       nombre: row.catalogo?.nombre ?? row.nombre_personalizado ?? 'Item sin catálogo',
       descripcion: row.catalogo?.descripcion ?? '',

@@ -21,7 +21,7 @@ import {
   Stethoscope, Syringe, Camera, FileText, Plus, ArrowLeft,
   Pencil, Trash2, AlertTriangle, Filter, X, CalendarDays,
 } from 'lucide-react';
-import type { Mascota } from '@/types';
+import type { Expediente, Mascota } from '@/types';
 
 const especies: { value: Mascota['especie']; label: string }[] = [
   { value: 'perro', label: 'Perro' },
@@ -40,7 +40,7 @@ export default function ExpedienteDetailPage() {
 
   // ── Datos reactivos desde el controller ─────────────────────────────────────
   const [refresh, setRefresh] = useState(0);
-  const [expediente, setExpediente] = useState<any | undefined>(undefined);
+  const [expediente, setExpediente] = useState<Expediente | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const mascota    = expediente?.mascota;
