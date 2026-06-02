@@ -13,6 +13,11 @@ import {
 import type { Consulta, Mascota } from '@/types'
 import { useAuth } from '@/context/AuthContext'
 import { imprimirTratamiento } from '@/lib/printTratamiento'
+import { generarPdfTratamiento } from '@/lib/pdfTratamiento'
+import { EmailController } from '@/controllers/email.controller'
+import { toast } from 'sonner'
+
+const emailCtrl = EmailController.getInstance()
 
 interface DetailRecepcionDialogProps {
   open: boolean
@@ -44,9 +49,48 @@ export function DetailRecepcionDialog({
   const handleTerminado = () => {
     if (!consulta) return
     if (!confirmando) { setConfirmando(true); return }
+
+    const ownerEmail = mascota?.propietario.email
+    const pdfPromise = ownerEmail && veterinaria
+      ? generarPdfTratamiento(consulta.tratamiento, veterinaria.logoUrl)
+      : null
+
     onTerminado?.(consulta.id)
     setConfirmando(false)
     onOpenChange(false)
+
+    if (pdfPromise && ownerEmail && veterinaria) {
+      pdfPromise.then(pdfBase64 =>
+        emailCtrl.enviarTratamientoEmail({
+          veterinariaId: veterinaria.id,
+          veterinariaNombre: veterinaria.nombre,
+          veterinariaTelefono: veterinaria.telefono,
+          veterinariaDireccion: veterinaria.direccion,
+          propietarioEmail: ownerEmail,
+          propietarioNombre: mascota!.propietario.nombre,
+          mascotaNombre: mascota!.nombre,
+          fecha: consulta!.fecha,
+          pdfBase64,
+        })
+      ).then(r => {
+        if (r.ok) {
+          toast.success('Tratamiento enviado al correo del propietario')
+        } else {
+          const msg = r.error?.includes('non-2xx')
+            ? 'La función de correo no está disponible. Despliega la Edge Function send-email en Supabase.'
+            : 'Puede configurar SMTP en Configuración.'
+          toast.warning('No se pudo enviar el tratamiento por correo', {
+            description: msg,
+          })
+        }
+      }).catch(() => {
+        toast.error('Error al generar el PDF del tratamiento')
+      })
+    } else if (!ownerEmail) {
+      toast.info('El propietario no tiene correo registrado', {
+        description: 'Para enviarle el tratamiento electrónico, registre su correo en la ficha del paciente.',
+      })
+    }
   }
 
   return (

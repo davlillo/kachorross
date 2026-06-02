@@ -41,6 +41,7 @@ export function ProductFormDialog({ open, onOpenChange, onSave, initialData, mod
 
   const handleSave = () => {
     onSave({
+      veterinariaId: '',
       codigo:      form.codigo,
       nombre:      form.nombre,
       descripcion: form.descripcion,

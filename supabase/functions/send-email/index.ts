@@ -5,12 +5,20 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+interface Attachment {
+  filename: string
+  content: string
+  contentType?: string
+}
+
 interface SendEmailPayload {
   veterinariaId?: string
   to: string
   subject: string
-  html: string
+  text?: string
+  html?: string
   useSystemConfig?: boolean
+  attachment?: Attachment
 }
 
 Deno.serve(async (req) => {
@@ -44,15 +52,15 @@ Deno.serve(async (req) => {
       .eq('id', caller.id)
       .maybeSingle()
 
-    if (!callerPerfil || (callerPerfil.rol !== 'admin' && callerPerfil.rol !== 'super_admin')) {
+    if (!callerPerfil || (callerPerfil.rol !== 'admin' && callerPerfil.rol !== 'super_admin' && callerPerfil.rol !== 'recepcion')) {
       return new Response(JSON.stringify({ error: 'Sin permisos de administrador' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    const { veterinariaId, to, subject, html, useSystemConfig }: SendEmailPayload = await req.json()
-    if (!to || !subject || !html) {
+    const { veterinariaId, to, subject, text, html, useSystemConfig, attachment }: SendEmailPayload = await req.json()
+    if (!to || !subject || (!text && !html)) {
       return new Response(JSON.stringify({ error: 'Payload incompleto' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -116,12 +124,25 @@ Deno.serve(async (req) => {
       auth: { user: smtpUser, pass: smtpPass },
     })
 
-    await transporter.sendMail({
+    const mailOptions: any = {
       from: `"${fromName}" <${fromEmail}>`,
       to,
       subject,
-      html,
-    })
+    }
+
+    if (text) mailOptions.text = text
+    if (html) mailOptions.html = html
+
+    if (attachment) {
+      mailOptions.attachments = [{
+        filename: attachment.filename,
+        content: attachment.content,
+        encoding: 'base64',
+        contentType: attachment.contentType || 'application/pdf',
+      }]
+    }
+
+    await transporter.sendMail(mailOptions)
 
     await admin.from('notificaciones').insert({
       veterinaria_id: logVetId,

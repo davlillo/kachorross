@@ -8,7 +8,6 @@ import type { MonitorSalida } from '@/types'
 interface MonitorCardProps {
   item: MonitorSalida
   onVerDetalle: (consultaId: string) => void
-  onMarcarTerminado?: (consultaId: string) => void
   consultaTerminada: string | null
 }
 
@@ -28,7 +27,7 @@ function tiempoTranscurrido(hora: string) {
   return `Hace ${horas}h ${minutos % 60}m`
 }
 
-export function MonitorCard({ item, onVerDetalle, onMarcarTerminado, consultaTerminada }: MonitorCardProps) {
+export function MonitorCard({ item, onVerDetalle, consultaTerminada }: MonitorCardProps) {
   const config = estadoConfig[item.estado]
 
   return (

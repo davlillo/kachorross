@@ -10,7 +10,7 @@ import { Label } from '@/components/atoms/ui/label';
 import { Separator } from '@/components/atoms/ui/separator';
 import {
   Settings, Upload, Building, Mail, Phone, MapPin, Loader2, PawPrint,
-  Key, Save, Send, AlertTriangle, Info, Eye, EyeOff, HelpCircle, CheckCircle2,
+  Key, Save, Send, Info, Eye, EyeOff, HelpCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
