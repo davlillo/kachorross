@@ -240,50 +240,57 @@ export default function NuevaConsultaPage() {
 
               <TratamientoHoja value={tratamiento} onChange={setTratamiento} />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-                <div>
-                  <Label htmlFor="notas">Notas Adicionales</Label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:items-stretch">
+                <div className="flex flex-col">
+                  <Label htmlFor="notas" className="min-h-5 flex items-center">
+                    Notas Adicionales
+                  </Label>
                   <Textarea
                     id="notas"
                     placeholder="Notas internas, recomendaciones, etc..."
                     value={notas}
                     onChange={(e) => setNotas(e.target.value)}
-                    className="mt-1 min-h-[100px] resize-none"
+                    className="mt-1 min-h-[120px] flex-1 resize-none md:min-h-0"
                   />
                 </div>
 
-                <div className="rounded-xl border border-purpura-100 bg-purpura-50/40 p-4">
-                  <Label className="flex items-center gap-2 text-purpura-800">
-                    <Calendar className="w-4 h-4 text-purpura-500" />
+                <div className="flex flex-col">
+                  <Label className="min-h-5 flex items-center gap-2 text-purpura-800">
+                    <Calendar className="w-4 h-4 shrink-0 text-purpura-500" />
                     Próximo control
                     <span className="text-xs font-normal text-muted-foreground">(opcional)</span>
                   </Label>
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    <div>
-                      <Label htmlFor="proximaCita" className="text-[11px] text-muted-foreground">Fecha</Label>
-                      <Input
-                        id="proximaCita"
-                        type="date"
-                        value={proximaCita}
-                        onChange={(e) => setProximaCita(e.target.value)}
-                        className="mt-0.5 bg-white"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="proximaCitaHora" className="text-[11px] text-muted-foreground flex items-center gap-1">
-                        <Clock className="w-3 h-3" /> Hora
-                      </Label>
-                      <TimeClockPicker
-                        id="proximaCitaHora"
-                        value={proximaCitaHora}
-                        onChange={setProximaCitaHora}
-                        disabled={!proximaCita}
-                      />
+                  <div className="mt-1 flex min-h-[120px] flex-1 flex-col rounded-xl border border-purpura-100 bg-purpura-50/40 p-4 md:min-h-0">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label htmlFor="proximaCita" className="text-[11px] text-muted-foreground">
+                          Fecha
+                        </Label>
+                        <Input
+                          id="proximaCita"
+                          type="date"
+                          value={proximaCita}
+                          onChange={(e) => setProximaCita(e.target.value)}
+                          className="mt-0.5 h-10 bg-white"
+                        />
+                      </div>
+                      <div>
+                        <Label
+                          htmlFor="proximaCitaHora"
+                          className="text-[11px] text-muted-foreground flex items-center gap-1"
+                        >
+                          <Clock className="w-3 h-3" /> Hora
+                        </Label>
+                        <TimeClockPicker
+                          id="proximaCitaHora"
+                          value={proximaCitaHora}
+                          onChange={setProximaCitaHora}
+                          disabled={!proximaCita}
+                          className="mt-0.5"
+                        />
+                      </div>
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                    Aparece en la agenda a la hora elegida. Si la cita es <strong>mañana</strong>, al terminar la consulta en recepción se envía el recordatorio por correo (además del tratamiento).
-                  </p>
                 </div>
               </div>
             </CardContent>
