@@ -19,6 +19,7 @@ interface SendEmailPayload {
   html?: string
   useSystemConfig?: boolean
   attachment?: Attachment
+  tipoNotificacion?: 'recordatorio' | 'confirmacion' | 'personalizado' | 'receta' | 'invitacion'
 }
 
 Deno.serve(async (req) => {
@@ -59,7 +60,8 @@ Deno.serve(async (req) => {
       })
     }
 
-    const { veterinariaId, to, subject, text, html, useSystemConfig, attachment }: SendEmailPayload = await req.json()
+    const { veterinariaId, to, subject, text, html, useSystemConfig, attachment, tipoNotificacion }: SendEmailPayload = await req.json()
+    const tipoLog = tipoNotificacion ?? 'personalizado'
     if (!to || !subject || (!text && !html)) {
       return new Response(JSON.stringify({ error: 'Payload incompleto' }), {
         status: 400,
@@ -147,7 +149,7 @@ Deno.serve(async (req) => {
     await admin.from('notificaciones').insert({
       veterinaria_id: logVetId,
       destinatario_email: to,
-      tipo_notificacion: 'personalizado',
+      tipo_notificacion: tipoLog,
       estado: 'enviado',
       fecha_envio: new Date().toISOString(),
     })
