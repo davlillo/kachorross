@@ -264,19 +264,11 @@ Deno.serve(async (req) => {
     }
 
     const vetId = veterinaria_id || callerPerfil.veterinaria_id
+    let recoveryLink: string | undefined
 
-    if (redirectTo && vetId) {
+    if (redirectTo) {
       try {
-        const { data: vetData } = await admin
-          .from('veterinarias')
-          .select('nombre, logo_url')
-          .eq('id', vetId)
-          .maybeSingle()
-
-        const vetNombre = vetData?.nombre || 'Veterinaria'
-        const vetLogo = vetData?.logo_url || ''
-
-        const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+        const { data: linkData } = await admin.auth.admin.generateLink({
           type: 'recovery',
           email,
           options: {
@@ -284,67 +276,120 @@ Deno.serve(async (req) => {
           },
         })
 
-        if (!linkError && linkData?.properties?.action_link) {
-          const sendEmailUrl = `${supabaseUrl}/functions/v1/send-email`
+        if (linkData?.properties?.action_link) {
+          recoveryLink = linkData.properties.action_link
           const avatarImg = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(nombre)}`
-          const invitationHtml = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #f9fafb; border-radius: 12px;">
-              <div style="text-align: center; margin-bottom: 24px;">
-                ${vetLogo ? `<img src="${vetLogo}" alt="${vetNombre}" style="max-height: 60px; margin-bottom: 12px;" />` : ''}
-                <h1 style="color: #7c3aed; font-size: 24px; margin: 0;">${vetNombre}</h1>
-              </div>
-              <div style="background: white; padding: 32px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                <div style="text-align: center; margin-bottom: 20px;">
-                  <img src="${avatarImg}" alt="${nombre}" style="width: 64px; height: 64px; border-radius: 50%; border: 3px solid #7c3aed;" />
-                </div>
-                <h2 style="color: #1f2937; font-size: 20px; margin: 0 0 16px 0; text-align: center;">Has sido invitado</h2>
-                <p style="color: #4b5563; font-size: 14px; line-height: 1.6; text-align: center;">Hola <strong>${nombre}</strong>,</p>
-                <p style="color: #4b5563; font-size: 14px; line-height: 1.6; text-align: center;">
-                  Has sido invitado al sistema de <strong>${vetNombre}</strong> con el rol de <strong>${rol}</strong>.
-                </p>
-                <p style="color: #4b5563; font-size: 14px; line-height: 1.6; text-align: center;">
-                  Para comenzar, haz clic en el botón de abajo y establece tu contraseña:
-                </p>
-                <div style="text-align: center; margin: 32px 0;">
-                  <a href="${linkData.properties.action_link}"
-                     style="display: inline-block; background: #7c3aed; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-size: 16px; font-weight: 600;">
-                    Establecer mi contraseña
-                  </a>
-                </div>
-                <p style="color: #9ca3af; font-size: 12px; line-height: 1.6; text-align: center;">
-                  ⏰ Este enlace expirará en <strong>24 horas</strong>. Si no lo usas a tiempo, pídele al administrador que te reenvíe la invitación.
-                </p>
-                <p style="color: #9ca3af; font-size: 12px; line-height: 1.6; text-align: center;">
-                  Si no esperabas esta invitación, puedes ignorar este correo.
-                </p>
-              </div>
-              <div style="text-align: center; margin-top: 16px;">
-                <p style="color: #9ca3af; font-size: 12px;">&copy; 2026 ${vetNombre}. Todos los derechos reservados.</p>
-              </div>
-            </div>
-          `
+          const sendEmailUrl = `${supabaseUrl}/functions/v1/send-email`
 
-          await fetch(sendEmailUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': authHeader,
-            },
-            body: JSON.stringify({
-              veterinariaId: vetId,
-              to: email,
-              subject: `Has sido invitado a ${vetNombre}`,
-              html: invitationHtml,
-            }),
-          })
+          if (vetId) {
+            const { data: vetData } = await admin
+              .from('veterinarias')
+              .select('nombre, logo_url')
+              .eq('id', vetId)
+              .maybeSingle()
+
+            const vetNombre = vetData?.nombre || 'Veterinaria'
+            const vetLogo = vetData?.logo_url || ''
+
+            const invitationHtml = `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #f9fafb; border-radius: 12px;">
+                <div style="text-align: center; margin-bottom: 24px;">
+                  ${vetLogo ? `<img src="${vetLogo}" alt="${vetNombre}" style="max-height: 60px; margin-bottom: 12px;" />` : ''}
+                  <h1 style="color: #7c3aed; font-size: 24px; margin: 0;">${vetNombre}</h1>
+                </div>
+                <div style="background: white; padding: 32px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                  <div style="text-align: center; margin-bottom: 20px;">
+                    <img src="${avatarImg}" alt="${nombre}" style="width: 64px; height: 64px; border-radius: 50%; border: 3px solid #7c3aed;" />
+                  </div>
+                  <h2 style="color: #1f2937; font-size: 20px; margin: 0 0 16px 0; text-align: center;">Has sido invitado</h2>
+                  <p style="color: #4b5563; font-size: 14px; line-height: 1.6; text-align: center;">Hola <strong>${nombre}</strong>,</p>
+                  <p style="color: #4b5563; font-size: 14px; line-height: 1.6; text-align: center;">
+                    Has sido invitado al sistema de <strong>${vetNombre}</strong> con el rol de <strong>${rol}</strong>.
+                  </p>
+                  <p style="color: #4b5563; font-size: 14px; line-height: 1.6; text-align: center;">
+                    Para comenzar, haz clic en el botón de abajo y establece tu contraseña:
+                  </p>
+                  <div style="text-align: center; margin: 32px 0;">
+                    <a href="${recoveryLink}"
+                       style="display: inline-block; background: #7c3aed; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-size: 16px; font-weight: 600;">
+                      Establecer mi contraseña
+                    </a>
+                  </div>
+                  <p style="color: #9ca3af; font-size: 12px; line-height: 1.6; text-align: center;">
+                    ⏰ Este enlace expirará en <strong>24 horas</strong>.
+                  </p>
+                  <p style="color: #9ca3af; font-size: 12px; line-height: 1.6; text-align: center;">
+                    Si no esperabas esta invitación, puedes ignorar este correo.
+                  </p>
+                </div>
+                <div style="text-align: center; margin-top: 16px;">
+                  <p style="color: #9ca3af; font-size: 12px;">&copy; 2026 ${vetNombre}. Todos los derechos reservados.</p>
+                </div>
+              </div>
+            `
+
+            await fetch(sendEmailUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
+              body: JSON.stringify({
+                veterinariaId: vetId,
+                to: email,
+                subject: `Has sido invitado a ${vetNombre}`,
+                html: invitationHtml,
+              }),
+            })
+          } else {
+            const invitationHtml = `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #f9fafb; border-radius: 12px;">
+                <div style="text-align: center; margin-bottom: 24px;">
+                  <h1 style="color: #7c3aed; font-size: 24px; margin: 0;">Sistema Veterinario</h1>
+                </div>
+                <div style="background: white; padding: 32px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                  <div style="text-align: center; margin-bottom: 20px;">
+                    <img src="${avatarImg}" alt="${nombre}" style="width: 64px; height: 64px; border-radius: 50%; border: 3px solid #7c3aed;" />
+                  </div>
+                  <h2 style="color: #1f2937; font-size: 20px; margin: 0 0 16px 0; text-align: center;">Has sido invitado</h2>
+                  <p style="color: #4b5563; font-size: 14px; line-height: 1.6; text-align: center;">Hola <strong>${nombre}</strong>,</p>
+                  <p style="color: #4b5563; font-size: 14px; line-height: 1.6; text-align: center;">
+                    Has sido invitado al sistema con el rol de <strong>${rol}</strong>.
+                  </p>
+                  <p style="color: #4b5563; font-size: 14px; line-height: 1.6; text-align: center;">
+                    Para comenzar, haz clic en el botón de abajo y establece tu contraseña:
+                  </p>
+                  <div style="text-align: center; margin: 32px 0;">
+                    <a href="${recoveryLink}"
+                       style="display: inline-block; background: #7c3aed; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-size: 16px; font-weight: 600;">
+                      Establecer mi contraseña
+                    </a>
+                  </div>
+                  <p style="color: #9ca3af; font-size: 12px; line-height: 1.6; text-align: center;">
+                    ⏰ Este enlace expirará en <strong>24 horas</strong>.
+                  </p>
+                </div>
+                <div style="text-align: center; margin-top: 16px;">
+                  <p style="color: #9ca3af; font-size: 12px;">&copy; 2026 Sistema Veterinario. Todos los derechos reservados.</p>
+                </div>
+              </div>
+            `
+
+            await fetch(sendEmailUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
+              body: JSON.stringify({
+                to: email,
+                subject: 'Has sido invitado al Sistema Veterinario',
+                html: invitationHtml,
+                useSystemConfig: true,
+              }),
+            })
+          }
         }
       } catch {
-        // Si falla el envío de email, no bloqueamos la creación del usuario
         console.error('Error al enviar email de invitación')
       }
     }
 
-    return new Response(JSON.stringify({ ok: true, perfil }), {
+    return new Response(JSON.stringify({ ok: true, perfil, recoveryLink }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

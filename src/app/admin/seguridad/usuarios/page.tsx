@@ -91,6 +91,7 @@ export default function SeguridadUsuariosPage() {
 
       await cargar();
       setShowForm(false);
+      toast.success(editTarget ? 'Usuario actualizado' : 'Cuenta creada. Se envió un correo de invitación.');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No se pudo guardar la cuenta.');
     } finally {

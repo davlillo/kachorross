@@ -201,7 +201,7 @@ export class AuthController {
     return (data ?? []).map(row => this.mapPerfil(row))
   }
 
-  async crearUsuario(data: Omit<Perfil, 'id'>): Promise<Perfil> {
+  async crearUsuario(data: Omit<Perfil, 'id'>): Promise<{ perfil: Perfil; recoveryLink?: string }> {
     const currentUser = await this.resolveUser()
     let vetId = data.veterinariaId;
     if (currentUser?.rol === 'admin') {
@@ -232,8 +232,13 @@ export class AuthController {
       throw new Error('Respuesta inválida de admin-create-user.')
     }
 
-    const perfil = (fnData as { perfil: any }).perfil
-    return this.mapPerfil(perfil)
+    const responseData = fnData as { perfil: any; recoveryLink?: string }
+    const perfil = this.mapPerfil(responseData.perfil)
+
+    return {
+      perfil,
+      recoveryLink: responseData.recoveryLink,
+    }
   }
 
   async actualizarUsuario(id: string, data: Partial<Omit<Perfil, 'id'>>): Promise<Perfil | null> {

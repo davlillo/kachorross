@@ -1,4 +1,5 @@
 import { supabase } from '@/supabase/client'
+import { AgendaController } from './agenda.controller'
 import type { Consulta, DetalleConsulta, MonitorSalida, Producto } from '@/types'
 import { normalizeCategoria } from '@/lib/catalogo-categorias'
 import { MascotaController } from './mascota.controller'
@@ -49,6 +50,7 @@ export class ConsultaController {
   private mapProducto(row: DetalleRow['catalogo'], fallbackName?: string | null): Producto {
     return {
       id: row?.id ?? '',
+      veterinariaId: '',
       codigo: row?.codigo ?? 'MANUAL',
       nombre: row?.nombre ?? fallbackName ?? 'Item sin catálogo',
       descripcion: row?.descripcion ?? '',
@@ -158,6 +160,15 @@ export class ConsultaController {
     const currentUser = await auth.resolveUser()
     if (!currentUser?.veterinariaId) throw new Error('No hay veterinaria activa')
 
+    let proxima_cita: string | null = null
+    if (data.proximaCita) {
+      const hora = data.proximaCitaHora || '09:00'
+      const agenda = AgendaController.getInstance()
+      const { conflicto, detalle } = await agenda.verificarConflicto(data.proximaCita, hora)
+      if (conflicto) throw new Error(detalle ?? 'Ese horario ya está ocupado')
+      proxima_cita = new Date(`${data.proximaCita}T${hora}:00`).toISOString()
+    }
+
     const payload = {
       veterinaria_id: currentUser.veterinariaId,
       mascota_id: data.mascotaId || '',
@@ -168,7 +179,7 @@ export class ConsultaController {
       notas: data.notas || null,
       estado: 'pendiente',
       total: data.total || 0,
-      proxima_cita: data.proximaCita || null,
+      proxima_cita,
     }
 
     const { data: inserted, error } = await supabase
@@ -226,7 +237,7 @@ export class ConsultaController {
         return {
           consultaId: c.id,
           mascota,
-          horaTermino: new Date(Date.now() - (i + 1) * 15 * 60000).toISOString(),
+          horaTermino: c.fecha,
           total: c.total,
           estado: (i === 2 ? 'pagando' : 'listo') as MonitorSalida['estado'],
         }

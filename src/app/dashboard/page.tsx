@@ -2,16 +2,20 @@ import { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { MascotaController } from '@/controllers/mascota.controller';
 import { ConsultaController } from '@/controllers/consulta.controller';
+import { compararEventosAgenda } from '@/controllers/agenda.controller';
+import { useAgenda } from '@/hooks/useAgenda';
 import {
   colorEvento,
-  type Evento, type TipoEvento
+  type TipoEvento
 } from '@/data/eventosData';
+import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/atoms/ui/card';
 import { Badge } from '@/components/atoms/ui/badge';
 import { Button } from '@/components/atoms/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/atoms/ui/dialog';
 import { Input } from '@/components/atoms/ui/input';
 import { Label } from '@/components/atoms/ui/label';
+import { TimeClockPicker } from '@/components/molecules/TimeClockPicker';
 import { Textarea } from '@/components/atoms/ui/textarea';
 import {
   BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -20,7 +24,7 @@ import {
 import {
   Users, Calendar, Stethoscope, PawPrint,
   ArrowRight, Activity, ChevronLeft, ChevronRight,
-  Plus, X, Syringe, Scissors, AlertTriangle, DollarSign, FileText,
+  Plus, X, Syringe, Bug, AlertTriangle, DollarSign, FileText,
   TrendingUp, Banknote, HeartPulse, Clock
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -34,25 +38,23 @@ import { fechaLocalClave, hoyLocalClave } from '@/lib/utils';
 
 // ── Leyenda colores calendario ────────────────────────────────────────────────
 const tiposEvento: { tipo: TipoEvento; icon: React.ElementType }[] = [
-  { tipo: 'cita',     icon: Stethoscope },
-  { tipo: 'control',  icon: Activity },
-  { tipo: 'vacuna',   icon: Syringe },
-  { tipo: 'cirugia',  icon: Scissors },
-  { tipo: 'urgencia', icon: AlertTriangle },
+  { tipo: 'control',        icon: Activity },
+  { tipo: 'vacuna',         icon: Syringe },
+  { tipo: 'desparasitante', icon: Bug },
+  { tipo: 'urgencia',       icon: AlertTriangle },
 ];
 
 // ── Formulario nuevo evento ────────────────────────────────────────────────────
 interface FormEvento {
   titulo: string;
   hora: string;
-  mascota: string;
-  propietario: string;
+  mascotaId: string;
   tipo: TipoEvento;
   notas: string;
 }
 
 const formVacio: FormEvento = {
-  titulo: '', hora: '09:00', mascota: '', propietario: '', tipo: 'cita', notas: ''
+  titulo: '', hora: '09:00', mascotaId: '', tipo: 'control', notas: ''
 };
 
 // ── Componente principal ───────────────────────────────────────────────────────
@@ -94,40 +96,13 @@ export default function DashboardPage() {
   // ── Calendario ──────────────────────────────────────────────────────────────
   const [mesActual, setMesActual] = useState(new Date());
   const [diaSeleccionado, setDiaSeleccionado] = useState<Date | null>(new Date());
-  const [eventos, setEventos] = useState<Evento[]>([]);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [formEvento, setFormEvento] = useState<FormEvento>(formVacio);
+  const [guardandoEvento, setGuardandoEvento] = useState(false);
+  const { eventos, isLoading: agendaLoading, crearEvento, eliminarEvento } = useAgenda(mesActual);
 
   // ── Gráficas ────────────────────────────────────────────────────────────────
   const [periodoGrafica, setPeriodoGrafica] = useState<'semana' | 'mes'>('semana');
-
-  const inferirTipoEvento = (consulta: Consulta): TipoEvento => {
-    const base = `${consulta.motivo} ${consulta.diagnostico} ${consulta.tratamiento}`.toLowerCase();
-    if (base.includes('urgenc')) return 'urgencia';
-    if (base.includes('cirug')) return 'cirugia';
-    if (base.includes('vacun')) return 'vacuna';
-    if (base.includes('control')) return 'control';
-    return 'cita';
-  };
-
-  useEffect(() => {
-    const mascotasMap = new Map(mascotas.map(m => [m.id, m]));
-    const eventosDb: Evento[] = consultas.map(c => {
-      const mascota = mascotasMap.get(c.mascotaId);
-      const fecha = new Date(c.fecha);
-      return {
-        id: c.id,
-        fecha: format(fecha, 'yyyy-MM-dd'),
-        hora: format(fecha, 'HH:mm'),
-        titulo: c.motivo || 'Consulta',
-        mascota: mascota?.nombre ?? 'Mascota',
-        propietario: mascota?.propietario?.nombre ?? 'Propietario',
-        tipo: inferirTipoEvento(c),
-        notas: c.notas,
-      };
-    });
-    setEventos(eventosDb);
-  }, [consultas, mascotas]);
 
   const datosGrafica = useMemo(() => {
     if (periodoGrafica === 'semana') {
@@ -232,7 +207,7 @@ export default function DashboardPage() {
   }, [mesActual]);
 
   const eventosPorFecha = useMemo(() => {
-    const mapa: Record<string, Evento[]> = {};
+    const mapa: Record<string, typeof eventos> = {};
     eventos.forEach(ev => {
       if (!mapa[ev.fecha]) mapa[ev.fecha] = [];
       mapa[ev.fecha].push(ev);
@@ -243,7 +218,7 @@ export default function DashboardPage() {
   const eventosDiaSeleccionado = useMemo(() => {
     if (!diaSeleccionado) return [];
     const key = format(diaSeleccionado, 'yyyy-MM-dd');
-    return (eventosPorFecha[key] ?? []).sort((a, b) => a.hora.localeCompare(b.hora));
+    return [...(eventosPorFecha[key] ?? [])].sort(compararEventosAgenda);
   }, [diaSeleccionado, eventosPorFecha]);
 
   const primerDiaSemana = useMemo(() => {
@@ -251,19 +226,43 @@ export default function DashboardPage() {
     return dia === 0 ? 6 : dia - 1;
   }, [mesActual]);
 
-  const agregarEvento = () => {
-    if (!diaSeleccionado || !formEvento.titulo.trim()) return;
-    const nuevo: Evento = {
-      id: `ev-${Date.now()}`,
-      fecha: format(diaSeleccionado, 'yyyy-MM-dd'),
-      ...formEvento,
-    };
-    setEventos(prev => [...prev, nuevo]);
-    setFormEvento(formVacio);
-    setMostrarForm(false);
+  const agregarEvento = async () => {
+    if (!diaSeleccionado || !formEvento.titulo.trim() || !formEvento.mascotaId) {
+      toast.error('Complete título y mascota');
+      return;
+    }
+    setGuardandoEvento(true);
+    try {
+      await crearEvento({
+        mascotaId: formEvento.mascotaId,
+        titulo: formEvento.titulo.trim(),
+        tipo: formEvento.tipo,
+        fecha: format(diaSeleccionado, 'yyyy-MM-dd'),
+        hora: formEvento.hora,
+        notas: formEvento.notas || undefined,
+      });
+      setFormEvento(formVacio);
+      setMostrarForm(false);
+      toast.success('Evento registrado en la agenda');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'No se pudo guardar el evento');
+    } finally {
+      setGuardandoEvento(false);
+    }
   };
 
-  const eliminarEvento = (id: string) => setEventos(prev => prev.filter(e => e.id !== id));
+  const handleEliminarEvento = async (id: string, origen: string) => {
+    if (origen !== 'evento') {
+      toast.info('Este evento proviene de una consulta, vacuna o desparasitación y no se puede eliminar aquí');
+      return;
+    }
+    try {
+      await eliminarEvento(id);
+      toast.success('Evento eliminado');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'No se pudo eliminar');
+    }
+  };
 
   // ── Totales para el ingreso acumulado ────────────────────────────────────────
   const datosConAcumulado = useMemo(() => {
@@ -503,28 +502,45 @@ export default function DashboardPage() {
                   {eventosDiaSeleccionado.length === 0 ? (
                     <div className="flex flex-col items-center gap-1.5 py-4 text-muted-foreground/40">
                       <Calendar className="w-7 h-7" />
-                      <p className="text-xs">Sin eventos</p>
+                      <p className="text-xs">{agendaLoading ? 'Cargando...' : 'Sin eventos programados'}</p>
                     </div>
                   ) : (
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       {eventosDiaSeleccionado.map(ev => {
                         const col = colorEvento[ev.tipo];
+                        const prefijo = `${col.label}: `;
+                        const nota = ev.titulo.startsWith(prefijo)
+                          ? ev.titulo.slice(prefijo.length)
+                          : ev.titulo;
+                        const mostrarNota = nota && nota !== 'Control de seguimiento';
                         return (
-                          <div key={ev.id} className={`flex items-start gap-2 p-2 rounded-xl ${col.bg} group`}>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <span className={`text-[10px] font-black ${col.text}`}>{ev.hora}</span>
-                                <span className={`text-[8px] px-1.5 py-0.5 rounded-full bg-white/50 ${col.text} font-bold`}>
-                                  {col.label}
-                                </span>
-                              </div>
-                              <p className={`text-xs font-semibold ${col.text} truncate`}>{ev.titulo}</p>
-                              <p className="text-[10px] text-muted-foreground truncate">{ev.mascota} · {ev.propietario}</p>
+                          <div
+                            key={ev.id}
+                            className={`flex items-center gap-3 rounded-lg border border-border/70 bg-white shadow-sm border-l-[3px] ${col.border} px-3 py-2 group`}
+                          >
+                            <div className="shrink-0 min-w-[3.25rem] text-center flex flex-col justify-center">
+                              {ev.hora && (
+                                <p className="text-sm font-bold tabular-nums text-foreground leading-none">{ev.hora}</p>
+                              )}
+                              <p className={`text-[9px] font-semibold ${ev.hora ? 'mt-0.5' : ''} ${col.text}`}>{col.label}</p>
                             </div>
-                            <button onClick={() => eliminarEvento(ev.id)}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-red-500">
-                              <X className="w-3 h-3" />
-                            </button>
+
+                            <div className="flex-1 min-w-0 border-l border-border/50 pl-3">
+                              <p className="text-sm font-semibold text-foreground truncate">{ev.mascota}</p>
+                              <p className="text-xs text-muted-foreground truncate">{ev.propietario}</p>
+                              {mostrarNota && (
+                                <p className="text-[11px] text-muted-foreground/80 truncate mt-0.5">{nota}</p>
+                              )}
+                            </div>
+
+                            {ev.origen === 'evento' && (
+                              <button
+                                onClick={() => void handleEliminarEvento(ev.id, ev.origen)}
+                                className="shrink-0 self-center opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-red-500 p-1"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                           </div>
                         );
                       })}
@@ -555,10 +571,10 @@ export default function DashboardPage() {
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Label>Hora</Label>
-                <Input
-                  type="time"
+                <TimeClockPicker
                   value={formEvento.hora}
-                  onChange={(e) => setFormEvento(f => ({ ...f, hora: e.target.value }))}
+                  onChange={hora => setFormEvento(f => ({ ...f, hora }))}
+                  className="mt-1"
                 />
               </div>
               <div>
@@ -578,20 +594,24 @@ export default function DashboardPage() {
             </div>
             <div>
               <Label>Mascota</Label>
-              <Input
-                placeholder="Nombre de la mascota"
-                value={formEvento.mascota}
-                onChange={(e) => setFormEvento(f => ({ ...f, mascota: e.target.value }))}
-              />
+              <select
+                className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                value={formEvento.mascotaId}
+                onChange={(e) => setFormEvento(f => ({ ...f, mascotaId: e.target.value }))}
+              >
+                <option value="">Seleccionar mascota...</option>
+                {mascotas.map(m => (
+                  <option key={m.id} value={m.id}>
+                    {m.nombre} — {m.propietario?.nombre}
+                  </option>
+                ))}
+              </select>
             </div>
-            <div>
-              <Label>Propietario</Label>
-              <Input
-                placeholder="Nombre del propietario"
-                value={formEvento.propietario}
-                onChange={(e) => setFormEvento(f => ({ ...f, propietario: e.target.value }))}
-              />
-            </div>
+            {formEvento.mascotaId && (
+              <p className="text-xs text-muted-foreground">
+                Propietario: {mascotas.find(m => m.id === formEvento.mascotaId)?.propietario?.nombre}
+              </p>
+            )}
             <div>
               <Label>Notas</Label>
               <Textarea
@@ -600,6 +620,9 @@ export default function DashboardPage() {
                 onChange={(e) => setFormEvento(f => ({ ...f, notas: e.target.value }))}
               />
             </div>
+            <p className="text-xs text-muted-foreground">
+              No se puede agendar otra cita el mismo día a la misma hora.
+            </p>
           </div>
           <DialogFooter className="gap-2">
             <Button
@@ -611,8 +634,8 @@ export default function DashboardPage() {
             >
               Cancelar
             </Button>
-            <Button className="bg-purpura-500 hover:bg-purpura-600" onClick={agregarEvento}>
-              Guardar
+            <Button className="bg-purpura-500 hover:bg-purpura-600" onClick={() => void agregarEvento()} disabled={guardandoEvento}>
+              {guardandoEvento ? 'Guardando...' : 'Guardar'}
             </Button>
           </DialogFooter>
         </DialogContent>

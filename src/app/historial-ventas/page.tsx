@@ -5,15 +5,20 @@ import { Input } from '@/components/atoms/ui/input';
 import { PageHeader } from '@/components/molecules/PageHeader';
 import { ConsultaController } from '@/controllers/consulta.controller';
 import { MascotaController } from '@/controllers/mascota.controller';
-import { getCategoriaConfig, getCategoriaLabel } from '@/lib/catalogo-categorias';
+import type { Consulta, Mascota } from '@/types';
+import { getCategoriaConfig } from '@/lib/catalogo-categorias';
+import {
+  History, Search, TrendingUp, DollarSign,
+  Calendar, Receipt, ChevronRight, Stethoscope,
+} from 'lucide-react';
 
 export default function HistorialVentasPage() {
   const consultaCtrl = ConsultaController.getInstance();
   const mascotaCtrl = MascotaController.getInstance();
   const [busqueda, setBusqueda] = useState('');
   const [expandido, setExpandido] = useState<string | null>(null);
-  const [mascotas, setMascotas] = useState<any[]>([]);
-  const [todasLasConsultas, setTodasLasConsultas] = useState<any[]>([]);
+  const [mascotas, setMascotas] = useState<Mascota[]>([]);
+  const [todasLasConsultas, setTodasLasConsultas] = useState<Consulta[]>([]);
 
   useEffect(() => {
     const load = async () => {
@@ -22,15 +27,15 @@ export default function HistorialVentasPage() {
         mascotaCtrl.getAll(),
       ]);
       setMascotas(mascotasData);
-      setTodasLasConsultas(consultas.filter(c => c.estado === 'finalizado'));
+      setTodasLasConsultas(consultas.filter((c: Consulta) => c.estado === 'finalizado'));
     };
     void load();
   }, [consultaCtrl, mascotaCtrl]);
 
   const consultasFiltradas = useMemo(() => {
     const q = busqueda.toLowerCase();
-    return todasLasConsultas.filter(c => {
-      const mascota = mascotas.find(m => m.id === c.mascotaId);
+    return todasLasConsultas.filter((c: Consulta) => {
+      const mascota = mascotas.find((m: Mascota) => m.id === c.mascotaId);
       return (
         !q ||
         mascota?.nombre.toLowerCase().includes(q) ||
@@ -38,7 +43,7 @@ export default function HistorialVentasPage() {
         c.motivo.toLowerCase().includes(q) ||
         c.detalles.some(d => d.producto.codigo.toLowerCase().includes(q) || d.producto.nombre.toLowerCase().includes(q))
       );
-    }).sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+    }).sort((a: Consulta, b: Consulta) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
   }, [busqueda]);
 
   const totalIngresos = consultasFiltradas.reduce((acc, c) => acc + c.total, 0);

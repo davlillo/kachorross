@@ -1,6 +1,7 @@
 import { supabase } from '@/supabase/client'
 import type {
   Consulta,
+  Desparasitacion,
   DetalleConsulta,
   Expediente,
   ExpedienteResumen,
@@ -53,6 +54,7 @@ export class MascotaController {
   private mapDetalle(row: any): DetalleConsulta {
     const producto: Producto = {
       id: row.catalogo?.id ?? '',
+      veterinariaId: '',
       codigo: row.catalogo?.codigo ?? 'MANUAL',
       nombre: row.catalogo?.nombre ?? row.nombre_personalizado ?? 'Item sin catálogo',
       descripcion: row.catalogo?.descripcion ?? '',
@@ -158,7 +160,7 @@ export class MascotaController {
 
     if (q) {
       request = request.or(
-        `nombre.ilike.%${q}%,raza.ilike.%${q}%,propietarios.nombre.ilike.%${q}%,propietarios.telefono.ilike.%${q}%`
+        `nombre.ilike.%${q}%,raza.ilike.%${q}%`
       )
     }
 
@@ -213,7 +215,7 @@ export class MascotaController {
 
     if (!mascota) return undefined
 
-    const [{ data: consultasData, error: consultasError }, { data: vacunasData, error: vacunasError }, { data: fotosData, error: fotosError }] =
+    const [{ data: consultasData, error: consultasError }, { data: vacunasData, error: vacunasError }, { data: fotosData, error: fotosError }, { data: desparasitacionesData, error: desparasitacionesError }] =
       await Promise.all([
         supabase
           .from('consultas')
@@ -233,11 +235,18 @@ export class MascotaController {
           .eq('mascota_id', mascota.id)
           .eq('veterinaria_id', veterinariaId)
           .order('fecha', { ascending: false }),
+        supabase
+          .from('desparasitaciones')
+          .select('id,mascota_id,tipo,via_administracion,fecha_aplicacion,fecha_proximo_tratamiento,veterinaria_id')
+          .eq('mascota_id', mascota.id)
+          .eq('veterinaria_id', veterinariaId)
+          .order('fecha_aplicacion', { ascending: false }),
       ])
 
     if (consultasError) throw new Error(`No se pudieron cargar consultas del expediente: ${consultasError.message}`)
     if (vacunasError) throw new Error(`No se pudieron cargar vacunas del expediente: ${vacunasError.message}`)
     if (fotosError) throw new Error(`No se pudieron cargar fotos de evolución: ${fotosError.message}`)
+    if (desparasitacionesError) throw new Error(`No se pudieron cargar desparasitaciones: ${desparasitacionesError.message}`)
 
     const consultaIds = (consultasData ?? []).map(c => c.id)
     const { data: detallesData, error: detallesError } = consultaIds.length
@@ -263,11 +272,13 @@ export class MascotaController {
 
     const vacunas: Vacuna[] = (vacunasData ?? []).map(row => ({
       id: row.id,
+      mascotaId: row.mascota_id,
       expedienteId: `exp-${mascota.id}`,
       nombre: row.nombre,
       fechaAplicacion: row.fecha_aplicacion,
+      dosis: row.dosis ?? undefined,
       proximaDosis: row.fecha_proxima_dosis ?? undefined,
-      lote: row.lote ?? row.dosis ?? undefined,
+      lote: row.lote ?? undefined,
     }))
 
     const fotosEvolucion: FotoEvolucion[] = (fotosData ?? []).map(row => ({
@@ -278,6 +289,16 @@ export class MascotaController {
       descripcion: row.descripcion ?? 'Sin descripción',
     }))
 
+    const desparasitaciones: Desparasitacion[] = (desparasitacionesData ?? []).map(row => ({
+      id: row.id,
+      mascotaId: row.mascota_id,
+      expedienteId: `exp-${mascota.id}`,
+      tipo: row.tipo,
+      viaAdministracion: row.via_administracion,
+      fechaAplicacion: row.fecha_aplicacion,
+      fechaProximoTratamiento: row.fecha_proximo_tratamiento ?? undefined,
+    }))
+
     return {
       id: `exp-${mascota.id}`,
       mascotaId: mascota.id,
@@ -285,6 +306,7 @@ export class MascotaController {
       consultas,
       fotosEvolucion,
       vacunas,
+      desparasitaciones,
     }
   }
 

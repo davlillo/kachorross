@@ -10,7 +10,7 @@ import { Label } from '@/components/atoms/ui/label';
 import { Separator } from '@/components/atoms/ui/separator';
 import {
   Settings, Upload, Building, Mail, Phone, MapPin, Loader2, PawPrint,
-  Key, Save, Send, AlertTriangle, Info, Eye, EyeOff, HelpCircle, CheckCircle2,
+  Key, Save, Send, Info, Eye, EyeOff, HelpCircle, Calendar,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -27,6 +27,7 @@ export default function ConfiguracionPage() {
   const [emailLoading, setEmailLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
+  const [isSendingReminders, setIsSendingReminders] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [emailForm, setEmailForm] = useState({
     smtpUser: '',
@@ -156,6 +157,40 @@ export default function ConfiguracionPage() {
       toast.error(err.message || 'Error de conexión');
     } finally {
       setIsTesting(false);
+    }
+  };
+
+  const handleRecordatorios = async () => {
+    setIsSendingReminders(true);
+    try {
+      const result = await emailCtrl.enviarRecordatoriosAgenda();
+      if (!result.ok) {
+        toast.error(result.error || 'No se pudieron enviar recordatorios');
+        return;
+      }
+      if (result.enviados && result.enviados > 0) {
+        toast.success(`Recordatorios enviados: ${result.enviados}`, {
+          description: `Controles/vacunas programados para ${result.fechaManana ?? 'mañana'}`,
+        });
+      } else if (result.omitidos && result.omitidos > 0) {
+        toast.info('Ya se enviaron recordatorios hoy a esos propietarios');
+      } else if (result.grupos === 0) {
+        toast.info('No hay citas programadas para mañana', {
+          description: result.detalle?.[0] ?? 'El próximo control debe ser para mañana (fecha en agenda).',
+        });
+      } else if (result.errores?.length) {
+        toast.warning(result.errores[0], {
+          description: result.detalle?.slice(0, 2).join(' · ') || undefined,
+        });
+      } else {
+        toast.info('No se envió ningún recordatorio', {
+          description: result.detalle?.slice(0, 3).join(' · ') || `Controles mañana: ${result.controlesEncontrados ?? 0}`,
+        });
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Error al enviar recordatorios');
+    } finally {
+      setIsSendingReminders(false);
     }
   };
 
@@ -348,25 +383,39 @@ export default function ConfiguracionPage() {
             )}
           </CardContent>
           {!emailLoading && (
-            <CardFooter className="border-t pt-4 gap-2 w-full">
-              <Button
-                type="submit"
-                form="email-form"
-                disabled={isSaving}
-                className="flex-1 bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700 h-9"
-              >
-                {isSaving ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Save className="w-4 h-4 mr-1" />}
-                Guardar
-              </Button>
+            <CardFooter className="border-t pt-4 flex-col gap-2 w-full">
+              <div className="flex gap-2 w-full">
+                <Button
+                  type="submit"
+                  form="email-form"
+                  disabled={isSaving}
+                  className="flex-1 bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700 h-9"
+                >
+                  {isSaving ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Save className="w-4 h-4 mr-1" />}
+                  Guardar
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isTesting}
+                  onClick={handleTest}
+                  className="h-9"
+                >
+                  {isTesting ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Send className="w-4 h-4 mr-1" />}
+                  Probar
+                </Button>
+              </div>
               <Button
                 type="button"
                 variant="outline"
-                disabled={isTesting}
-                onClick={handleTest}
-                className="h-9"
+                disabled={isSendingReminders}
+                onClick={() => void handleRecordatorios()}
+                className="w-full h-9 border-purpura-200 text-purpura-700 hover:bg-purpura-50"
               >
-                {isTesting ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Send className="w-4 h-4 mr-1" />}
-                Probar
+                {isSendingReminders
+                  ? <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                  : <Calendar className="w-4 h-4 mr-1" />}
+                Enviar recordatorios de mañana
               </Button>
             </CardFooter>
           )}

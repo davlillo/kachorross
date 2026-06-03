@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/atoms/ui/card'
 import { Badge } from '@/components/atoms/ui/badge'
 import { Button } from '@/components/atoms/ui/button'
@@ -8,7 +9,6 @@ import type { MonitorSalida } from '@/types'
 interface MonitorCardProps {
   item: MonitorSalida
   onVerDetalle: (consultaId: string) => void
-  onMarcarTerminado?: (consultaId: string) => void
   consultaTerminada: string | null
 }
 
@@ -28,8 +28,14 @@ function tiempoTranscurrido(hora: string) {
   return `Hace ${horas}h ${minutos % 60}m`
 }
 
-export function MonitorCard({ item, onVerDetalle, onMarcarTerminado, consultaTerminada }: MonitorCardProps) {
+export function MonitorCard({ item, onVerDetalle, consultaTerminada }: MonitorCardProps) {
   const config = estadoConfig[item.estado]
+  const [, tick] = useState(0)
+
+  useEffect(() => {
+    const id = setInterval(() => tick(n => n + 1), 60_000)
+    return () => clearInterval(id)
+  }, [])
 
   return (
     <Card className={`border-0 shadow-soft hover:shadow-lg transition-all ${consultaTerminada === item.consultaId ? 'opacity-50' : ''}`}>

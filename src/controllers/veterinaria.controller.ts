@@ -115,4 +115,10 @@ export class VeterinariaController {
   async activar(id: string): Promise<Veterinaria> {
     return this.actualizar(id, { estado: 'activo' })
   }
+
+  async eliminar(id: string): Promise<boolean> {
+    const { error } = await supabase.from('veterinarias').delete().eq('id', id)
+    if (error) throw new Error(`No se pudo eliminar la veterinaria: ${error.message}`)
+    return true
+  }
 }
