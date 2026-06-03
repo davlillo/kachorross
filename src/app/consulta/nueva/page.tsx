@@ -14,13 +14,15 @@ import {
   DialogTitle,
 } from '@/components/atoms/ui/dialog';
 import { PageHeader } from '@/components/molecules/PageHeader';
-import { TratamientoHoja } from '@/components/molecules';
+import { TimeClockPicker, TratamientoHoja } from '@/components/molecules';
 import { ProductSelectorDialog } from '@/components/organisms/ProductSelectorDialog';
 
+import { toast } from 'sonner';
 import {
   Stethoscope,
   Search,
   Calendar,
+  Clock,
   PawPrint,
   User,
   Save,
@@ -53,6 +55,7 @@ export default function NuevaConsultaPage() {
   const [tratamiento, setTratamiento] = useState('');
   const [notas, setNotas] = useState('');
   const [proximaCita, setProximaCita] = useState('');
+  const [proximaCitaHora, setProximaCitaHora] = useState('09:00');
   const [detalles, setDetalles] = useState<DetalleConsulta[]>([]);
   
   const [showProductDialog, setShowProductDialog] = useState(false);
@@ -111,21 +114,26 @@ export default function NuevaConsultaPage() {
 
   const total = calcularTotal(detalles);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!selectedMascota || !motivo || !diagnostico) return;
 
-    void crearConsulta({
-      mascotaId: selectedMascota.id,
-      motivo,
-      sintomas,
-      diagnostico,
-      tratamiento,
-      notas,
-      proximaCita: proximaCita || undefined,
-      detalles,
-      total
-    });
-    navigate('/recepcion');
+    try {
+      await crearConsulta({
+        mascotaId: selectedMascota.id,
+        motivo,
+        sintomas,
+        diagnostico,
+        tratamiento,
+        notas,
+        proximaCita: proximaCita || undefined,
+        proximaCitaHora: proximaCita ? proximaCitaHora : undefined,
+        detalles,
+        total,
+      });
+      navigate('/recepcion');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'No se pudo guardar la consulta');
+    }
   };
 
   const isValid = selectedMascota && motivo && diagnostico;
@@ -232,29 +240,51 @@ export default function NuevaConsultaPage() {
 
               <TratamientoHoja value={tratamiento} onChange={setTratamiento} />
 
-              <div>
-                <Label htmlFor="notas">Notas Adicionales</Label>
-                <Textarea
-                  id="notas"
-                  placeholder="Notas internas, recomendaciones, etc..."
-                  value={notas}
-                  onChange={(e) => setNotas(e.target.value)}
-                  className="mt-1 min-h-[60px]"
-                />
-              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                <div>
+                  <Label htmlFor="notas">Notas Adicionales</Label>
+                  <Textarea
+                    id="notas"
+                    placeholder="Notas internas, recomendaciones, etc..."
+                    value={notas}
+                    onChange={(e) => setNotas(e.target.value)}
+                    className="mt-1 min-h-[100px] resize-none"
+                  />
+                </div>
 
-              <div>
-                <Label htmlFor="proximaCita" className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  Próxima Cita (opcional)
-                </Label>
-                <Input
-                  id="proximaCita"
-                  type="date"
-                  value={proximaCita}
-                  onChange={(e) => setProximaCita(e.target.value)}
-                  className="mt-1"
-                />
+                <div className="rounded-xl border border-purpura-100 bg-purpura-50/40 p-4">
+                  <Label className="flex items-center gap-2 text-purpura-800">
+                    <Calendar className="w-4 h-4 text-purpura-500" />
+                    Próximo control
+                    <span className="text-xs font-normal text-muted-foreground">(opcional)</span>
+                  </Label>
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    <div>
+                      <Label htmlFor="proximaCita" className="text-[11px] text-muted-foreground">Fecha</Label>
+                      <Input
+                        id="proximaCita"
+                        type="date"
+                        value={proximaCita}
+                        onChange={(e) => setProximaCita(e.target.value)}
+                        className="mt-0.5 bg-white"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="proximaCitaHora" className="text-[11px] text-muted-foreground flex items-center gap-1">
+                        <Clock className="w-3 h-3" /> Hora
+                      </Label>
+                      <TimeClockPicker
+                        id="proximaCitaHora"
+                        value={proximaCitaHora}
+                        onChange={setProximaCitaHora}
+                        disabled={!proximaCita}
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                    Aparece en la agenda a la hora elegida. Si la cita es <strong>mañana</strong>, al terminar la consulta en recepción se envía el recordatorio por correo (además del tratamiento).
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>

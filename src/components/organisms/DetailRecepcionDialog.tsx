@@ -15,6 +15,7 @@ import { useAuth } from '@/context/AuthContext'
 import { imprimirTratamiento } from '@/lib/printTratamiento'
 import { generarPdfTratamiento } from '@/lib/pdfTratamiento'
 import { EmailController } from '@/controllers/email.controller'
+import { proximaCitaEsManana } from '@/lib/fechaAgenda'
 import { toast } from 'sonner'
 
 const emailCtrl = EmailController.getInstance()
@@ -51,46 +52,90 @@ export function DetailRecepcionDialog({
     if (!confirmando) { setConfirmando(true); return }
 
     const ownerEmail = mascota?.propietario.email
-    const pdfPromise = ownerEmail && veterinaria
-      ? generarPdfTratamiento(consulta.tratamiento, veterinaria.logoUrl)
-      : null
+    const consultaId = consulta.id
+    const tratamiento = consulta.tratamiento
+    const fecha = consulta.fecha
+    const propietarioNombre = mascota?.propietario.nombre ?? ''
+    const mascotaNombre = mascota?.nombre ?? ''
+    const vet = veterinaria
 
-    onTerminado?.(consulta.id)
     setConfirmando(false)
+    onTerminado?.(consultaId)
     onOpenChange(false)
 
-    if (pdfPromise && ownerEmail && veterinaria) {
-      pdfPromise.then(pdfBase64 =>
-        emailCtrl.enviarTratamientoEmail({
-          veterinariaId: veterinaria.id,
-          veterinariaNombre: veterinaria.nombre,
-          veterinariaTelefono: veterinaria.telefono,
-          veterinariaDireccion: veterinaria.direccion,
-          propietarioEmail: ownerEmail,
-          propietarioNombre: mascota!.propietario.nombre,
-          mascotaNombre: mascota!.nombre,
-          fecha: consulta!.fecha,
-          pdfBase64,
-        })
-      ).then(r => {
-        if (r.ok) {
-          toast.success('Tratamiento enviado al correo del propietario')
-        } else {
-          const msg = r.error?.includes('non-2xx')
-            ? 'La función de correo no está disponible. Despliega la Edge Function send-email en Supabase.'
-            : 'Puede configurar SMTP en Configuración.'
-          toast.warning('No se pudo enviar el tratamiento por correo', {
-            description: msg,
-          })
-        }
-      }).catch(() => {
-        toast.error('Error al generar el PDF del tratamiento')
-      })
-    } else if (!ownerEmail) {
+    if (!ownerEmail) {
       toast.info('El propietario no tiene correo registrado', {
         description: 'Para enviarle el tratamiento electrónico, registre su correo en la ficha del paciente.',
       })
+      return
     }
+
+    if (!vet) {
+      toast.warning('No se pudo enviar el tratamiento por correo', {
+        description: 'Datos de la clínica no disponibles. Intente de nuevo en unos segundos.',
+      })
+      return
+    }
+
+    const proximaCita = consulta.proximaCita
+    const enviarRecordatorio = proximaCita && proximaCitaEsManana(proximaCita)
+
+    toast.promise(
+      (async () => {
+        const pdfBase64 = await generarPdfTratamiento(tratamiento, vet.logoUrl)
+        const r = await emailCtrl.enviarTratamientoEmail({
+          veterinariaId: vet.id,
+          veterinariaNombre: vet.nombre,
+          veterinariaTelefono: vet.telefono,
+          veterinariaDireccion: vet.direccion,
+          propietarioEmail: ownerEmail,
+          propietarioNombre,
+          mascotaNombre,
+          fecha,
+          pdfBase64,
+        })
+        if (!r.ok) {
+          const msg = r.error?.includes('non-2xx')
+            ? 'La función de correo no está disponible. Despliega la Edge Function send-email en Supabase.'
+            : r.error ?? 'Puede configurar SMTP en Configuración.'
+          throw new Error(msg)
+        }
+
+        if (enviarRecordatorio && proximaCita) {
+          const rec = await emailCtrl.enviarRecordatorioCita({
+            veterinariaId: vet.id,
+            veterinariaNombre: vet.nombre,
+            propietarioEmail: ownerEmail,
+            propietarioNombre,
+            mascotaNombre,
+            proximaCitaIso: proximaCita,
+            motivo: consulta.motivo,
+          })
+          if (!rec.ok) {
+            return { recordatorioFallo: rec.error ?? 'No se pudo enviar el recordatorio' }
+          }
+        }
+        return { recordatorioFallo: null as string | null }
+      })(),
+      {
+        id: 'envio-tratamiento-email',
+        loading: enviarRecordatorio
+          ? 'Enviando tratamiento y recordatorio de cita...'
+          : 'Enviando tratamiento por correo...',
+        success: (res) => {
+          if (res?.recordatorioFallo) {
+            toast.warning('Tratamiento enviado. Recordatorio no enviado', {
+              description: res.recordatorioFallo,
+            })
+            return 'Tratamiento enviado al correo del propietario'
+          }
+          return enviarRecordatorio
+            ? 'Tratamiento y recordatorio de cita enviados'
+            : 'Tratamiento enviado al correo del propietario'
+        },
+        error: (err) => err instanceof Error ? err.message : 'Error al enviar el tratamiento',
+      },
+    )
   }
 
   return (
@@ -259,7 +304,7 @@ export function DetailRecepcionDialog({
               <Button
                 variant="outline"
                 className="w-full h-11 text-sm font-semibold border-purpura-300 text-purpura-600 hover:bg-purpura-50"
-                onClick={() => imprimirTratamiento(consulta.tratamiento, veterinaria?.logoUrl, consulta.fecha)}
+                onClick={() => imprimirTratamiento(consulta.tratamiento, veterinaria?.logoUrl)}
               >
                 <Printer className="w-4 h-4 mr-2" />
                 Imprimir tratamiento
