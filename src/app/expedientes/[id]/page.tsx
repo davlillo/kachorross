@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { MascotaController } from '@/controllers/mascota.controller';
+import { VacunaController } from '@/controllers/vacuna.controller';
 import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/atoms/ui/card';
 import { Button } from '@/components/atoms/ui/button';
@@ -19,8 +21,10 @@ import { PatientInfoCard } from '@/components/organisms/PatientInfoCard';
 import { EmptyState } from '@/components/molecules/EmptyState';
 import {
   Stethoscope, Syringe, Camera, FileText, Plus, ArrowLeft,
-  Pencil, Trash2, AlertTriangle, Filter, X, CalendarDays,
+  Pencil, Trash2, AlertTriangle, Filter, CalendarDays,
+  Pill, Stamp, ChevronDown,
 } from 'lucide-react';
+import type { Expediente, Mascota, Vacuna, Desparasitacion } from '@/types';
 import type { Expediente, Mascota } from '@/types';
 import {
   formatTelefono,
@@ -41,6 +45,162 @@ const especies: { value: Mascota['especie']; label: string }[] = [
   { value: 'otro', label: 'Otro' },
 ];
 
+const TIPOS_DESPARASITACION = ['Interna', 'Externa', 'Interna + Externa'];
+const VIAS_ADMINISTRACION = ['Oral', 'Tópica', 'Inyectable', 'Subcutánea'];
+const SLOTS_POR_PAGINA = 12;
+const SLOTS_DESPARASITACION = 6;
+
+const formatDateShort = (dateStr: string) =>
+  new Date(dateStr).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+const now = new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+
+interface CartillaPageData {
+  pageIndex: number;
+  vacunas: Vacuna[];
+  desparasitaciones: Desparasitacion[];
+}
+
+function EmptySlot() {
+  return (
+    <div className="border-b border-dashed border-gray-300 py-2.5 px-3 min-h-[56px] flex items-center">
+      <span className="text-xs text-gray-300 italic">—— Disponible ——</span>
+    </div>
+  );
+}
+
+function VacunaSlot({ vacuna }: { vacuna: Vacuna }) {
+  return (
+    <div className="border-b border-gray-200 py-2.5 px-3 flex items-center gap-3 hover:bg-purpura-50/40 transition-colors">
+      <div className="w-6 h-6 rounded-full bg-purpura-100 flex items-center justify-center shrink-0">
+        <Syringe className="w-3 h-3 text-purpura-600" />
+      </div>
+      <div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-semibold text-sm text-gray-800">{vacuna.nombre}</span>
+        </div>
+        <div className="mt-0.5 flex items-center gap-2 flex-wrap text-[9px] font-mono text-gray-500">
+          <span className="bg-gray-100 px-1.5 py-0.5 rounded">Lote: {vacuna.lote ?? 'N/A'}</span>
+          <span className="bg-gray-100 px-1.5 py-0.5 rounded">Dosis: {vacuna.dosis ?? 'N/A'}</span>
+        </div>
+        <div className="flex items-center gap-3 text-[11px] text-gray-500">
+          <span>{formatDateShort(vacuna.fechaAplicacion)}</span>
+          {vacuna.proximaDosis && <span className="text-amber-600">→ {formatDateShort(vacuna.proximaDosis)}</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DesparasitacionSlot({ desparasitacion }: { desparasitacion: Desparasitacion }) {
+  return (
+    <div className="border-b border-gray-200 py-2.5 px-3 flex items-center gap-3 hover:bg-emerald-50/40 transition-colors">
+      <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+        <Pill className="w-3 h-3 text-emerald-600" />
+      </div>
+      <div>
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-sm text-gray-800">{desparasitacion.tipo}</span>
+          {desparasitacion.viaAdministracion && (
+            <Badge variant="secondary" className="text-[9px] h-4 px-1.5">{desparasitacion.viaAdministracion}</Badge>
+          )}
+        </div>
+        <div className="flex items-center gap-3 text-[11px] text-gray-500">
+          <span>{formatDateShort(desparasitacion.fechaAplicacion)}</span>
+          {desparasitacion.fechaProximoTratamiento && <span className="text-amber-600">→ {formatDateShort(desparasitacion.fechaProximoTratamiento)}</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CartillaPageView({
+  page,
+  pageIndex,
+  mascotaNombre,
+  mascotaEspecie,
+  mascotaRaza,
+}: {
+  page: CartillaPageData;
+  pageIndex: number;
+  mascotaNombre: string;
+  mascotaEspecie: string;
+  mascotaRaza: string;
+}) {
+  const colA: (Vacuna | null)[] = Array(6).fill(null);
+  const colB: (Vacuna | null)[] = Array(6).fill(null);
+  page.vacunas.forEach((v, i) => {
+    if (i < 6) colA[i] = v;
+    else if (i < 12) colB[i - 6] = v;
+  });
+
+  const colDesparasitaciones: (Desparasitacion | null)[] = Array(SLOTS_DESPARASITACION).fill(null);
+  page.desparasitaciones.forEach((d, i) => {
+    if (i < SLOTS_DESPARASITACION) colDesparasitaciones[i] = d;
+  });
+
+  return (
+    <div className="bg-[#faf8f4] border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden w-full">
+      <div className="border-b-2 border-gray-200 bg-white px-5 py-2 flex items-center justify-between text-xs text-gray-500">
+        <div className="flex min-w-0 items-center gap-4">
+          <span className="font-semibold text-gray-700 truncate">Paciente: <span className="font-normal">{mascotaNombre}</span></span>
+          <span className="text-gray-300">|</span>
+          <span className="font-semibold text-gray-700">Especie: <span className="font-normal">{mascotaEspecie.charAt(0).toUpperCase() + mascotaEspecie.slice(1)}</span></span>
+          <span className="text-gray-300">|</span>
+          <span className="font-semibold text-gray-700">Raza: <span className="font-normal">{mascotaRaza}</span></span>
+        </div>
+        <div className="text-[10px] text-gray-400 font-mono shrink-0">Emisión: {now}</div>
+      </div>
+
+      <div className="grid grid-cols-3 divide-x-2 divide-gray-200">
+        <div className="col-span-2 bg-purpura-100/80 px-4 py-2 border-b border-purpura-200 flex items-center justify-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-purpura-600" />
+          <span className="font-bold text-sm uppercase tracking-wider text-purpura-800">Vacunas</span>
+        </div>
+        <div className="bg-emerald-50 px-4 py-2 border-b border-emerald-200 flex items-center justify-start gap-2 pl-4">
+          <div className="w-2 h-2 rounded-full bg-emerald-600" />
+          <span className="font-bold text-sm uppercase tracking-wider text-emerald-800">Desparasitaciones</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 divide-x-2 divide-gray-200">
+        <div>
+          {colA.map((vacuna, i) =>
+            vacuna ? (
+              <VacunaSlot key={vacuna.id} vacuna={vacuna} />
+            ) : (
+              <EmptySlot key={`va-${pageIndex}-${i}`} />
+            ),
+          )}
+        </div>
+        <div>
+          {colB.map((vacuna, i) =>
+            vacuna ? (
+              <VacunaSlot key={vacuna.id} vacuna={vacuna} />
+            ) : (
+              <EmptySlot key={`vb-${pageIndex}-${i}`} />
+            ),
+          )}
+        </div>
+        <div>
+          {colDesparasitaciones.map((d, i) =>
+            d ? (
+              <DesparasitacionSlot key={d.id} desparasitacion={d} />
+            ) : (
+              <EmptySlot key={`dd-${pageIndex}-${i}`} />
+            ),
+          )}
+        </div>
+      </div>
+
+      <div className="border-t-2 border-gray-200 bg-white px-5 py-1.5 flex items-center justify-between text-[9px] text-gray-400">
+        <span>Kachorros Veterinaria · Cartilla de Vacunación</span>
+        <span>Página {pageIndex + 1}</span>
+      </div>
+    </div>
+  );
+}
+
 export default function ExpedienteDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -49,6 +209,7 @@ export default function ExpedienteDetailPage() {
   const evolucionInputRef = useRef<HTMLInputElement>(null);
 
   // ── Datos reactivos desde el controller ─────────────────────────────────────
+  const [activeTab, setActiveTab] = useState('historial');
   const [refresh, setRefresh] = useState(0);
   const [expediente, setExpediente] = useState<Expediente | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
@@ -75,8 +236,15 @@ export default function ExpedienteDetailPage() {
   // ── Filtros de fecha ─────────────────────────────────────────────────────────
   const [consultaDesde, setConsultaDesde] = useState('');
   const [consultaHasta, setConsultaHasta] = useState('');
-  const [vacunaDesde,   setVacunaDesde]   = useState('');
-  const [vacunaHasta,   setVacunaHasta]   = useState('');
+
+  // ── Cartilla / Vacunas ────────────────────────────────────────────────────────
+  const [activePage, setActivePage] = useState<number | null>(null);
+  const [agregarOpen, setAgregarOpen] = useState(false);
+  const [agregarTipo, setAgregarTipo] = useState<'vacuna' | 'desparasitacion'>('vacuna');
+  const [agregarForm, setAgregarForm] = useState({
+    nombre: '', fechaAplicacion: '', dosis: '', proximaDosis: '', lote: '',
+    tipo: '', viaAdministracion: '', fechaProximoTratamiento: '',
+  });
 
   // ── Diálogos ─────────────────────────────────────────────────────────────────
   const [editOpen,   setEditOpen]   = useState(false);
@@ -160,16 +328,74 @@ export default function ExpedienteDetailPage() {
       .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
   }, [expediente, consultaDesde, consultaHasta, refresh]);
 
-  // ── Vacunas filtradas ─────────────────────────────────────────────────────────
-  const vacunasFiltradas = useMemo(() => {
-    if (!expediente) return [];
-    return expediente.vacunas.filter(v => {
-      const fecha = new Date(v.fechaAplicacion);
-      if (vacunaDesde && fecha < new Date(vacunaDesde)) return false;
-      if (vacunaHasta && fecha > new Date(vacunaHasta + 'T23:59:59')) return false;
-      return true;
+  // ── Cartilla paginación ──────────────────────────────────────────────────────
+  const sortedCartillaVacunas = useMemo(
+    () => [...(expediente?.vacunas ?? [])].sort((a, b) => new Date(a.fechaAplicacion).getTime() - new Date(b.fechaAplicacion).getTime()),
+    [expediente],
+  );
+
+  const sortedCartillaDesparasitaciones = useMemo(
+    () => [...(expediente?.desparasitaciones ?? [])].sort((a, b) => new Date(a.fechaAplicacion).getTime() - new Date(b.fechaAplicacion).getTime()),
+    [expediente],
+  );
+
+  const cartillaPages = useMemo<CartillaPageData[]>(() => {
+    const pages: CartillaPageData[] = [];
+    sortedCartillaVacunas.forEach((v, i) => {
+      const pageIdx = Math.floor(i / SLOTS_POR_PAGINA);
+      if (!pages[pageIdx]) pages[pageIdx] = { pageIndex: pageIdx, vacunas: [], desparasitaciones: [] };
+      pages[pageIdx].vacunas.push(v);
     });
-  }, [expediente, vacunaDesde, vacunaHasta, refresh]);
+    sortedCartillaDesparasitaciones.forEach((d, i) => {
+      const pageIdx = Math.floor(i / SLOTS_DESPARASITACION);
+      if (!pages[pageIdx]) pages[pageIdx] = { pageIndex: pageIdx, vacunas: [], desparasitaciones: [] };
+      pages[pageIdx].desparasitaciones.push(d);
+    });
+    return pages.sort((a, b) => a.pageIndex - b.pageIndex);
+  }, [sortedCartillaVacunas, sortedCartillaDesparasitaciones]);
+
+  useEffect(() => {
+    if (cartillaPages.length > 0 && activePage === null) {
+      const incompleteIdx = cartillaPages.findIndex(p =>
+        p.vacunas.length >= SLOTS_POR_PAGINA && p.desparasitaciones.length >= SLOTS_DESPARASITACION ? false : true,
+      );
+      setActivePage(incompleteIdx >= 0 ? incompleteIdx : 0);
+    }
+  }, [cartillaPages, activePage]);
+
+  const isPageComplete = (p: CartillaPageData) =>
+    p.vacunas.length >= SLOTS_POR_PAGINA && p.desparasitaciones.length >= SLOTS_DESPARASITACION;
+
+  const handleAgregar = async () => {
+    const vacunaCtrl = VacunaController.getInstance();
+    try {
+      if (agregarTipo === 'vacuna') {
+        await vacunaCtrl.crearVacuna({
+          mascotaId: mascota!.id,
+          nombre: agregarForm.nombre,
+          fechaAplicacion: agregarForm.fechaAplicacion,
+          dosis: agregarForm.dosis || undefined,
+          proximaDosis: agregarForm.proximaDosis || undefined,
+          lote: agregarForm.lote || undefined,
+        });
+      } else {
+        await vacunaCtrl.crearDesparasitacion({
+          mascotaId: mascota!.id,
+          tipo: agregarForm.tipo,
+          viaAdministracion: agregarForm.viaAdministracion,
+          fechaAplicacion: agregarForm.fechaAplicacion,
+          fechaProximoTratamiento: agregarForm.fechaProximoTratamiento || undefined,
+        });
+      }
+      setAgregarForm({ nombre: '', fechaAplicacion: '', dosis: '', proximaDosis: '', lote: '', tipo: '', viaAdministracion: '', fechaProximoTratamiento: '' });
+      setAgregarOpen(false);
+      setRefresh(r => r + 1);
+      toast.success(`Se agregó ${agregarTipo === 'vacuna' ? 'vacuna' : 'desparasitación'} correctamente`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Error al agregar');
+      console.error(error);
+    }
+  };
 
   // ── Abrir diálogo edición con datos actuales ──────────────────────────────────
   const abrirEdicion = () => {
@@ -332,7 +558,7 @@ export default function ExpedienteDetailPage() {
         />
 
         <div className="lg:col-span-2">
-          <Tabs defaultValue="historial" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="historial" className="flex items-center gap-2">
                 <Stethoscope className="w-4 h-4" />Historial Médico
@@ -365,7 +591,7 @@ export default function ExpedienteDetailPage() {
                       {(consultaDesde || consultaHasta) && (
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground"
                           onClick={() => { setConsultaDesde(''); setConsultaHasta(''); }}>
-                          <X className="w-3 h-3" />
+                          <span aria-hidden="true" className="text-xs leading-none">×</span>
                         </Button>
                       )}
                     </div>
@@ -436,66 +662,88 @@ export default function ExpedienteDetailPage() {
               </Card>
             </TabsContent>
 
-            {/* ── Tab: Vacunas ── */}
-            <TabsContent value="vacunas" className="mt-4">
-              <Card className="border-0 shadow-soft">
-                <CardHeader className="pb-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <CardTitle className="text-lg">
-                      Cartilla de Vacunación
-                      <Badge variant="outline" className="ml-2 text-xs font-normal">{vacunasFiltradas.length}</Badge>
-                    </CardTitle>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <CalendarDays className="w-4 h-4 text-muted-foreground shrink-0" />
-                      <Input type="date" value={vacunaDesde} onChange={e => setVacunaDesde(e.target.value)}
-                        className="h-8 text-xs w-36" />
-                      <span className="text-xs text-muted-foreground">–</span>
-                      <Input type="date" value={vacunaHasta} onChange={e => setVacunaHasta(e.target.value)}
-                        className="h-8 text-xs w-36" />
-                      {(vacunaDesde || vacunaHasta) && (
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground"
-                          onClick={() => { setVacunaDesde(''); setVacunaHasta(''); }}>
-                          <X className="w-3 h-3" />
-                        </Button>
-                      )}
-                    </div>
+            {/* ── Tab: Vacunas (Cartilla) ── */}
+            <TabsContent value="vacunas" className="mt-4 space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+                    <Stamp className="w-5 h-5 text-amber-700" />
                   </div>
-                </CardHeader>
-                <CardContent>
-                  {vacunasFiltradas.length === 0 ? (
-                    <EmptyState icon={vacunaDesde || vacunaHasta ? Filter : Syringe}
-                      message={vacunaDesde || vacunaHasta ? 'Sin vacunas en ese rango de fechas' : 'No hay vacunas registradas'} />
-                  ) : (
-                    <div className="space-y-3 max-h-[440px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent">
-                      {vacunasFiltradas.map(vacuna => (
-                        <div key={vacuna.id} className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full bg-purpura-100 flex items-center justify-center shrink-0">
-                              <Syringe className="w-5 h-5 text-purpura-600" />
-                            </div>
-                            <div>
-                              <p className="font-semibold">{vacuna.nombre}</p>
-                              <p className="text-sm text-muted-foreground">Lote: {vacuna.lote}</p>
-                            </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-800">Cartilla de Vacunación</h2>
+                  </div>
+                </div>
+                  <div className="flex items-center gap-2 flex-wrap justify-end">
+                    <Button
+                    size="sm"
+                    className="bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700 shadow-sm shadow-purpura-500/20"
+                    onClick={() => setAgregarOpen(true)}
+                  >
+                    <Plus className="w-3.5 h-3.5 mr-1" />Agregar
+                  </Button>
+                </div>
+              </div>
+
+              {cartillaPages.length === 0 ? (
+                <div className="bg-[#faf8f4] border-2 border-dashed border-gray-200 rounded-xl py-16 flex flex-col items-center gap-3">
+                  <Stamp className="w-10 h-10 text-gray-300" />
+                  <p className="text-sm text-gray-400">No hay registros todavía</p>
+                  <p className="text-xs text-gray-300">Agrega una vacuna o desparasitación para comenzar</p>
+                </div>
+              ) : cartillaPages.length === 1 ? (
+                <div className="overflow-hidden">
+                  <CartillaPageView
+                    page={cartillaPages[0]}
+                    pageIndex={0}
+                    mascotaNombre={mascota.nombre}
+                    mascotaEspecie={mascota.especie}
+                    mascotaRaza={mascota.raza}
+                  />
+                </div>
+              ) : (
+                <div className="w-full">
+                  <div className="flex items-stretch gap-1 mb-4 overflow-x-auto">
+                    {cartillaPages.map((page) => {
+                      const complete = isPageComplete(page);
+                      const isActive = activePage === page.pageIndex;
+                      return (
+                        <button
+                          key={page.pageIndex}
+                          type="button"
+                          onClick={() => setActivePage(isActive ? null : page.pageIndex)}
+                          className={`flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all shrink-0 whitespace-nowrap ${
+                            isActive
+                              ? 'bg-purpura-100 text-purpura-800 shadow-sm ring-1 ring-purpura-300'
+                              : 'bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                          }`}
+                        >
+                          <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isActive ? '' : '-rotate-90'}`} />
+                          <div className="flex flex-col items-start">
+                            <span className="font-semibold">Cartilla {page.pageIndex + 1}</span>
+                            <span className="text-[9px] text-gray-400">
+                              {page.vacunas.length}/{SLOTS_POR_PAGINA} vac · {page.desparasitaciones.length}/{SLOTS_DESPARASITACION} des
+                            </span>
                           </div>
-                          <div className="text-right">
-                            <p className="text-sm">
-                              <span className="text-muted-foreground">Aplicada:</span>{' '}
-                              {new Date(vacuna.fechaAplicacion).toLocaleDateString('es-ES')}
-                            </p>
-                            {vacuna.proximaDosis && (
-                              <p className="text-sm text-purpura-600">
-                                <span className="text-muted-foreground">Próxima:</span>{' '}
-                                {new Date(vacuna.proximaDosis).toLocaleDateString('es-ES')}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      ))}
+                          {complete && (
+                            <span className="text-[9px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full ml-1">Completa</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {activePage !== null && cartillaPages[activePage] && (
+                    <div className="overflow-hidden">
+                      <CartillaPageView
+                        page={cartillaPages[activePage]}
+                        pageIndex={activePage}
+                        mascotaNombre={mascota.nombre}
+                        mascotaEspecie={mascota.especie}
+                        mascotaRaza={mascota.raza}
+                      />
                     </div>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              )}
             </TabsContent>
 
             {/* ── Tab: Fotos ── */}
@@ -774,6 +1022,114 @@ export default function ExpedienteDetailPage() {
             <Button variant="outline" onClick={() => setDeleteOpen(false)}>Cancelar</Button>
             <Button variant="destructive" onClick={confirmarEliminar}>
               <Trash2 className="w-4 h-4 mr-2" />Sí, eliminar paciente
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Dialog: Agregar Vacuna / Desparasitación ── */}
+      <Dialog open={agregarOpen} onOpenChange={setAgregarOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${agregarTipo === 'vacuna' ? 'bg-purpura-100' : 'bg-emerald-100'}`}>
+                {agregarTipo === 'vacuna' ? <Syringe className="w-4 h-4 text-purpura-600" /> : <Pill className="w-4 h-4 text-emerald-600" />}
+              </div>
+              {agregarTipo === 'vacuna' ? 'Nueva Vacuna' : 'Nueva Desparasitación'}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="py-2">
+            <div className="flex items-center gap-2 mb-4 bg-gray-50 rounded-lg p-1">
+              <button
+                type="button"
+                onClick={() => setAgregarTipo('vacuna')}
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-all ${
+                  agregarTipo === 'vacuna' ? 'bg-white text-purpura-700 shadow-sm ring-1 ring-purpura-200' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <Syringe className="w-3.5 h-3.5" /> Vacuna
+              </button>
+              <button
+                type="button"
+                onClick={() => setAgregarTipo('desparasitacion')}
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-all ${
+                  agregarTipo === 'desparasitacion' ? 'bg-white text-emerald-700 shadow-sm ring-1 ring-emerald-200' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <Pill className="w-3.5 h-3.5" /> Desparasitación
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {agregarTipo === 'vacuna' ? (
+                <>
+                  <div className="space-y-1.5">
+                    <Label>Nombre de la Vacuna *</Label>
+                    <Input
+                      placeholder="Ej. Pentavalente, Antirrábica..."
+                      value={agregarForm.nombre}
+                      onChange={e => setAgregarForm(prev => ({ ...prev, nombre: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Dosis</Label>
+                    <Input placeholder="Ej. 1 ml, 0.5 ml" value={agregarForm.dosis} onChange={e => setAgregarForm(prev => ({ ...prev, dosis: e.target.value }))} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Fecha de Aplicación *</Label>
+                    <Input type="date" value={agregarForm.fechaAplicacion} onChange={e => setAgregarForm(prev => ({ ...prev, fechaAplicacion: e.target.value }))} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Próxima Dosis</Label>
+                    <Input type="date" min={agregarForm.fechaAplicacion || undefined} value={agregarForm.proximaDosis} onChange={e => setAgregarForm(prev => ({ ...prev, proximaDosis: e.target.value }))} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Lote</Label>
+                    <Input placeholder="Número de lote" value={agregarForm.lote} onChange={e => setAgregarForm(prev => ({ ...prev, lote: e.target.value }))} />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-1.5">
+                    <Label>Tipo *</Label>
+                    <Select value={agregarForm.tipo} onValueChange={v => setAgregarForm(prev => ({ ...prev, tipo: v }))}>
+                      <SelectTrigger><SelectValue placeholder="Seleccionar tipo" /></SelectTrigger>
+                      <SelectContent>
+                        {TIPOS_DESPARASITACION.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Vía de Administración *</Label>
+                    <Select value={agregarForm.viaAdministracion} onValueChange={v => setAgregarForm(prev => ({ ...prev, viaAdministracion: v }))}>
+                      <SelectTrigger><SelectValue placeholder="Seleccionar vía" /></SelectTrigger>
+                      <SelectContent>
+                        {VIAS_ADMINISTRACION.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Fecha de Aplicación *</Label>
+                    <Input type="date" value={agregarForm.fechaAplicacion} onChange={e => setAgregarForm(prev => ({ ...prev, fechaAplicacion: e.target.value }))} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Próximo Tratamiento</Label>
+                    <Input type="date" min={agregarForm.fechaAplicacion || undefined} value={agregarForm.fechaProximoTratamiento} onChange={e => setAgregarForm(prev => ({ ...prev, fechaProximoTratamiento: e.target.value }))} />
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setAgregarOpen(false)}>Cancelar</Button>
+            <Button
+              onClick={handleAgregar}
+              disabled={agregarTipo === 'vacuna' ? (!agregarForm.nombre || !agregarForm.fechaAplicacion) : (!agregarForm.tipo || !agregarForm.viaAdministracion || !agregarForm.fechaAplicacion)}
+              className="bg-gradient-to-r from-purpura-500 to-purpura-600"
+            >
+              <Plus className="w-4 h-4 mr-2" />Agregar
             </Button>
           </DialogFooter>
         </DialogContent>
