@@ -25,7 +25,6 @@ import {
   Pill, Stamp, ChevronDown,
 } from 'lucide-react';
 import type { Expediente, Mascota, Vacuna, Desparasitacion } from '@/types';
-import type { Expediente, Mascota } from '@/types';
 import {
   formatTelefono,
   formatPeso,
@@ -602,7 +601,7 @@ export default function ExpedienteDetailPage() {
                     <EmptyState icon={consultaDesde || consultaHasta ? Filter : Stethoscope}
                       message={consultaDesde || consultaHasta ? 'Sin consultas en ese rango de fechas' : 'No hay consultas registradas'} />
                   ) : (
-                    <div className="space-y-4 max-h-[480px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent">
+                    <div className="space-y-4 max-h-[480px] overflow-y-auto pr-1">
                       {consultasFiltradas.map(consulta => (
                         <div key={consulta.id} className="p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
                           <div className="flex items-start justify-between mb-3">

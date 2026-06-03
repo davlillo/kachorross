@@ -1,9 +1,15 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+import { toast } from 'sonner';
 import { AuthController } from '@/controllers/auth.controller';
 import { VeterinariaController } from '@/controllers/veterinaria.controller';
 import { supabase } from '@/supabase/client';
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import type { Perfil, Veterinaria } from '@/types';
+
+/** Cierra sesión tras este tiempo sin actividad del usuario */
+const INACTIVIDAD_MS = 30 * 60 * 1000;
+
+const EVENTOS_ACTIVIDAD = ['mousedown', 'keydown', 'touchstart', 'scroll', 'click'] as const;
 
 interface AuthContextType {
   user: Perfil | null;
@@ -179,6 +185,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setVeterinaria(null);
     setError(null);
   }, []);
+
+  const logoutRef = useRef(logout);
+  logoutRef.current = logout;
+
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!user) {
+      if (idleTimerRef.current) {
+        clearTimeout(idleTimerRef.current);
+        idleTimerRef.current = null;
+      }
+      return;
+    }
+
+    const cerrarPorInactividad = () => {
+      toast.info('Sesión cerrada por inactividad (30 minutos).');
+      void logoutRef.current().then(() => {
+        window.location.assign('/login');
+      });
+    };
+
+    const reiniciarTemporizador = () => {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = setTimeout(cerrarPorInactividad, INACTIVIDAD_MS);
+    };
+
+    EVENTOS_ACTIVIDAD.forEach(ev => {
+      window.addEventListener(ev, reiniciarTemporizador, { passive: true });
+    });
+    reiniciarTemporizador();
+
+    return () => {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      EVENTOS_ACTIVIDAD.forEach(ev => {
+        window.removeEventListener(ev, reiniciarTemporizador);
+      });
+    };
+  }, [user]);
 
   const refreshUser = useCallback(async () => {
     await applyUser(true);
