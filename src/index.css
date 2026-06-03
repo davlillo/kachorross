@@ -171,3 +171,8 @@ input[type="password"]::-webkit-password-reveal-button {
   display: none;
   -webkit-appearance: none;
 }
+
+/* Toasts (Sonner) — alineados con la marca */
+[data-sonner-toaster] [data-sonner-toast] {
+  font-family: inherit;
+}

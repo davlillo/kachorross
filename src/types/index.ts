@@ -78,6 +78,8 @@ export interface Consulta {
   total: number;
   detalles: DetalleConsulta[];
   proximaCita?: string;
+  /** HH:mm — al crear consulta con próximo control */
+  proximaCitaHora?: string;
 }
 
 export interface DetalleConsulta {

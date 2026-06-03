@@ -308,7 +308,7 @@ function App() {
 
         </AuthGate>
 
-        <Toaster position="top-right" richColors />
+        <Toaster position="top-right" />
 
       </Router>
 

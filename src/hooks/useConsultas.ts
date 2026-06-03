@@ -23,7 +23,7 @@ async function attachMascotasToMonitor(consultas: Consulta[]): Promise<MonitorSa
       return {
         consultaId: c.id,
         mascota,
-        horaTermino: new Date(Date.now() - (i + 1) * 15 * 60000).toISOString(),
+        horaTermino: c.fecha,
         total: c.total,
         estado: (i === 2 ? 'pagando' : 'listo') as MonitorSalida['estado'],
       }
