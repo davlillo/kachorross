@@ -26,7 +26,7 @@ import {
   TELEFONO_MAX_LENGTH,
   TELEFONO_PLACEHOLDER,
 } from '@/lib/input-validators';
-import { cn } from '@/lib/utils';
+import { cn, todayLocal } from '@/lib/utils';
 
 const especies: { value: Mascota['especie']; label: string }[] = [
   { value: 'perro', label: 'Perro' },
@@ -39,6 +39,10 @@ const especies: { value: Mascota['especie']; label: string }[] = [
 export default function NuevoExpedientePage() {
   const navigate = useNavigate();
   const ctrl = MascotaController.getInstance();
+
+  const hoy = todayLocal();
+  const [hoyY, hoyM, hoyD] = hoy.split('-').map(Number);
+  const hace30Anos = `${hoyY - 30}-${String(hoyM).padStart(2, '0')}-${String(hoyD).padStart(2, '0')}`;
 
   const [propNombre, setPropNombre] = useState('');
   const [propTelefono, setPropTelefono] = useState('');
@@ -291,6 +295,8 @@ export default function NuevoExpedientePage() {
                     value={mascotaFechaNac}
                     onChange={(e) => setMascotaFechaNac(e.target.value)}
                     className="mt-1"
+                    min={hace30Anos}
+                    max={hoy}
                     required
                   />
                 </div>

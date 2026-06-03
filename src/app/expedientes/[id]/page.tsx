@@ -34,7 +34,7 @@ import {
   TELEFONO_MAX_LENGTH,
   TELEFONO_PLACEHOLDER,
 } from '@/lib/input-validators';
-import { cn } from '@/lib/utils';
+import { cn, parseDateLocal, formatDateLocal, todayLocal } from '@/lib/utils';
 
 const especies: { value: Mascota['especie']; label: string }[] = [
   { value: 'perro', label: 'Perro' },
@@ -50,7 +50,7 @@ const SLOTS_POR_PAGINA = 12;
 const SLOTS_DESPARASITACION = 6;
 
 const formatDateShort = (dateStr: string) =>
-  new Date(dateStr).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  formatDateLocal(dateStr);
 
 const now = new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -259,6 +259,10 @@ export default function ExpedienteDetailPage() {
 
   const puedeSubirEvolucion = user?.rol === 'doctora' || user?.rol === 'admin';
 
+  const hoy = todayLocal();
+  const [hoyY, hoyM, hoyD] = hoy.split('-').map(Number);
+  const hace30Anos = `${hoyY - 30}-${String(hoyM).padStart(2, '0')}-${String(hoyD).padStart(2, '0')}`;
+
   // ── Estado form edición ──────────────────────────────────────────────────────
   const [editNombre,    setEditNombre]    = useState('');
   const [editEspecie,   setEditEspecie]   = useState<Mascota['especie']>('perro');
@@ -306,7 +310,7 @@ export default function ExpedienteDetailPage() {
     ({ perro: '🐕', gato: '🐱', ave: '🦜', conejo: '🐰', otro: '🐾' }[especie] ?? '🐾');
 
   const getAge = (birthDate: string) => {
-    const birth = new Date(birthDate);
+    const birth = parseDateLocal(birthDate);
     const today = new Date();
     const years = today.getFullYear() - birth.getFullYear();
     const months = today.getMonth() - birth.getMonth();
@@ -881,7 +885,7 @@ export default function ExpedienteDetailPage() {
             </div>
             <div className="space-y-1">
               <Label>Fecha de Nacimiento</Label>
-              <Input type="date" value={editFechaNac} onChange={e => setEditFechaNac(e.target.value)} />
+              <Input type="date" value={editFechaNac} onChange={e => setEditFechaNac(e.target.value)} min={hace30Anos} max={hoy} />
             </div>
             <div className="space-y-1">
               <Label>Sexo</Label>
@@ -1073,7 +1077,23 @@ export default function ExpedienteDetailPage() {
                   </div>
                   <div className="space-y-1.5">
                     <Label>Dosis</Label>
-                    <Input placeholder="Ej. 1 ml, 0.5 ml" value={agregarForm.dosis} onChange={e => setAgregarForm(prev => ({ ...prev, dosis: e.target.value }))} />
+                    <div className="relative">
+                      <Input
+                        placeholder="0.0"
+                        inputMode="decimal"
+                        value={agregarForm.dosis}
+                        onChange={e => {
+                          const val = e.target.value;
+                          if (/^\d*\.?\d*$/.test(val)) {
+                            setAgregarForm(prev => ({ ...prev, dosis: val }));
+                          }
+                        }}
+                        className="pr-10"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none select-none">
+                        ml
+                      </span>
+                    </div>
                   </div>
                   <div className="space-y-1.5">
                     <Label>Fecha de Aplicación *</Label>

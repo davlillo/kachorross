@@ -4,6 +4,7 @@ import type { Consulta, DetalleConsulta, MonitorSalida, Producto } from '@/types
 import { normalizeCategoria } from '@/lib/catalogo-categorias'
 import { MascotaController } from './mascota.controller'
 import { AuthController } from './auth.controller'
+import { hoyEnElSalvador } from '@/lib/fechaAgenda'
 
 let instance: ConsultaController | null = null
 
@@ -162,11 +163,15 @@ export class ConsultaController {
 
     let proxima_cita: string | null = null
     if (data.proximaCita) {
+      if (data.proximaCita < hoyEnElSalvador()) {
+        throw new Error('La fecha del próximo control no puede estar en el pasado')
+      }
       const hora = data.proximaCitaHora || '09:00'
       const agenda = AgendaController.getInstance()
       const { conflicto, detalle } = await agenda.verificarConflicto(data.proximaCita, hora)
       if (conflicto) throw new Error(detalle ?? 'Ese horario ya está ocupado')
-      proxima_cita = new Date(`${data.proximaCita}T${hora}:00`).toISOString()
+      const [y, m, d] = data.proximaCita.split('-').map(Number)
+      proxima_cita = new Date(y, m - 1, d, parseInt(hora), 0).toISOString()
     }
 
     const payload = {
