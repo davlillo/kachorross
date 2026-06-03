@@ -1,5 +1,6 @@
 import { supabase } from '@/supabase/client'
 import type { Producto } from '@/types'
+import { normalizeCategoria, categoriaFromCodigo } from '@/lib/catalogo-categorias'
 import { AuthController } from './auth.controller'
 
 let instance: CatalogoController | null = null
@@ -28,7 +29,7 @@ export class CatalogoController {
       codigo: row.codigo,
       nombre: row.nombre,
       descripcion: row.descripcion ?? '',
-      categoria: row.categoria as Producto['categoria'],
+      categoria: normalizeCategoria(row.categoria, row.codigo),
       precio: Number(row.precio ?? 0),
       activo: row.activo ?? true,
     }
@@ -43,7 +44,7 @@ export class CatalogoController {
       .from('catalogo')
       .select('id,codigo,nombre,descripcion,categoria,precio,activo,veterinaria_id')
       .eq('veterinaria_id', currentUser.veterinariaId)
-      .order('nombre', { ascending: true })
+      .order('codigo', { ascending: true })
 
     if (error) throw new Error(`No se pudo cargar catálogo: ${error.message}`)
     return (data ?? []).map(row => this.mapRow(row as CatalogoRow))
@@ -60,7 +61,7 @@ export class CatalogoController {
       .eq('veterinaria_id', currentUser.veterinariaId)
       .eq('categoria', categoria)
       .eq('activo', true)
-      .order('nombre', { ascending: true })
+      .order('codigo', { ascending: true })
 
     if (error) throw new Error(`No se pudo filtrar catálogo: ${error.message}`)
     return (data ?? []).map(row => this.mapRow(row as CatalogoRow))
@@ -80,7 +81,7 @@ export class CatalogoController {
       .eq('veterinaria_id', currentUser.veterinariaId)
       .eq('activo', true)
       .or(`nombre.ilike.%${q}%,codigo.ilike.%${q}%,descripcion.ilike.%${q}%`)
-      .order('nombre', { ascending: true })
+      .order('codigo', { ascending: true })
 
     if (error) throw new Error(`No se pudo buscar en catálogo: ${error.message}`)
     return (data ?? []).map(row => this.mapRow(row as CatalogoRow))
@@ -112,7 +113,7 @@ export class CatalogoController {
         codigo: data.codigo,
         nombre: data.nombre,
         descripcion: data.descripcion,
-        categoria: data.categoria,
+        categoria: data.categoria ?? categoriaFromCodigo(data.codigo),
         precio: data.precio,
         activo: data.activo,
       })

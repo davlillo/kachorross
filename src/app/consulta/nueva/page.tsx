@@ -16,6 +16,7 @@ import {
 import { PageHeader } from '@/components/molecules/PageHeader';
 import { TimeClockPicker, TratamientoHoja } from '@/components/molecules';
 import { ProductSelectorDialog } from '@/components/organisms/ProductSelectorDialog';
+import { Badge } from '@/components/atoms/ui/badge';
 
 import { toast } from 'sonner';
 import {
@@ -326,9 +327,17 @@ export default function NuevaConsultaPage() {
                 <div className="space-y-3">
                   {detalles.map((detalle) => (
                     <div key={detalle.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">{detalle.producto.nombre}</p>
-                        <p className="text-xs text-muted-foreground">${detalle.precioAplicado.toFixed(2)} c/u</p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant="outline" className="text-[10px] font-mono font-bold shrink-0">
+                            {detalle.producto.codigo}
+                          </Badge>
+                          <p className="font-medium text-sm truncate">{detalle.producto.nombre}</p>
+                        </div>
+                        {detalle.producto.descripcion && detalle.producto.descripcion !== detalle.producto.nombre && (
+                          <p className="text-xs text-muted-foreground mt-0.5 truncate">{detalle.producto.descripcion}</p>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-0.5">${detalle.precioAplicado.toFixed(2)} c/u</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <button 

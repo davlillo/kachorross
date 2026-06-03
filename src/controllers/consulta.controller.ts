@@ -1,6 +1,7 @@
 import { supabase } from '@/supabase/client'
 import { AgendaController } from './agenda.controller'
 import type { Consulta, DetalleConsulta, MonitorSalida, Producto } from '@/types'
+import { normalizeCategoria } from '@/lib/catalogo-categorias'
 import { MascotaController } from './mascota.controller'
 import { AuthController } from './auth.controller'
 
@@ -53,7 +54,7 @@ export class ConsultaController {
       codigo: row?.codigo ?? 'MANUAL',
       nombre: row?.nombre ?? fallbackName ?? 'Item sin catálogo',
       descripcion: row?.descripcion ?? '',
-      categoria: (row?.categoria as Producto['categoria']) ?? 'servicio',
+      categoria: normalizeCategoria(row?.categoria ?? 'consulta', row?.codigo),
       precio: Number(row?.precio ?? 0),
       activo: row?.activo ?? true,
     }

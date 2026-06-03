@@ -98,7 +98,7 @@ export interface Producto {
   codigo: string;
   nombre: string;
   descripcion: string;
-  categoria: 'servicio' | 'vacuna' | 'medicamento' | 'petshop' | 'laboratorio';
+  categoria: 'consulta' | 'farmacia' | 'peluqueria' | 'petshop';
   precio: number;
   stock?: number;
   activo: boolean;

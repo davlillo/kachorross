@@ -8,13 +8,13 @@ import {
 } from '@/components/atoms/ui/dialog'
 import { Edit2, Trash2, Package, AlertTriangle, CheckCircle2, XCircle, Eye } from 'lucide-react'
 import type { Producto } from '@/types'
+import { getCategoriaConfig, getCategoriaLabel } from '@/lib/catalogo-categorias'
 
-const categoriaStyles: Record<string, { label: string; className: string; icon: string }> = {
-  servicio:     { label: 'Servicio',     className: 'bg-blue-100 text-blue-700',     icon: '🩺' },
-  vacuna:       { label: 'Vacuna',       className: 'bg-purpura-100 text-purpura-700',icon: '💉' },
-  medicamento:  { label: 'Medicamento',  className: 'bg-amber-100 text-amber-700',   icon: '💊' },
-  petshop:      { label: 'PetShop',      className: 'bg-pink-100 text-pink-700',     icon: '🐾' },
-  laboratorio:  { label: 'Laboratorio',  className: 'bg-violet-100 text-violet-700', icon: '🔬' },
+const categoriaStyles: Record<string, { label: string; className: string }> = {
+  consulta:   { label: 'Consulta',   className: 'bg-blue-100 text-blue-700' },
+  farmacia:   { label: 'Farmacia',   className: 'bg-amber-100 text-amber-700' },
+  peluqueria: { label: 'Peluquería', className: 'bg-teal-100 text-teal-700' },
+  petshop:    { label: 'PetShop',    className: 'bg-pink-100 text-pink-700' },
 }
 
 interface ProductTableProps {
@@ -61,7 +61,7 @@ export function ProductTable({ productos, onEdit, onDelete }: ProductTableProps)
                 </TableRow>
               ) : (
                 productos.map((producto) => {
-                  const cat = categoriaStyles[producto.categoria] ?? categoriaStyles.servicio
+                  const cat = categoriaStyles[producto.categoria] ?? { label: getCategoriaLabel(producto.categoria, producto.codigo), className: 'bg-muted text-muted-foreground' }
                   return (
                     <TableRow key={producto.id} className="hover:bg-muted/30 group">
                       <TableCell>
@@ -79,8 +79,8 @@ export function ProductTable({ productos, onEdit, onDelete }: ProductTableProps)
                         </button>
                       </TableCell>
                       <TableCell>
-                        <Badge className={`${cat.className} gap-1`}>
-                          <span>{cat.icon}</span>{cat.label}
+                        <Badge className={cat.className}>
+                          {cat.label}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -126,12 +126,13 @@ export function ProductTable({ productos, onEdit, onDelete }: ProductTableProps)
       <Dialog open={!!verProducto} onOpenChange={v => !v && setVerProducto(null)}>
         <DialogContent className="max-w-md">
           {verProducto && (() => {
-            const cat = categoriaStyles[verProducto.categoria] ?? categoriaStyles.servicio
+            const cat = categoriaStyles[verProducto.categoria] ?? { label: getCategoriaLabel(verProducto.categoria, verProducto.codigo), className: 'bg-muted text-muted-foreground' }
+            const CatIcon = getCategoriaConfig(verProducto.categoria, verProducto.codigo).icon
             return (
               <>
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
-                    <span className="text-2xl">{cat.icon}</span>
+                    <CatIcon className="w-5 h-5 text-purpura-600" />
                     {verProducto.nombre}
                   </DialogTitle>
                 </DialogHeader>

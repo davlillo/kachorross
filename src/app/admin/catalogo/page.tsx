@@ -6,25 +6,35 @@ import { SearchBar } from '@/components/molecules/SearchBar';
 import { ProductTable } from '@/components/organisms/ProductTable';
 import { ProductFormDialog } from '@/components/organisms/ProductFormDialog';
 import {
-  Settings, Plus, Stethoscope, Syringe, Pill, ShoppingBag, FlaskConical, Package2
+  Settings, Plus, Package2,
 } from 'lucide-react';
 import type { Producto } from '@/types';
+import { CATEGORIAS_CATALOGO, categoriaFromCodigo, compareCodigo } from '@/lib/catalogo-categorias';
 
-const categoriaConfig = [
-  { value: 'servicio',    label: 'Servicios',    icon: Stethoscope, gradient: 'from-blue-500 to-azure-blue',     bg: 'bg-blue-500' },
-  { value: 'vacuna',      label: 'Vacunas',      icon: Syringe,     gradient: 'from-purpura-500 to-violet-600',  bg: 'bg-purpura-500' },
-  { value: 'medicamento', label: 'Medicamentos', icon: Pill,        gradient: 'from-amber-500 to-orange-500',    bg: 'bg-amber-500' },
-  { value: 'petshop',     label: 'PetShop',      icon: ShoppingBag, gradient: 'from-pink-500 to-rose-500',       bg: 'bg-pink-500' },
-  { value: 'laboratorio', label: 'Laboratorio',  icon: FlaskConical,gradient: 'from-violet-500 to-purple-600',  bg: 'bg-violet-500' },
-];
+const categoriaConfig = CATEGORIAS_CATALOGO.map(c => ({
+  value: c.value,
+  label: c.label,
+  icon: c.icon,
+  gradient: c.value === 'consulta' ? 'from-blue-500 to-azure-blue'
+    : c.value === 'farmacia' ? 'from-amber-500 to-orange-500'
+    : c.value === 'peluqueria' ? 'from-teal-500 to-emerald-600'
+    : 'from-pink-500 to-rose-500',
+  bg: c.value === 'consulta' ? 'bg-blue-500'
+    : c.value === 'farmacia' ? 'bg-amber-500'
+    : c.value === 'peluqueria' ? 'bg-teal-500'
+    : 'bg-pink-500',
+}));
 
 const filtrosCategoria = [
-  { label: 'Todos',       value: 'todos',       activeClass: 'bg-blue-violet' },
-  { label: 'Servicios',   value: 'servicio',    activeClass: 'bg-blue-500' },
-  { label: 'Vacunas',     value: 'vacuna',      activeClass: 'bg-purpura-500' },
-  { label: 'Medicamentos',value: 'medicamento', activeClass: 'bg-amber-500' },
-  { label: 'PetShop',     value: 'petshop',     activeClass: 'bg-pink-500' },
-  { label: 'Laboratorio', value: 'laboratorio', activeClass: 'bg-violet-500' },
+  { label: 'Todos', value: 'todos', activeClass: 'bg-blue-violet' },
+  ...CATEGORIAS_CATALOGO.map(c => ({
+    label: c.label,
+    value: c.value,
+    activeClass: c.value === 'consulta' ? 'bg-blue-500'
+      : c.value === 'farmacia' ? 'bg-amber-500'
+      : c.value === 'peluqueria' ? 'bg-teal-500'
+      : 'bg-pink-500',
+  })),
 ];
 
 export default function CatalogoPage() {
@@ -36,13 +46,15 @@ export default function CatalogoPage() {
   const [selectedProducto,  setSelectedProducto]  = useState<Producto | null>(null);
   const [formKey,           setFormKey]           = useState(0);
 
-  const productosFiltrados = productos.filter(p => {
-    const matchCategoria = filtroCategoria === 'todos' || p.categoria === filtroCategoria;
+  const productosFiltrados = productos
+    .filter(p => {
+    const matchCategoria = filtroCategoria === 'todos' || categoriaFromCodigo(p.codigo) === filtroCategoria;
     const matchSearch = !searchQuery ||
       p.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.codigo.toLowerCase().includes(searchQuery.toLowerCase());
     return matchCategoria && matchSearch;
-  });
+  })
+    .sort((a, b) => compareCodigo(a.codigo, b.codigo));
 
   const handleEdit = (producto: Producto) => {
     setSelectedProducto(producto);
@@ -80,7 +92,7 @@ export default function CatalogoPage() {
 
         {/* Por categoría */}
         {categoriaConfig.map(cat => {
-          const count = productos.filter(p => p.categoria === cat.value && p.activo).length;
+          const count = productos.filter(p => categoriaFromCodigo(p.codigo) === cat.value && p.activo).length;
           const Icon = cat.icon;
           return (
             <div

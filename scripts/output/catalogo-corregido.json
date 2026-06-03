@@ -1,0 +1,2725 @@
+[
+  {
+    "codigo": "CON-0001",
+    "nombre": "Dosis de Ankofen",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Ankofen",
+    "categoria": "consulta",
+    "precio": 5.5
+  },
+  {
+    "codigo": "CON-0002",
+    "nombre": "Dosis de Algen LD",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Algen LD",
+    "categoria": "consulta",
+    "precio": 5.5
+  },
+  {
+    "codigo": "CON-0003",
+    "nombre": "Dosis de Atriben",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Atriben",
+    "categoria": "consulta",
+    "precio": 5.5
+  },
+  {
+    "codigo": "CON-0004",
+    "nombre": "Dosis de Atropina",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Atropina",
+    "categoria": "consulta",
+    "precio": 10
+  },
+  {
+    "codigo": "CON-0005",
+    "nombre": "Dosis de Bronquivet",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Bronquivet",
+    "categoria": "consulta",
+    "precio": 5.5
+  },
+  {
+    "codigo": "CON-0006",
+    "nombre": "Dosis de Cerenia",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Cerenia",
+    "categoria": "consulta",
+    "precio": 8.5
+  },
+  {
+    "codigo": "CON-0007",
+    "nombre": "Dosis de Diuravet",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Diuravet",
+    "categoria": "consulta",
+    "precio": 5.5
+  },
+  {
+    "codigo": "CON-0008",
+    "nombre": "Dosis de Dolfen",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Dolfen",
+    "categoria": "consulta",
+    "precio": 5.5
+  },
+  {
+    "codigo": "CON-0009",
+    "nombre": "Dosis de Doramectina 1%",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Doramectina 1%",
+    "categoria": "consulta",
+    "precio": 5.5
+  },
+  {
+    "codigo": "CON-0010",
+    "nombre": "Dosis de Dufamox 15%",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Dufamox 15%",
+    "categoria": "consulta",
+    "precio": 5.5
+  },
+  {
+    "codigo": "CON-0011",
+    "nombre": "Dosis de Endovet",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Endovet",
+    "categoria": "consulta",
+    "precio": 5.5
+  },
+  {
+    "codigo": "CON-0012",
+    "nombre": "Dosis de Estimulante Inmunologico Calox",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Estimulante Inmunologico Calox",
+    "categoria": "consulta",
+    "precio": 5.5
+  },
+  {
+    "codigo": "CON-0013",
+    "nombre": "Dosis de Histamacin",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Histamacin",
+    "categoria": "consulta",
+    "precio": 5.5
+  },
+  {
+    "codigo": "CON-0014",
+    "nombre": "Dosis de Imidofin",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Imidofin",
+    "categoria": "consulta",
+    "precio": 5.5
+  },
+  {
+    "codigo": "CON-0015",
+    "nombre": "Dosis de MarcoWitt B12",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de MarcoWitt B12",
+    "categoria": "consulta",
+    "precio": 5.5
+  },
+  {
+    "codigo": "CON-0016",
+    "nombre": "Dosis de Meloxivet",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Meloxivet",
+    "categoria": "consulta",
+    "precio": 5.5
+  },
+  {
+    "codigo": "CON-0017",
+    "nombre": "Dosis de Nexum",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Nexum",
+    "categoria": "consulta",
+    "precio": 5.5
+  },
+  {
+    "codigo": "CON-0018",
+    "nombre": "Dosis de Pileran",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Pileran",
+    "categoria": "consulta",
+    "precio": 5.5
+  },
+  {
+    "codigo": "CON-0019",
+    "nombre": "Dosis de Progesterona",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Progesterona",
+    "categoria": "consulta",
+    "precio": 5.5
+  },
+  {
+    "codigo": "CON-0020",
+    "nombre": "Dosis de Quercetol Vet",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Quercetol Vet",
+    "categoria": "consulta",
+    "precio": 5.5
+  },
+  {
+    "codigo": "CON-0021",
+    "nombre": "Dosis de Sertal Compuesto",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Sertal Compuesto",
+    "categoria": "consulta",
+    "precio": 5.5
+  },
+  {
+    "codigo": "CON-0022",
+    "nombre": "Dosis de Sulfatrim",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Sulfatrim",
+    "categoria": "consulta",
+    "precio": 5.5
+  },
+  {
+    "codigo": "CON-0023",
+    "nombre": "Dosis de Trim/Sul D",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Trim/Sul D",
+    "categoria": "consulta",
+    "precio": 5.5
+  },
+  {
+    "codigo": "CON-0024",
+    "nombre": "Dosis de Vincristina",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Vincristina",
+    "categoria": "consulta",
+    "precio": 5.5
+  },
+  {
+    "codigo": "CON-0025",
+    "nombre": "Dosis de Warit- B",
+    "descripcion": "Administración de medicamentos parenteral → Dosis de Warit- B",
+    "categoria": "consulta",
+    "precio": 5.5
+  },
+  {
+    "codigo": "CON-0026",
+    "nombre": "Administración de sueros",
+    "descripcion": "Administración de sueros",
+    "categoria": "consulta",
+    "precio": 25
+  },
+  {
+    "codigo": "CON-0027",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Amputacion de uñas → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 80
+  },
+  {
+    "codigo": "CON-0028",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Amputacion de uñas → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 100
+  },
+  {
+    "codigo": "CON-0029",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Amputacion de uñas → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 120
+  },
+  {
+    "codigo": "CON-0030",
+    "nombre": "Aplicación de medicamentos parenterales (Externos)",
+    "descripcion": "Aplicación de medicamentos parenterales (Externos)",
+    "categoria": "consulta",
+    "precio": 3.5
+  },
+  {
+    "codigo": "CON-0031",
+    "nombre": "Vacuna contra Giardiasis canina",
+    "descripcion": "Aplicación de vacunas → Vacuna contra Giardiasis canina",
+    "categoria": "consulta",
+    "precio": 20
+  },
+  {
+    "codigo": "CON-0032",
+    "nombre": "Vacuna contra la Rabia",
+    "descripcion": "Aplicación de vacunas → Vacuna contra la Rabia",
+    "categoria": "consulta",
+    "precio": 12.5
+  },
+  {
+    "codigo": "CON-0033",
+    "nombre": "Vacuna contra Leucemia felina",
+    "descripcion": "Aplicación de vacunas → Vacuna contra Leucemia felina",
+    "categoria": "consulta",
+    "precio": 20
+  },
+  {
+    "codigo": "CON-0034",
+    "nombre": "Vacuna contra Parvorisosis canina",
+    "descripcion": "Aplicación de vacunas → Vacuna contra Parvorisosis canina",
+    "categoria": "consulta",
+    "precio": 12.5
+  },
+  {
+    "codigo": "CON-0035",
+    "nombre": "Vacuna contra Tos de las perreras",
+    "descripcion": "Aplicación de vacunas → Vacuna contra Tos de las perreras",
+    "categoria": "consulta",
+    "precio": 20
+  },
+  {
+    "codigo": "CON-0036",
+    "nombre": "Vacuna Quintuple canina",
+    "descripcion": "Aplicación de vacunas → Vacuna Quintuple canina",
+    "categoria": "consulta",
+    "precio": 18
+  },
+  {
+    "codigo": "CON-0037",
+    "nombre": "Vacuna Quintuple felina",
+    "descripcion": "Aplicación de vacunas → Vacuna Quintuple felina",
+    "categoria": "consulta",
+    "precio": 38
+  },
+  {
+    "codigo": "CON-0038",
+    "nombre": "Vacuna Sextuple canina",
+    "descripcion": "Aplicación de vacunas → Vacuna Sextuple canina",
+    "categoria": "consulta",
+    "precio": 20
+  },
+  {
+    "codigo": "CON-0039",
+    "nombre": "Vacuna Triple felina",
+    "descripcion": "Aplicación de vacunas → Vacuna Triple felina",
+    "categoria": "consulta",
+    "precio": 18
+  },
+  {
+    "codigo": "CON-0040",
+    "nombre": "Felino",
+    "descripcion": "Cateterización urinaria → Felino",
+    "categoria": "consulta",
+    "precio": 50
+  },
+  {
+    "codigo": "CON-0041",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Cateterización urinaria → Canino → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 50
+  },
+  {
+    "codigo": "CON-0042",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Cateterización urinaria → Canino → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 100
+  },
+  {
+    "codigo": "CON-0043",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Cateterización urinaria → Canino → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 150
+  },
+  {
+    "codigo": "CON-0044",
+    "nombre": "Felino",
+    "descripcion": "Cirugias de emergencia → Eviseracion → Felino",
+    "categoria": "consulta",
+    "precio": 250
+  },
+  {
+    "codigo": "CON-0045",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Cirugias de emergencia → Eviseracion → Canino → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 300
+  },
+  {
+    "codigo": "CON-0046",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Cirugias de emergencia → Eviseracion → Canino → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 400
+  },
+  {
+    "codigo": "CON-0047",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Cirugias de emergencia → Eviseracion → Canino → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 500
+  },
+  {
+    "codigo": "CON-0048",
+    "nombre": "Felino",
+    "descripcion": "Cirugias de emergencia → Amputacion de cola → Felino",
+    "categoria": "consulta",
+    "precio": 100
+  },
+  {
+    "codigo": "CON-0049",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Cirugias de emergencia → Amputacion de cola → Canino → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 150
+  },
+  {
+    "codigo": "CON-0050",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Cirugias de emergencia → Amputacion de cola → Canino → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 200
+  },
+  {
+    "codigo": "CON-0051",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Cirugias de emergencia → Amputacion de cola → Canino → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 250
+  },
+  {
+    "codigo": "CON-0052",
+    "nombre": "Felino",
+    "descripcion": "Cirugias electivas → Castracion → Felino",
+    "categoria": "consulta",
+    "precio": 115
+  },
+  {
+    "codigo": "CON-0053",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Cirugias electivas → Castracion → Canino → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 150
+  },
+  {
+    "codigo": "CON-0054",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Cirugias electivas → Castracion → Canino → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 200
+  },
+  {
+    "codigo": "CON-0055",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Cirugias electivas → Castracion → Canino → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 250
+  },
+  {
+    "codigo": "CON-0056",
+    "nombre": "Monorquido Inguinal",
+    "descripcion": "Cirugias electivas → Criptorquidectomia → Felino → Monorquido Inguinal",
+    "categoria": "consulta",
+    "precio": 150
+  },
+  {
+    "codigo": "CON-0057",
+    "nombre": "Monorquido Abdominal",
+    "descripcion": "Cirugias electivas → Criptorquidectomia → Felino → Monorquido Abdominal",
+    "categoria": "consulta",
+    "precio": 250
+  },
+  {
+    "codigo": "CON-0058",
+    "nombre": "Criptorquido Inguinal",
+    "descripcion": "Cirugias electivas → Criptorquidectomia → Felino → Criptorquido Inguinal",
+    "categoria": "consulta",
+    "precio": 200
+  },
+  {
+    "codigo": "CON-0059",
+    "nombre": "Criptorquido Abdominal",
+    "descripcion": "Cirugias electivas → Criptorquidectomia → Felino → Criptorquido Abdominal",
+    "categoria": "consulta",
+    "precio": 250
+  },
+  {
+    "codigo": "CON-0060",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Cirugias electivas → Criptorquidectomia → Canino → Monorquido Inguinal → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 200
+  },
+  {
+    "codigo": "CON-0061",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Cirugias electivas → Criptorquidectomia → Canino → Monorquido Inguinal → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 250
+  },
+  {
+    "codigo": "CON-0062",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Cirugias electivas → Criptorquidectomia → Canino → Monorquido Inguinal → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 300
+  },
+  {
+    "codigo": "CON-0063",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Cirugias electivas → Criptorquidectomia → Canino → Monorquido Abdominal → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 250
+  },
+  {
+    "codigo": "CON-0064",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Cirugias electivas → Criptorquidectomia → Canino → Monorquido Abdominal → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 300
+  },
+  {
+    "codigo": "CON-0065",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Cirugias electivas → Criptorquidectomia → Canino → Monorquido Abdominal → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 350
+  },
+  {
+    "codigo": "CON-0066",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Cirugias electivas → Criptorquidectomia → Canino → Criptorquido Inguinal → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 250
+  },
+  {
+    "codigo": "CON-0067",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Cirugias electivas → Criptorquidectomia → Canino → Criptorquido Inguinal → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 300
+  },
+  {
+    "codigo": "CON-0068",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Cirugias electivas → Criptorquidectomia → Canino → Criptorquido Inguinal → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 350
+  },
+  {
+    "codigo": "CON-0069",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Cirugias electivas → Criptorquidectomia → Canino → Criptorquido Abdominal → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 300
+  },
+  {
+    "codigo": "CON-0070",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Cirugias electivas → Criptorquidectomia → Canino → Criptorquido Abdominal → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 350
+  },
+  {
+    "codigo": "CON-0071",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Cirugias electivas → Criptorquidectomia → Canino → Criptorquido Abdominal → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 400
+  },
+  {
+    "codigo": "CON-0072",
+    "nombre": "OVH Electiva",
+    "descripcion": "OVH → Felino → OVH Electiva",
+    "categoria": "consulta",
+    "precio": 200
+  },
+  {
+    "codigo": "CON-0073",
+    "nombre": "OVH por Piometra",
+    "descripcion": "OVH → Felino → OVH por Piometra",
+    "categoria": "consulta",
+    "precio": 250
+  },
+  {
+    "codigo": "CON-0074",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "OVH → Canino → OVH Electiva → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 250
+  },
+  {
+    "codigo": "CON-0075",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "OVH → Canino → OVH Electiva → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 300
+  },
+  {
+    "codigo": "CON-0076",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "OVH → Canino → OVH Electiva → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 400
+  },
+  {
+    "codigo": "CON-0077",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "OVH por Piometra → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 300
+  },
+  {
+    "codigo": "CON-0078",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "OVH por Piometra → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 350
+  },
+  {
+    "codigo": "CON-0079",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "OVH por Piometra → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 450
+  },
+  {
+    "codigo": "CON-0080",
+    "nombre": "Leve",
+    "descripcion": "Reseccion de Tumores → Felino → Leve",
+    "categoria": "consulta",
+    "precio": 100
+  },
+  {
+    "codigo": "CON-0081",
+    "nombre": "Moderado",
+    "descripcion": "Reseccion de Tumores → Felino → Moderado",
+    "categoria": "consulta",
+    "precio": 150
+  },
+  {
+    "codigo": "CON-0082",
+    "nombre": "Grave",
+    "descripcion": "Reseccion de Tumores → Felino → Grave",
+    "categoria": "consulta",
+    "precio": 200
+  },
+  {
+    "codigo": "CON-0083",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Reseccion de Tumores → Canino → Leve → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 80
+  },
+  {
+    "codigo": "CON-0084",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Reseccion de Tumores → Canino → Leve → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 125
+  },
+  {
+    "codigo": "CON-0085",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Reseccion de Tumores → Canino → Leve → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 150
+  },
+  {
+    "codigo": "CON-0086",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Moderada → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 150
+  },
+  {
+    "codigo": "CON-0087",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Moderada → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 200
+  },
+  {
+    "codigo": "CON-0088",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Moderada → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 250
+  },
+  {
+    "codigo": "CON-0089",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Grave → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 200
+  },
+  {
+    "codigo": "CON-0090",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Grave → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 250
+  },
+  {
+    "codigo": "CON-0091",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Grave → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 300
+  },
+  {
+    "codigo": "CON-0092",
+    "nombre": "Felino",
+    "descripcion": "Cistotomia → Felino",
+    "categoria": "consulta",
+    "precio": 300
+  },
+  {
+    "codigo": "CON-0093",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Cistotomia → Canino → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 300
+  },
+  {
+    "codigo": "CON-0094",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Cistotomia → Canino → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 350
+  },
+  {
+    "codigo": "CON-0095",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Cistotomia → Canino → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 400
+  },
+  {
+    "codigo": "CON-0096",
+    "nombre": "Felino",
+    "descripcion": "Enucleacion → Felino",
+    "categoria": "consulta",
+    "precio": 150
+  },
+  {
+    "codigo": "CON-0097",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Enucleacion → Canino → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 150
+  },
+  {
+    "codigo": "CON-0098",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Enucleacion → Canino → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 200
+  },
+  {
+    "codigo": "CON-0099",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Enucleacion → Canino → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 250
+  },
+  {
+    "codigo": "CON-0100",
+    "nombre": "Consulta",
+    "descripcion": "Consulta",
+    "categoria": "consulta",
+    "precio": 15
+  },
+  {
+    "codigo": "CON-0101",
+    "nombre": "Leve",
+    "descripcion": "Curaciones → Leve",
+    "categoria": "consulta",
+    "precio": 3.5
+  },
+  {
+    "codigo": "CON-0102",
+    "nombre": "Moderado",
+    "descripcion": "Curaciones → Moderado",
+    "categoria": "consulta",
+    "precio": 5
+  },
+  {
+    "codigo": "CON-0103",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Desparasitaciones → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 8.5
+  },
+  {
+    "codigo": "CON-0104",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Desparasitaciones → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 10.5
+  },
+  {
+    "codigo": "CON-0105",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Desparasitaciones → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 12.5
+  },
+  {
+    "codigo": "CON-0106",
+    "nombre": "Felino",
+    "descripcion": "Dreno de abseceso → Leve → Felino",
+    "categoria": "consulta",
+    "precio": 80
+  },
+  {
+    "codigo": "CON-0107",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Dreno de abseceso → Leve → Canino → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 75
+  },
+  {
+    "codigo": "CON-0108",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Dreno de abseceso → Leve → Canino → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 100
+  },
+  {
+    "codigo": "CON-0109",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Dreno de abseceso → Leve → Canino → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 125
+  },
+  {
+    "codigo": "CON-0110",
+    "nombre": "Felino",
+    "descripcion": "Moderado → Felino",
+    "categoria": "consulta",
+    "precio": 125
+  },
+  {
+    "codigo": "CON-0111",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Moderado → Canino → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 100
+  },
+  {
+    "codigo": "CON-0112",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Moderado → Canino → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 125
+  },
+  {
+    "codigo": "CON-0113",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Moderado → Canino → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 150
+  },
+  {
+    "codigo": "CON-0114",
+    "nombre": "Felino",
+    "descripcion": "Enemas → Felino",
+    "categoria": "consulta",
+    "precio": 50
+  },
+  {
+    "codigo": "CON-0115",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Enemas → Canino → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 50
+  },
+  {
+    "codigo": "CON-0116",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Enemas → Canino → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 100
+  },
+  {
+    "codigo": "CON-0117",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Enemas → Canino → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 150
+  },
+  {
+    "codigo": "CON-0118",
+    "nombre": "Felino",
+    "descripcion": "Eutanasia → Felino",
+    "categoria": "consulta",
+    "precio": 50
+  },
+  {
+    "codigo": "CON-0119",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Eutanasia → Canino → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 75
+  },
+  {
+    "codigo": "CON-0120",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Eutanasia → Canino → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 100
+  },
+  {
+    "codigo": "CON-0121",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Eutanasia → Canino → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 150
+  },
+  {
+    "codigo": "CON-0122",
+    "nombre": "Hospitalizaciones",
+    "descripcion": "Hospitalizaciones",
+    "categoria": "consulta",
+    "precio": 25
+  },
+  {
+    "codigo": "CON-0123",
+    "nombre": "Felino",
+    "descripcion": "Profilaxis dental + Medicamento → Felino",
+    "categoria": "consulta",
+    "precio": 60
+  },
+  {
+    "codigo": "CON-0124",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Profilaxis dental + Medicamento → Canino → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 60
+  },
+  {
+    "codigo": "CON-0125",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Profilaxis dental + Medicamento → Canino → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 80
+  },
+  {
+    "codigo": "CON-0126",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Profilaxis dental + Medicamento → Canino → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 100
+  },
+  {
+    "codigo": "CON-0127",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Quimioterapia → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 35
+  },
+  {
+    "codigo": "CON-0128",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Quimioterapia → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 40
+  },
+  {
+    "codigo": "CON-0129",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Quimioterapia → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 50
+  },
+  {
+    "codigo": "CON-0130",
+    "nombre": "Sutura pequeña",
+    "descripcion": "Retiro de puntos → Sutura pequeña",
+    "categoria": "consulta",
+    "precio": 5
+  },
+  {
+    "codigo": "CON-0131",
+    "nombre": "Sutura grande",
+    "descripcion": "Retiro de puntos → Sutura grande",
+    "categoria": "consulta",
+    "precio": 10
+  },
+  {
+    "codigo": "CON-0132",
+    "nombre": "Felino",
+    "descripcion": "Sedaciones → Felino",
+    "categoria": "consulta",
+    "precio": 10
+  },
+  {
+    "codigo": "CON-0133",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Sedaciones → Canino → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 15
+  },
+  {
+    "codigo": "CON-0134",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Sedaciones → Canino → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 20
+  },
+  {
+    "codigo": "CON-0135",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Sedaciones → Canino → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 25
+  },
+  {
+    "codigo": "CON-0136",
+    "nombre": "Coprologia General de heces",
+    "descripcion": "Servicios de laboratorio → Coprologia General de heces",
+    "categoria": "consulta",
+    "precio": 12
+  },
+  {
+    "codigo": "CON-0137",
+    "nombre": "Coprocultivo",
+    "descripcion": "Servicios de laboratorio → Coprocultivo",
+    "categoria": "consulta",
+    "precio": 15
+  },
+  {
+    "codigo": "CON-0138",
+    "nombre": "Hematologia Frotis + hemograma",
+    "descripcion": "Servicios de laboratorio → Hematologia Frotis + hemograma",
+    "categoria": "consulta",
+    "precio": 20
+  },
+  {
+    "codigo": "CON-0139",
+    "nombre": "Kit de Sida/ Leucemia + frotis de sangre",
+    "descripcion": "Servicios de laboratorio → Inmunocromatografia → Kit de Sida/ Leucemia + frotis de sangre",
+    "categoria": "consulta",
+    "precio": 60
+  },
+  {
+    "codigo": "CON-0140",
+    "nombre": "Kit de parvovirus",
+    "descripcion": "Servicios de laboratorio → Inmunocromatografia → Kit de parvovirus",
+    "categoria": "consulta",
+    "precio": 30
+  },
+  {
+    "codigo": "CON-0141",
+    "nombre": "Kit de moquillo",
+    "descripcion": "Servicios de laboratorio → Inmunocromatografia → Kit de moquillo",
+    "categoria": "consulta",
+    "precio": 40
+  },
+  {
+    "codigo": "CON-0142",
+    "nombre": "Perfil Hepatico",
+    "descripcion": "Servicios de laboratorio → Perfiles → Perfil Hepatico",
+    "categoria": "consulta",
+    "precio": 45
+  },
+  {
+    "codigo": "CON-0143",
+    "nombre": "Perfil Pre-quirurgico",
+    "descripcion": "Servicios de laboratorio → Perfiles → Perfil Pre-quirurgico",
+    "categoria": "consulta",
+    "precio": 40
+  },
+  {
+    "codigo": "CON-0144",
+    "nombre": "Perfil Renal",
+    "descripcion": "Servicios de laboratorio → Perfiles → Perfil Renal",
+    "categoria": "consulta",
+    "precio": 40
+  },
+  {
+    "codigo": "CON-0145",
+    "nombre": "Perfil Tiroideo",
+    "descripcion": "Servicios de laboratorio → Perfiles → Perfil Tiroideo",
+    "categoria": "consulta",
+    "precio": 80
+  },
+  {
+    "codigo": "CON-0146",
+    "nombre": "Perfin Diabetico",
+    "descripcion": "Servicios de laboratorio → Perfiles → Perfin Diabetico",
+    "categoria": "consulta",
+    "precio": 80
+  },
+  {
+    "codigo": "CON-0147",
+    "nombre": "General de orina",
+    "descripcion": "Servicios de laboratorio → Urologia → General de orina",
+    "categoria": "consulta",
+    "precio": 12
+  },
+  {
+    "codigo": "CON-0148",
+    "nombre": "Urocultivo",
+    "descripcion": "Servicios de laboratorio → Urologia → Urocultivo",
+    "categoria": "consulta",
+    "precio": 15
+  },
+  {
+    "codigo": "CON-0149",
+    "nombre": "Felino",
+    "descripcion": "Sutura de heridas → Leve → Felino",
+    "categoria": "consulta",
+    "precio": 100
+  },
+  {
+    "codigo": "CON-0150",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Sutura de heridas → Leve → Canino → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 100
+  },
+  {
+    "codigo": "CON-0151",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Sutura de heridas → Leve → Canino → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 150
+  },
+  {
+    "codigo": "CON-0152",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Sutura de heridas → Leve → Canino → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 200
+  },
+  {
+    "codigo": "CON-0153",
+    "nombre": "Felino",
+    "descripcion": "Moderado → Felino",
+    "categoria": "consulta",
+    "precio": 150
+  },
+  {
+    "codigo": "CON-0154",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Moderado → Canino → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 200
+  },
+  {
+    "codigo": "CON-0155",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Moderado → Canino → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 250
+  },
+  {
+    "codigo": "CON-0156",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Moderado → Canino → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 300
+  },
+  {
+    "codigo": "CON-0157",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Transfuciones de sangre → Canino → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 125
+  },
+  {
+    "codigo": "CON-0158",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Transfuciones de sangre → Canino → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 175
+  },
+  {
+    "codigo": "CON-0159",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Transfuciones de sangre → Canino → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 225
+  },
+  {
+    "codigo": "CON-0160",
+    "nombre": "Felino",
+    "descripcion": "Vendaje Robert Jones → Felino",
+    "categoria": "consulta",
+    "precio": 100
+  },
+  {
+    "codigo": "CON-0161",
+    "nombre": "Talla pequeña (1 - 10 kg)",
+    "descripcion": "Vendaje Robert Jones → Canino → Talla pequeña (1 - 10 kg)",
+    "categoria": "consulta",
+    "precio": 150
+  },
+  {
+    "codigo": "CON-0162",
+    "nombre": "Talla mediana (10 - 20 kg)",
+    "descripcion": "Vendaje Robert Jones → Canino → Talla mediana (10 - 20 kg)",
+    "categoria": "consulta",
+    "precio": 200
+  },
+  {
+    "codigo": "CON-0163",
+    "nombre": "Talla grande (+20 kg)",
+    "descripcion": "Vendaje Robert Jones → Canino → Talla grande (+20 kg)",
+    "categoria": "consulta",
+    "precio": 250
+  },
+  {
+    "codigo": "FAR-0001",
+    "nombre": "Algen tabletas",
+    "descripcion": "Algen tabletas",
+    "categoria": "farmacia",
+    "precio": 1.25
+  },
+  {
+    "codigo": "FAR-0002",
+    "nombre": "Amoxipet Plus 250",
+    "descripcion": "Amoxipet Plus 250",
+    "categoria": "farmacia",
+    "precio": null
+  },
+  {
+    "codigo": "FAR-0003",
+    "nombre": "Amoxipet Plus 500",
+    "descripcion": "Amoxipet Plus 500",
+    "categoria": "farmacia",
+    "precio": null
+  },
+  {
+    "codigo": "FAR-0004",
+    "nombre": "Ankofen tabletas",
+    "descripcion": "Ankofen tabletas",
+    "categoria": "farmacia",
+    "precio": 1
+  },
+  {
+    "codigo": "FAR-0005",
+    "nombre": "ANXIVET Caja",
+    "descripcion": "ANXIVET Caja",
+    "categoria": "farmacia",
+    "precio": 30
+  },
+  {
+    "codigo": "FAR-0006",
+    "nombre": "ANXIVET Tableta",
+    "descripcion": "ANXIVET Tableta",
+    "categoria": "farmacia",
+    "precio": 1
+  },
+  {
+    "codigo": "FAR-0007",
+    "nombre": "Anxocare",
+    "descripcion": "Anxocare",
+    "categoria": "farmacia",
+    "precio": 14
+  },
+  {
+    "codigo": "FAR-0008",
+    "nombre": "Apetikan",
+    "descripcion": "Apetikan",
+    "categoria": "farmacia",
+    "precio": 10.5
+  },
+  {
+    "codigo": "FAR-0009",
+    "nombre": "Aprax Suspensión Oral",
+    "descripcion": "Aprax Suspensión Oral",
+    "categoria": "farmacia",
+    "precio": null
+  },
+  {
+    "codigo": "FAR-0010",
+    "nombre": "Aprax Tableta 10 kg",
+    "descripcion": "Aprax Tableta 10 kg",
+    "categoria": "farmacia",
+    "precio": 6.5
+  },
+  {
+    "codigo": "FAR-0011",
+    "nombre": "Aprax Tableta 20 kg",
+    "descripcion": "Aprax Tableta 20 kg",
+    "categoria": "farmacia",
+    "precio": 7.5
+  },
+  {
+    "codigo": "FAR-0012",
+    "nombre": "Artro Tabs",
+    "descripcion": "Artro Tabs",
+    "categoria": "farmacia",
+    "precio": 20
+  },
+  {
+    "codigo": "FAR-0013",
+    "nombre": "Calcipet Tabs",
+    "descripcion": "Calcipet Tabs",
+    "categoria": "farmacia",
+    "precio": 12
+  },
+  {
+    "codigo": "FAR-0014",
+    "nombre": "Cephapet 250",
+    "descripcion": "Cephapet 250",
+    "categoria": "farmacia",
+    "precio": 14.5
+  },
+  {
+    "codigo": "FAR-0015",
+    "nombre": "CLOREXIVET PLUS",
+    "descripcion": "CLOREXIVET PLUS",
+    "categoria": "farmacia",
+    "precio": 20
+  },
+  {
+    "codigo": "FAR-0016",
+    "nombre": "Credelio 1.3 a 2.5 kg",
+    "descripcion": "Credelio 1.3 a 2.5 kg",
+    "categoria": "farmacia",
+    "precio": 18
+  },
+  {
+    "codigo": "FAR-0017",
+    "nombre": "Credelio 11 a 22 kg",
+    "descripcion": "Credelio 11 a 22 kg",
+    "categoria": "farmacia",
+    "precio": 21
+  },
+  {
+    "codigo": "FAR-0018",
+    "nombre": "Credelio 2.5 a 5.5 kg",
+    "descripcion": "Credelio 2.5 a 5.5 kg",
+    "categoria": "farmacia",
+    "precio": 19
+  },
+  {
+    "codigo": "FAR-0019",
+    "nombre": "Credelio 22 a 45 kg",
+    "descripcion": "Credelio 22 a 45 kg",
+    "categoria": "farmacia",
+    "precio": 22
+  },
+  {
+    "codigo": "FAR-0020",
+    "nombre": "Credelio 5.5 a 11 kg",
+    "descripcion": "Credelio 5.5 a 11 kg",
+    "categoria": "farmacia",
+    "precio": 20
+  },
+  {
+    "codigo": "FAR-0021",
+    "nombre": "Crema Saniderm",
+    "descripcion": "Crema Saniderm",
+    "categoria": "farmacia",
+    "precio": 11
+  },
+  {
+    "codigo": "FAR-0022",
+    "nombre": "DERMATRYL JABÓN",
+    "descripcion": "DERMATRYL JABÓN",
+    "categoria": "farmacia",
+    "precio": 8
+  },
+  {
+    "codigo": "FAR-0023",
+    "nombre": "DERMATRYL SHAMPOO",
+    "descripcion": "DERMATRYL SHAMPOO",
+    "categoria": "farmacia",
+    "precio": null
+  },
+  {
+    "codigo": "FAR-0024",
+    "nombre": "DERMATRYL SPA",
+    "descripcion": "DERMATRYL SPA",
+    "categoria": "farmacia",
+    "precio": 15
+  },
+  {
+    "codigo": "FAR-0025",
+    "nombre": "Doxiciclina Calox 100 mg",
+    "descripcion": "Doxiciclina Calox 100 mg",
+    "categoria": "farmacia",
+    "precio": 1
+  },
+  {
+    "codigo": "FAR-0026",
+    "nombre": "Doxiciclina Calox 50 mg",
+    "descripcion": "Doxiciclina Calox 50 mg",
+    "categoria": "farmacia",
+    "precio": 0.6
+  },
+  {
+    "codigo": "FAR-0027",
+    "nombre": "Doximicina 200 mg",
+    "descripcion": "Doximicina 200 mg",
+    "categoria": "farmacia",
+    "precio": 2
+  },
+  {
+    "codigo": "FAR-0028",
+    "nombre": "Enrocilina tabletas",
+    "descripcion": "Enrocilina tabletas",
+    "categoria": "farmacia",
+    "precio": 1.1
+  },
+  {
+    "codigo": "FAR-0029",
+    "nombre": "Feline Full Sport 2.1 a 5 kg",
+    "descripcion": "Feline Full Sport 2.1 a 5 kg",
+    "categoria": "farmacia",
+    "precio": 23
+  },
+  {
+    "codigo": "FAR-0030",
+    "nombre": "Feline Full Spot +5 kg",
+    "descripcion": "Feline Full Spot +5 kg",
+    "categoria": "farmacia",
+    "precio": 25
+  },
+  {
+    "codigo": "FAR-0031",
+    "nombre": "Feline Full Spot 1 a 2 kg",
+    "descripcion": "Feline Full Spot 1 a 2 kg",
+    "categoria": "farmacia",
+    "precio": 18
+  },
+  {
+    "codigo": "FAR-0032",
+    "nombre": "Ferox 1000 mg",
+    "descripcion": "Ferox 1000 mg",
+    "categoria": "farmacia",
+    "precio": 38
+  },
+  {
+    "codigo": "FAR-0033",
+    "nombre": "Ferox 112.5 mg",
+    "descripcion": "Ferox 112.5 mg",
+    "categoria": "farmacia",
+    "precio": 32
+  },
+  {
+    "codigo": "FAR-0034",
+    "nombre": "Ferox 1400 mg",
+    "descripcion": "Ferox 1400 mg",
+    "categoria": "farmacia",
+    "precio": 40
+  },
+  {
+    "codigo": "FAR-0035",
+    "nombre": "Ferox 250 mg",
+    "descripcion": "Ferox 250 mg",
+    "categoria": "farmacia",
+    "precio": 34
+  },
+  {
+    "codigo": "FAR-0036",
+    "nombre": "Ferox 500 mg",
+    "descripcion": "Ferox 500 mg",
+    "categoria": "farmacia",
+    "precio": 36
+  },
+  {
+    "codigo": "FAR-0037",
+    "nombre": "Frontline Plus 40 a 60 kg",
+    "descripcion": "Frontline Plus 40 a 60 kg",
+    "categoria": "farmacia",
+    "precio": 27.5
+  },
+  {
+    "codigo": "FAR-0038",
+    "nombre": "Garrafin",
+    "descripcion": "Garrafin",
+    "categoria": "farmacia",
+    "precio": 5.5
+  },
+  {
+    "codigo": "FAR-0039",
+    "nombre": "Gentanazol Spray",
+    "descripcion": "Gentanazol Spray",
+    "categoria": "farmacia",
+    "precio": 14.5
+  },
+  {
+    "codigo": "FAR-0040",
+    "nombre": "Gentayn oftalmico",
+    "descripcion": "Gentayn oftalmico",
+    "categoria": "farmacia",
+    "precio": 8
+  },
+  {
+    "codigo": "FAR-0041",
+    "nombre": "HEMOFER-B12",
+    "descripcion": "HEMOFER-B12",
+    "categoria": "farmacia",
+    "precio": 28
+  },
+  {
+    "codigo": "FAR-0042",
+    "nombre": "HEPATOCAN",
+    "descripcion": "HEPATOCAN",
+    "categoria": "farmacia",
+    "precio": 32
+  },
+  {
+    "codigo": "FAR-0043",
+    "nombre": "HEPATOVET Caja",
+    "descripcion": "HEPATOVET Caja",
+    "categoria": "farmacia",
+    "precio": 18
+  },
+  {
+    "codigo": "FAR-0044",
+    "nombre": "HEPATOVET Tableta",
+    "descripcion": "HEPATOVET Tableta",
+    "categoria": "farmacia",
+    "precio": 0.6
+  },
+  {
+    "codigo": "FAR-0045",
+    "nombre": "Imidofin tabletas",
+    "descripcion": "Imidofin tabletas",
+    "categoria": "farmacia",
+    "precio": 2
+  },
+  {
+    "codigo": "FAR-0046",
+    "nombre": "Inmunol",
+    "descripcion": "Inmunol",
+    "categoria": "farmacia",
+    "precio": 14
+  },
+  {
+    "codigo": "FAR-0047",
+    "nombre": "IQ 180",
+    "descripcion": "IQ 180",
+    "categoria": "farmacia",
+    "precio": null
+  },
+  {
+    "codigo": "FAR-0048",
+    "nombre": "KANNES - Shampoo Insecticida",
+    "descripcion": "KANNES - Shampoo Insecticida",
+    "categoria": "farmacia",
+    "precio": 15.5
+  },
+  {
+    "codigo": "FAR-0049",
+    "nombre": "KAOLIN VET",
+    "descripcion": "KAOLIN VET",
+    "categoria": "farmacia",
+    "precio": 5.5
+  },
+  {
+    "codigo": "FAR-0050",
+    "nombre": "KirOftal AzitroKir",
+    "descripcion": "KirOftal AzitroKir",
+    "categoria": "farmacia",
+    "precio": 14.5
+  },
+  {
+    "codigo": "FAR-0051",
+    "nombre": "KirOftal Dexa",
+    "descripcion": "KirOftal Dexa",
+    "categoria": "farmacia",
+    "precio": 9.5
+  },
+  {
+    "codigo": "FAR-0052",
+    "nombre": "KirOftal Diclo",
+    "descripcion": "KirOftal Diclo",
+    "categoria": "farmacia",
+    "precio": 12.5
+  },
+  {
+    "codigo": "FAR-0053",
+    "nombre": "KirOftal Ungüento",
+    "descripcion": "KirOftal Ungüento",
+    "categoria": "farmacia",
+    "precio": null
+  },
+  {
+    "codigo": "FAR-0054",
+    "nombre": "Lagrivet SC",
+    "descripcion": "Lagrivet SC",
+    "categoria": "farmacia",
+    "precio": 17
+  },
+  {
+    "codigo": "FAR-0055",
+    "nombre": "Limpiador bucal",
+    "descripcion": "Limpiador bucal",
+    "categoria": "farmacia",
+    "precio": 13.5
+  },
+  {
+    "codigo": "FAR-0056",
+    "nombre": "Liv. 52",
+    "descripcion": "Liv. 52",
+    "categoria": "farmacia",
+    "precio": 13
+  },
+  {
+    "codigo": "FAR-0057",
+    "nombre": "Meloxivet 1 mg",
+    "descripcion": "Meloxivet 1 mg",
+    "categoria": "farmacia",
+    "precio": 1.25
+  },
+  {
+    "codigo": "FAR-0058",
+    "nombre": "Meloxivet 2.5 mg",
+    "descripcion": "Meloxivet 2.5 mg",
+    "categoria": "farmacia",
+    "precio": 2.5
+  },
+  {
+    "codigo": "FAR-0059",
+    "nombre": "Meloxivet 4 mg",
+    "descripcion": "Meloxivet 4 mg",
+    "categoria": "farmacia",
+    "precio": 3.75
+  },
+  {
+    "codigo": "FAR-0060",
+    "nombre": "Micofin tabletas",
+    "descripcion": "Micofin tabletas",
+    "categoria": "farmacia",
+    "precio": 1.5
+  },
+  {
+    "codigo": "FAR-0061",
+    "nombre": "Microflox 150",
+    "descripcion": "Microflox 150",
+    "categoria": "farmacia",
+    "precio": 3.75
+  },
+  {
+    "codigo": "FAR-0062",
+    "nombre": "Microflox 50",
+    "descripcion": "Microflox 50",
+    "categoria": "farmacia",
+    "precio": 1.5
+  },
+  {
+    "codigo": "FAR-0063",
+    "nombre": "MV DERVA - Shampoo Antimicótico y Antiséptico",
+    "descripcion": "MV DERVA - Shampoo Antimicótico y Antiséptico",
+    "categoria": "farmacia",
+    "precio": null
+  },
+  {
+    "codigo": "FAR-0064",
+    "nombre": "MV DERVA - Shampoo Antipuriginoso",
+    "descripcion": "MV DERVA - Shampoo Antipuriginoso",
+    "categoria": "farmacia",
+    "precio": 22.5
+  },
+  {
+    "codigo": "FAR-0065",
+    "nombre": "MV DERVA - Shampoo Antiseborreico y Queratolítico",
+    "descripcion": "MV DERVA - Shampoo Antiseborreico y Queratolítico",
+    "categoria": "farmacia",
+    "precio": null
+  },
+  {
+    "codigo": "FAR-0066",
+    "nombre": "MV DERVA - Shampoo Piel sencible",
+    "descripcion": "MV DERVA - Shampoo Piel sencible",
+    "categoria": "farmacia",
+    "precio": null
+  },
+  {
+    "codigo": "FAR-0067",
+    "nombre": "Nefrotec",
+    "descripcion": "Nefrotec",
+    "categoria": "farmacia",
+    "precio": 15
+  },
+  {
+    "codigo": "FAR-0068",
+    "nombre": "Neosept Spray",
+    "descripcion": "Neosept Spray",
+    "categoria": "farmacia",
+    "precio": 10.5
+  },
+  {
+    "codigo": "FAR-0069",
+    "nombre": "Omega Tabs",
+    "descripcion": "Omega Tabs",
+    "categoria": "farmacia",
+    "precio": null
+  },
+  {
+    "codigo": "FAR-0070",
+    "nombre": "OMEGA Vet",
+    "descripcion": "OMEGA Vet",
+    "categoria": "farmacia",
+    "precio": 23
+  },
+  {
+    "codigo": "FAR-0071",
+    "nombre": "OTIKO",
+    "descripcion": "OTIKO",
+    "categoria": "farmacia",
+    "precio": 14
+  },
+  {
+    "codigo": "FAR-0072",
+    "nombre": "Pileran gotas",
+    "descripcion": "Pileran gotas",
+    "categoria": "farmacia",
+    "precio": 13
+  },
+  {
+    "codigo": "FAR-0073",
+    "nombre": "Protech 1 a 4 kg",
+    "descripcion": "Protech 1 a 4 kg",
+    "categoria": "farmacia",
+    "precio": 18
+  },
+  {
+    "codigo": "FAR-0074",
+    "nombre": "Protech 11 a 25 kg",
+    "descripcion": "Protech 11 a 25 kg",
+    "categoria": "farmacia",
+    "precio": 23
+  },
+  {
+    "codigo": "FAR-0075",
+    "nombre": "Protech 26 a 40 kg",
+    "descripcion": "Protech 26 a 40 kg",
+    "categoria": "farmacia",
+    "precio": 25
+  },
+  {
+    "codigo": "FAR-0076",
+    "nombre": "Protech 5 a 10 kg",
+    "descripcion": "Protech 5 a 10 kg",
+    "categoria": "farmacia",
+    "precio": 20
+  },
+  {
+    "codigo": "FAR-0077",
+    "nombre": "PROVIOVET Capsula",
+    "descripcion": "PROVIOVET Capsula",
+    "categoria": "farmacia",
+    "precio": 2
+  },
+  {
+    "codigo": "FAR-0078",
+    "nombre": "Quercetol Vet",
+    "descripcion": "Quercetol Vet",
+    "categoria": "farmacia",
+    "precio": null
+  },
+  {
+    "codigo": "FAR-0079",
+    "nombre": "Ranipet Oral",
+    "descripcion": "Ranipet Oral",
+    "categoria": "farmacia",
+    "precio": 10.5
+  },
+  {
+    "codigo": "FAR-0080",
+    "nombre": "RELAY C",
+    "descripcion": "RELAY C",
+    "categoria": "farmacia",
+    "precio": 7.25
+  },
+  {
+    "codigo": "FAR-0081",
+    "nombre": "Revolution 12% 10.1 a 20 kg - Perro",
+    "descripcion": "Revolution 12% 10.1 a 20 kg - Perro",
+    "categoria": "farmacia",
+    "precio": 22
+  },
+  {
+    "codigo": "FAR-0082",
+    "nombre": "Revolution 12% 20.1 a 40 kg -Perro",
+    "descripcion": "Revolution 12% 20.1 a 40 kg -Perro",
+    "categoria": "farmacia",
+    "precio": 23
+  },
+  {
+    "codigo": "FAR-0083",
+    "nombre": "Revolution 12% 5.1 a 10 kg - Perro",
+    "descripcion": "Revolution 12% 5.1 a 10 kg - Perro",
+    "categoria": "farmacia",
+    "precio": 20
+  },
+  {
+    "codigo": "FAR-0084",
+    "nombre": "Revolution Plus 1.25 a 2.5 kg - Gato",
+    "descripcion": "Revolution Plus 1.25 a 2.5 kg - Gato",
+    "categoria": "farmacia",
+    "precio": 21.5
+  },
+  {
+    "codigo": "FAR-0085",
+    "nombre": "Revolution Plus 2.5 a 5 kg - Gato",
+    "descripcion": "Revolution Plus 2.5 a 5 kg - Gato",
+    "categoria": "farmacia",
+    "precio": 23
+  },
+  {
+    "codigo": "FAR-0086",
+    "nombre": "Rimadyl",
+    "descripcion": "Rimadyl",
+    "categoria": "farmacia",
+    "precio": 4.5
+  },
+  {
+    "codigo": "FAR-0087",
+    "nombre": "Solubron 20",
+    "descripcion": "Solubron 20",
+    "categoria": "farmacia",
+    "precio": 2
+  },
+  {
+    "codigo": "FAR-0088",
+    "nombre": "Stomorgyl 10",
+    "descripcion": "Stomorgyl 10",
+    "categoria": "farmacia",
+    "precio": null
+  },
+  {
+    "codigo": "FAR-0089",
+    "nombre": "Stomorgyl 2",
+    "descripcion": "Stomorgyl 2",
+    "categoria": "farmacia",
+    "precio": null
+  },
+  {
+    "codigo": "FAR-0090",
+    "nombre": "Stomorgyl 20",
+    "descripcion": "Stomorgyl 20",
+    "categoria": "farmacia",
+    "precio": null
+  },
+  {
+    "codigo": "FAR-0091",
+    "nombre": "TONANVIT",
+    "descripcion": "TONANVIT",
+    "categoria": "farmacia",
+    "precio": 14.5
+  },
+  {
+    "codigo": "FAR-0092",
+    "nombre": "Total Full CG Suspensión",
+    "descripcion": "Total Full CG Suspensión",
+    "categoria": "farmacia",
+    "precio": 25
+  },
+  {
+    "codigo": "FAR-0093",
+    "nombre": "URIVET",
+    "descripcion": "URIVET",
+    "categoria": "farmacia",
+    "precio": null
+  },
+  {
+    "codigo": "FAR-0094",
+    "nombre": "Viyo Fortalece - Gato",
+    "descripcion": "Viyo Fortalece - Gato",
+    "categoria": "farmacia",
+    "precio": 4.5
+  },
+  {
+    "codigo": "FAR-0095",
+    "nombre": "Viyo Fortalece - Perro",
+    "descripcion": "Viyo Fortalece - Perro",
+    "categoria": "farmacia",
+    "precio": 4.5
+  },
+  {
+    "codigo": "FAR-0096",
+    "nombre": "Viyo Recuperation - Gato",
+    "descripcion": "Viyo Recuperation - Gato",
+    "categoria": "farmacia",
+    "precio": 22
+  },
+  {
+    "codigo": "FAR-0097",
+    "nombre": "Viyo Recuperation - Perro",
+    "descripcion": "Viyo Recuperation - Perro",
+    "categoria": "farmacia",
+    "precio": 22
+  },
+  {
+    "codigo": "PEL-0001",
+    "nombre": "Normal",
+    "descripcion": "Baño → Talla pequeña (1 - 10 kg) → Normal",
+    "categoria": "peluqueria",
+    "precio": 10
+  },
+  {
+    "codigo": "PEL-0002",
+    "nombre": "Medicado",
+    "descripcion": "Baño → Talla pequeña (1 - 10 kg) → Medicado",
+    "categoria": "peluqueria",
+    "precio": 12
+  },
+  {
+    "codigo": "PEL-0003",
+    "nombre": "Normal",
+    "descripcion": "Baño → Talla mediana (10 - 20 kg) → Normal",
+    "categoria": "peluqueria",
+    "precio": 12
+  },
+  {
+    "codigo": "PEL-0004",
+    "nombre": "Medicado",
+    "descripcion": "Baño → Talla mediana (10 - 20 kg) → Medicado",
+    "categoria": "peluqueria",
+    "precio": 14
+  },
+  {
+    "codigo": "PEL-0005",
+    "nombre": "Normal",
+    "descripcion": "Baño → Talla grande (+20 kg) → Normal",
+    "categoria": "peluqueria",
+    "precio": 15
+  },
+  {
+    "codigo": "PEL-0006",
+    "nombre": "Medicado",
+    "descripcion": "Baño → Talla grande (+20 kg) → Medicado",
+    "categoria": "peluqueria",
+    "precio": 18
+  },
+  {
+    "codigo": "PEL-0007",
+    "nombre": "Normal",
+    "descripcion": "Baño + Deslanado → Normal",
+    "categoria": "peluqueria",
+    "precio": 25
+  },
+  {
+    "codigo": "PEL-0008",
+    "nombre": "Medicado",
+    "descripcion": "Baño + Deslanado → Medicado",
+    "categoria": "peluqueria",
+    "precio": 30
+  },
+  {
+    "codigo": "PEL-0009",
+    "nombre": "Pequeño",
+    "descripcion": "Baño → + Limpieza → Pequeño",
+    "categoria": "peluqueria",
+    "precio": 13
+  },
+  {
+    "codigo": "PEL-0010",
+    "nombre": "Mediano",
+    "descripcion": "Baño → Mediano",
+    "categoria": "peluqueria",
+    "precio": 15
+  },
+  {
+    "codigo": "PEL-0011",
+    "nombre": "Grande",
+    "descripcion": "Baño → Grande",
+    "categoria": "peluqueria",
+    "precio": 19
+  },
+  {
+    "codigo": "PEL-0012",
+    "nombre": "Normal",
+    "descripcion": "Corte + Baño → Normal → Talla pequeña (1 - 10 kg) → Normal",
+    "categoria": "peluqueria",
+    "precio": 13
+  },
+  {
+    "codigo": "PEL-0013",
+    "nombre": "Normal Medicado",
+    "descripcion": "Corte + Baño → Normal → Talla pequeña (1 - 10 kg) → Normal Medicado",
+    "categoria": "peluqueria",
+    "precio": 13
+  },
+  {
+    "codigo": "PEL-0014",
+    "nombre": "Nudoso leve Normal",
+    "descripcion": "Corte + Baño → Normal → Talla pequeña (1 - 10 kg) → Nudoso leve Normal",
+    "categoria": "peluqueria",
+    "precio": 15
+  },
+  {
+    "codigo": "PEL-0015",
+    "nombre": "Nudoso leve Medicado",
+    "descripcion": "Corte + Baño → Normal → Talla pequeña (1 - 10 kg) → Nudoso leve Medicado",
+    "categoria": "peluqueria",
+    "precio": 15
+  },
+  {
+    "codigo": "PEL-0016",
+    "nombre": "Normal",
+    "descripcion": "Corte + Baño → Normal → Talla pequeña (1 - 10 kg) → Nudoso moderado → Normal",
+    "categoria": "peluqueria",
+    "precio": 18
+  },
+  {
+    "codigo": "PEL-0017",
+    "nombre": "Medicado",
+    "descripcion": "Corte + Baño → Normal → Talla pequeña (1 - 10 kg) → Nudoso moderado → Medicado",
+    "categoria": "peluqueria",
+    "precio": 18
+  },
+  {
+    "codigo": "PEL-0018",
+    "nombre": "Nudoso grave Normal",
+    "descripcion": "Corte + Baño → Normal → Talla pequeña (1 - 10 kg) → Nudoso grave Normal",
+    "categoria": "peluqueria",
+    "precio": 20
+  },
+  {
+    "codigo": "PEL-0019",
+    "nombre": "Nudoso grave Medicado",
+    "descripcion": "Corte + Baño → Normal → Talla pequeña (1 - 10 kg) → Nudoso grave Medicado",
+    "categoria": "peluqueria",
+    "precio": 20
+  },
+  {
+    "codigo": "PEL-0020",
+    "nombre": "Rebajado Normal",
+    "descripcion": "Corte + Baño → Normal → Talla pequeña (1 - 10 kg) → Rebajado Normal",
+    "categoria": "peluqueria",
+    "precio": 15
+  },
+  {
+    "codigo": "PEL-0021",
+    "nombre": "Rebajado Medicado",
+    "descripcion": "Corte + Baño → Normal → Talla pequeña (1 - 10 kg) → Rebajado Medicado",
+    "categoria": "peluqueria",
+    "precio": 15
+  },
+  {
+    "codigo": "PEL-0022",
+    "nombre": "Normal",
+    "descripcion": "Corte + Baño → Normal → Talla mediana (10 - 20 kg) → Normal",
+    "categoria": "peluqueria",
+    "precio": 15
+  },
+  {
+    "codigo": "PEL-0023",
+    "nombre": "Normal Medicado",
+    "descripcion": "Corte + Baño → Normal → Talla mediana (10 - 20 kg) → Normal Medicado",
+    "categoria": "peluqueria",
+    "precio": 15
+  },
+  {
+    "codigo": "PEL-0024",
+    "nombre": "Nudoso leve Normal",
+    "descripcion": "Corte + Baño → Normal → Talla mediana (10 - 20 kg) → Nudoso leve Normal",
+    "categoria": "peluqueria",
+    "precio": 16
+  },
+  {
+    "codigo": "PEL-0025",
+    "nombre": "Nudoso leve Medicado",
+    "descripcion": "Corte + Baño → Normal → Talla mediana (10 - 20 kg) → Nudoso leve Medicado",
+    "categoria": "peluqueria",
+    "precio": 16
+  },
+  {
+    "codigo": "PEL-0026",
+    "nombre": "Normal",
+    "descripcion": "Corte + Baño → Normal → Talla mediana (10 - 20 kg) → Nudoso moderado → Normal",
+    "categoria": "peluqueria",
+    "precio": 17
+  },
+  {
+    "codigo": "PEL-0027",
+    "nombre": "Medicado",
+    "descripcion": "Corte + Baño → Normal → Talla mediana (10 - 20 kg) → Nudoso moderado → Medicado",
+    "categoria": "peluqueria",
+    "precio": 17
+  },
+  {
+    "codigo": "PEL-0028",
+    "nombre": "Nudoso grave Normal",
+    "descripcion": "Corte + Baño → Normal → Talla mediana (10 - 20 kg) → Nudoso grave Normal",
+    "categoria": "peluqueria",
+    "precio": 18
+  },
+  {
+    "codigo": "PEL-0029",
+    "nombre": "Nudoso grave Medicado",
+    "descripcion": "Corte + Baño → Normal → Talla mediana (10 - 20 kg) → Nudoso grave Medicado",
+    "categoria": "peluqueria",
+    "precio": 18
+  },
+  {
+    "codigo": "PEL-0030",
+    "nombre": "Rebajado Normal",
+    "descripcion": "Corte + Baño → Normal → Talla mediana (10 - 20 kg) → Rebajado Normal",
+    "categoria": "peluqueria",
+    "precio": 18
+  },
+  {
+    "codigo": "PEL-0031",
+    "nombre": "Rebajado Medicado",
+    "descripcion": "Corte + Baño → Normal → Talla mediana (10 - 20 kg) → Rebajado Medicado",
+    "categoria": "peluqueria",
+    "precio": 18
+  },
+  {
+    "codigo": "PEL-0032",
+    "nombre": "Normal",
+    "descripcion": "Corte + Baño → Normal → Talla grande (+20 kg) → Normal",
+    "categoria": "peluqueria",
+    "precio": 18
+  },
+  {
+    "codigo": "PEL-0033",
+    "nombre": "Normal Medicado",
+    "descripcion": "Corte + Baño → Normal → Talla grande (+20 kg) → Normal Medicado",
+    "categoria": "peluqueria",
+    "precio": 18
+  },
+  {
+    "codigo": "PEL-0034",
+    "nombre": "Nudoso leve Normal",
+    "descripcion": "Corte + Baño → Normal → Talla grande (+20 kg) → Nudoso leve Normal",
+    "categoria": "peluqueria",
+    "precio": 20
+  },
+  {
+    "codigo": "PEL-0035",
+    "nombre": "Nudoso leve Medicado",
+    "descripcion": "Corte + Baño → Normal → Talla grande (+20 kg) → Nudoso leve Medicado",
+    "categoria": "peluqueria",
+    "precio": 20
+  },
+  {
+    "codigo": "PEL-0036",
+    "nombre": "Normal",
+    "descripcion": "Corte + Baño → Normal → Talla grande (+20 kg) → Nudoso moderado → Normal",
+    "categoria": "peluqueria",
+    "precio": 22
+  },
+  {
+    "codigo": "PEL-0037",
+    "nombre": "Medicado",
+    "descripcion": "Corte + Baño → Normal → Talla grande (+20 kg) → Nudoso moderado → Medicado",
+    "categoria": "peluqueria",
+    "precio": 22
+  },
+  {
+    "codigo": "PEL-0038",
+    "nombre": "Nudoso grave Normal",
+    "descripcion": "Corte + Baño → Normal → Talla grande (+20 kg) → Nudoso grave Normal",
+    "categoria": "peluqueria",
+    "precio": 25
+  },
+  {
+    "codigo": "PEL-0039",
+    "nombre": "Nudoso grave Medicado",
+    "descripcion": "Corte + Baño → Normal → Talla grande (+20 kg) → Nudoso grave Medicado",
+    "categoria": "peluqueria",
+    "precio": 25
+  },
+  {
+    "codigo": "PEL-0040",
+    "nombre": "Rebajado Normal",
+    "descripcion": "Corte + Baño → Normal → Talla grande (+20 kg) → Rebajado Normal",
+    "categoria": "peluqueria",
+    "precio": 20
+  },
+  {
+    "codigo": "PEL-0041",
+    "nombre": "Rebajado Medicado",
+    "descripcion": "Corte + Baño → Normal → Talla grande (+20 kg) → Rebajado Medicado",
+    "categoria": "peluqueria",
+    "precio": 20
+  },
+  {
+    "codigo": "PEL-0042",
+    "nombre": "Normal Normal",
+    "descripcion": "Corte especial + baño → Normal Normal",
+    "categoria": "peluqueria",
+    "precio": 15
+  },
+  {
+    "codigo": "PEL-0043",
+    "nombre": "Normal Medicado",
+    "descripcion": "Corte especial + baño → Normal Medicado",
+    "categoria": "peluqueria",
+    "precio": 15
+  },
+  {
+    "codigo": "PEL-0044",
+    "nombre": "Nudoso Normal",
+    "descripcion": "Corte especial + baño → Nudoso Normal",
+    "categoria": "peluqueria",
+    "precio": 18
+  },
+  {
+    "codigo": "PEL-0045",
+    "nombre": "Nudoso Medicado",
+    "descripcion": "Corte especial + baño → Nudoso Medicado",
+    "categoria": "peluqueria",
+    "precio": 18
+  },
+  {
+    "codigo": "PEL-0046",
+    "nombre": "Pequeño",
+    "descripcion": "Corte de uñas → Pequeño",
+    "categoria": "peluqueria",
+    "precio": 5
+  },
+  {
+    "codigo": "PEL-0047",
+    "nombre": "Mediano",
+    "descripcion": "Corte de uñas → Mediano",
+    "categoria": "peluqueria",
+    "precio": 8
+  },
+  {
+    "codigo": "PEL-0048",
+    "nombre": "Grande",
+    "descripcion": "Corte de uñas → Grande",
+    "categoria": "peluqueria",
+    "precio": 10
+  },
+  {
+    "codigo": "PTS-0001",
+    "nombre": "Advance Neo Clean/Lavanda - 4.15 kg",
+    "descripcion": "Advance Neo Clean/Lavanda - 4.15 kg",
+    "categoria": "petshop",
+    "precio": 6
+  },
+  {
+    "codigo": "PTS-0002",
+    "nombre": "Advance Neo Clean/Sin aroma - 4.15 kg",
+    "descripcion": "Advance Neo Clean/Sin aroma - 4.15 kg",
+    "categoria": "petshop",
+    "precio": 5.5
+  },
+  {
+    "codigo": "PTS-0003",
+    "nombre": "Advance Urinary Gato - 1.5 kg",
+    "descripcion": "Advance Urinary Gato - 1.5 kg",
+    "categoria": "petshop",
+    "precio": 24.5
+  },
+  {
+    "codigo": "PTS-0004",
+    "nombre": "Arnes Azul Talla L",
+    "descripcion": "Arnes Azul Talla L",
+    "categoria": "petshop",
+    "precio": 6
+  },
+  {
+    "codigo": "PTS-0005",
+    "nombre": "Arnes Gris Talla L",
+    "descripcion": "Arnes Gris Talla L",
+    "categoria": "petshop",
+    "precio": 6
+  },
+  {
+    "codigo": "PTS-0006",
+    "nombre": "Arnes Talla L - Variedad",
+    "descripcion": "Arnes Talla L - Variedad",
+    "categoria": "petshop",
+    "precio": 6.5
+  },
+  {
+    "codigo": "PTS-0007",
+    "nombre": "Arnes Talla M - Traje",
+    "descripcion": "Arnes Talla M - Traje",
+    "categoria": "petshop",
+    "precio": 7.5
+  },
+  {
+    "codigo": "PTS-0008",
+    "nombre": "Arnes Talla M - Variedad",
+    "descripcion": "Arnes Talla M - Variedad",
+    "categoria": "petshop",
+    "precio": 6
+  },
+  {
+    "codigo": "PTS-0009",
+    "nombre": "Arnes Talla S - Traje",
+    "descripcion": "Arnes Talla S - Traje",
+    "categoria": "petshop",
+    "precio": 6.5
+  },
+  {
+    "codigo": "PTS-0010",
+    "nombre": "Bolsa de juguete de lazo",
+    "descripcion": "Bolsa de juguete de lazo",
+    "categoria": "petshop",
+    "precio": 5
+  },
+  {
+    "codigo": "PTS-0011",
+    "nombre": "Bozal Azul Talla S - Tela",
+    "descripcion": "Bozal Azul Talla S - Tela",
+    "categoria": "petshop",
+    "precio": 4.5
+  },
+  {
+    "codigo": "PTS-0012",
+    "nombre": "Bozal Negro Talla M - Tela",
+    "descripcion": "Bozal Negro Talla M - Tela",
+    "categoria": "petshop",
+    "precio": 5
+  },
+  {
+    "codigo": "PTS-0013",
+    "nombre": "Cadena de Ahorque",
+    "descripcion": "Cadena de Ahorque",
+    "categoria": "petshop",
+    "precio": 12
+  },
+  {
+    "codigo": "PTS-0014",
+    "nombre": "Cama para mascotas - Talla M",
+    "descripcion": "Cama para mascotas - Talla M",
+    "categoria": "petshop",
+    "precio": 16.5
+  },
+  {
+    "codigo": "PTS-0015",
+    "nombre": "Cepillo de silicon / Variedad",
+    "descripcion": "Cepillo de silicon / Variedad",
+    "categoria": "petshop",
+    "precio": 3
+  },
+  {
+    "codigo": "PTS-0016",
+    "nombre": "Cepillo Ovalado - gris mediano",
+    "descripcion": "Cepillo Ovalado - gris mediano",
+    "categoria": "petshop",
+    "precio": 12
+  },
+  {
+    "codigo": "PTS-0017",
+    "nombre": "Cepillo Ovalado - gris pequeño",
+    "descripcion": "Cepillo Ovalado - gris pequeño",
+    "categoria": "petshop",
+    "precio": 10
+  },
+  {
+    "codigo": "PTS-0018",
+    "nombre": "Cepillo Ovalado - Variedad",
+    "descripcion": "Cepillo Ovalado - Variedad",
+    "categoria": "petshop",
+    "precio": 3.5
+  },
+  {
+    "codigo": "PTS-0019",
+    "nombre": "Cepillo Rectangular - Variedad",
+    "descripcion": "Cepillo Rectangular - Variedad",
+    "categoria": "petshop",
+    "precio": 3.5
+  },
+  {
+    "codigo": "PTS-0020",
+    "nombre": "Collar Isabelino - Talla 0",
+    "descripcion": "Collar Isabelino - Talla 0",
+    "categoria": "petshop",
+    "precio": null
+  },
+  {
+    "codigo": "PTS-0021",
+    "nombre": "Collar Isabelino - Talla 1",
+    "descripcion": "Collar Isabelino - Talla 1",
+    "categoria": "petshop",
+    "precio": null
+  },
+  {
+    "codigo": "PTS-0022",
+    "nombre": "Collar Isabelino - Talla 2",
+    "descripcion": "Collar Isabelino - Talla 2",
+    "categoria": "petshop",
+    "precio": null
+  },
+  {
+    "codigo": "PTS-0023",
+    "nombre": "Collar Isabelino - Talla 3",
+    "descripcion": "Collar Isabelino - Talla 3",
+    "categoria": "petshop",
+    "precio": null
+  },
+  {
+    "codigo": "PTS-0024",
+    "nombre": "Collar Isabelino - Talla 4",
+    "descripcion": "Collar Isabelino - Talla 4",
+    "categoria": "petshop",
+    "precio": null
+  },
+  {
+    "codigo": "PTS-0025",
+    "nombre": "Collar Isabelino - Talla 5",
+    "descripcion": "Collar Isabelino - Talla 5",
+    "categoria": "petshop",
+    "precio": null
+  },
+  {
+    "codigo": "PTS-0026",
+    "nombre": "Collar Isabelino - Talla 6",
+    "descripcion": "Collar Isabelino - Talla 6",
+    "categoria": "petshop",
+    "precio": null
+  },
+  {
+    "codigo": "PTS-0027",
+    "nombre": "Collar Isabelino - Talla 7",
+    "descripcion": "Collar Isabelino - Talla 7",
+    "categoria": "petshop",
+    "precio": null
+  },
+  {
+    "codigo": "PTS-0028",
+    "nombre": "Collar Luz led - Variedad",
+    "descripcion": "Collar Luz led - Variedad",
+    "categoria": "petshop",
+    "precio": 13.5
+  },
+  {
+    "codigo": "PTS-0029",
+    "nombre": "Collar reflectivo - Variedad",
+    "descripcion": "Collar reflectivo - Variedad",
+    "categoria": "petshop",
+    "precio": 4
+  },
+  {
+    "codigo": "PTS-0030",
+    "nombre": "Correa + collar Talla M Neon",
+    "descripcion": "Correa + collar Talla M Neon",
+    "categoria": "petshop",
+    "precio": 6.5
+  },
+  {
+    "codigo": "PTS-0031",
+    "nombre": "Correa Luz led / Variedad",
+    "descripcion": "Correa Luz led / Variedad",
+    "categoria": "petshop",
+    "precio": 6
+  },
+  {
+    "codigo": "PTS-0032",
+    "nombre": "Correas - Variedad",
+    "descripcion": "Correas - Variedad",
+    "categoria": "petshop",
+    "precio": 7.5
+  },
+  {
+    "codigo": "PTS-0033",
+    "nombre": "Dona Talla S",
+    "descripcion": "Dona Talla S",
+    "categoria": "petshop",
+    "precio": 15
+  },
+  {
+    "codigo": "PTS-0034",
+    "nombre": "Guantes para cepillar - Variedad",
+    "descripcion": "Guantes para cepillar - Variedad",
+    "categoria": "petshop",
+    "precio": 2.5
+  },
+  {
+    "codigo": "PTS-0035",
+    "nombre": "Hill´s Adult 1 a 6 Small Bites Perro - 4.4 lbs",
+    "descripcion": "Hill´s Adult 1 a 6 Small Bites Perro - 4.4 lbs",
+    "categoria": "petshop",
+    "precio": 25
+  },
+  {
+    "codigo": "PTS-0036",
+    "nombre": "Hill´s Adult 1-6 Gato - 4 lbs",
+    "descripcion": "Hill´s Adult 1-6 Gato - 4 lbs",
+    "categoria": "petshop",
+    "precio": 25
+  },
+  {
+    "codigo": "PTS-0037",
+    "nombre": "Hill´s Adult 1-6 Perro - 6.6 lbs",
+    "descripcion": "Hill´s Adult 1-6 Perro - 6.6 lbs",
+    "categoria": "petshop",
+    "precio": 31.5
+  },
+  {
+    "codigo": "PTS-0038",
+    "nombre": "Hill´s Adult 7+ Perro - 6.6 lbs",
+    "descripcion": "Hill´s Adult 7+ Perro - 6.6 lbs",
+    "categoria": "petshop",
+    "precio": 40
+  },
+  {
+    "codigo": "PTS-0039",
+    "nombre": "Hill´s Kitten Gato - 3.5 lbs",
+    "descripcion": "Hill´s Kitten Gato - 3.5 lbs",
+    "categoria": "petshop",
+    "precio": 25
+  },
+  {
+    "codigo": "PTS-0040",
+    "nombre": "Hill´s Multibenefit W/D Gato - 4 lbs",
+    "descripcion": "Hill´s Multibenefit W/D Gato - 4 lbs",
+    "categoria": "petshop",
+    "precio": 32.5
+  },
+  {
+    "codigo": "PTS-0041",
+    "nombre": "Hill´s Puppy Small Bites Perro - 4.5 lbs",
+    "descripcion": "Hill´s Puppy Small Bites Perro - 4.5 lbs",
+    "categoria": "petshop",
+    "precio": 25
+  },
+  {
+    "codigo": "PTS-0042",
+    "nombre": "Hill´s Urinary Care C/D Gato - 4 lbs",
+    "descripcion": "Hill´s Urinary Care C/D Gato - 4 lbs",
+    "categoria": "petshop",
+    "precio": 32.5
+  },
+  {
+    "codigo": "PTS-0043",
+    "nombre": "Hill´s Urinary Care C/D Perro 3.3 lbs",
+    "descripcion": "Hill´s Urinary Care C/D Perro 3.3 lbs",
+    "categoria": "petshop",
+    "precio": 25
+  },
+  {
+    "codigo": "PTS-0044",
+    "nombre": "Hill´s Weight Loss R/D Gato - 4 lbs",
+    "descripcion": "Hill´s Weight Loss R/D Gato - 4 lbs",
+    "categoria": "petshop",
+    "precio": 32
+  },
+  {
+    "codigo": "PTS-0045",
+    "nombre": "Hill´s Weight Loss R/D Perro 8.5 lbs",
+    "descripcion": "Hill´s Weight Loss R/D Perro 8.5 lbs",
+    "categoria": "petshop",
+    "precio": 51
+  },
+  {
+    "codigo": "PTS-0046",
+    "nombre": "Hueso de Goma - Variedad",
+    "descripcion": "Hueso de Goma - Variedad",
+    "categoria": "petshop",
+    "precio": 1
+  },
+  {
+    "codigo": "PTS-0047",
+    "nombre": "Juguete de lazo unidad - Variedad",
+    "descripcion": "Juguete de lazo unidad - Variedad",
+    "categoria": "petshop",
+    "precio": 1
+  },
+  {
+    "codigo": "PTS-0048",
+    "nombre": "Lata Grande Hill´s Digestive Care I/D Perro",
+    "descripcion": "Lata Grande Hill´s Digestive Care I/D Perro",
+    "categoria": "petshop",
+    "precio": 8
+  },
+  {
+    "codigo": "PTS-0049",
+    "nombre": "Lata Hill´s ONC Care Gata",
+    "descripcion": "Lata Hill´s ONC Care Gata",
+    "categoria": "petshop",
+    "precio": 3.75
+  },
+  {
+    "codigo": "PTS-0050",
+    "nombre": "Lata pequeña Hill´s Digestive Care I/D Gato",
+    "descripcion": "Lata pequeña Hill´s Digestive Care I/D Gato",
+    "categoria": "petshop",
+    "precio": 6
+  },
+  {
+    "codigo": "PTS-0051",
+    "nombre": "Lata pequeña Hill´s Digestive Care I/D Perro",
+    "descripcion": "Lata pequeña Hill´s Digestive Care I/D Perro",
+    "categoria": "petshop",
+    "precio": 6
+  },
+  {
+    "codigo": "PTS-0052",
+    "nombre": "Lata pequeña Hill´s Urgent Care A/D Perro-Gato",
+    "descripcion": "Lata pequeña Hill´s Urgent Care A/D Perro-Gato",
+    "categoria": "petshop",
+    "precio": 6
+  },
+  {
+    "codigo": "PTS-0053",
+    "nombre": "Mochila para mascota - Grande",
+    "descripcion": "Mochila para mascota - Grande",
+    "categoria": "petshop",
+    "precio": 22
+  },
+  {
+    "codigo": "PTS-0054",
+    "nombre": "Mochila para mascota - Medina",
+    "descripcion": "Mochila para mascota - Medina",
+    "categoria": "petshop",
+    "precio": 20
+  },
+  {
+    "codigo": "PTS-0055",
+    "nombre": "Mochila para mascota - Pequeña",
+    "descripcion": "Mochila para mascota - Pequeña",
+    "categoria": "petshop",
+    "precio": 18
+  },
+  {
+    "codigo": "PTS-0056",
+    "nombre": "Naill Clippers for cats",
+    "descripcion": "Naill Clippers for cats",
+    "categoria": "petshop",
+    "precio": 13.5
+  },
+  {
+    "codigo": "PTS-0057",
+    "nombre": "Naill Clippers small dog",
+    "descripcion": "Naill Clippers small dog",
+    "categoria": "petshop",
+    "precio": 15
+  },
+  {
+    "codigo": "PTS-0058",
+    "nombre": "Pechera + Correa smoking anaranjado",
+    "descripcion": "Pechera + Correa smoking anaranjado",
+    "categoria": "petshop",
+    "precio": 7.25
+  },
+  {
+    "codigo": "PTS-0059",
+    "nombre": "Pechera + Correa tipo jeans mediana",
+    "descripcion": "Pechera + Correa tipo jeans mediana",
+    "categoria": "petshop",
+    "precio": 6.5
+  },
+  {
+    "codigo": "PTS-0060",
+    "nombre": "Pechera + Correa tipo jeans pequeña",
+    "descripcion": "Pechera + Correa tipo jeans pequeña",
+    "categoria": "petshop",
+    "precio": 5
+  },
+  {
+    "codigo": "PTS-0061",
+    "nombre": "Pelota de Goma / Grande - Variedad",
+    "descripcion": "Pelota de Goma / Grande - Variedad",
+    "categoria": "petshop",
+    "precio": 2
+  },
+  {
+    "codigo": "PTS-0062",
+    "nombre": "Pelota de Goma / Mediana - Variedad",
+    "descripcion": "Pelota de Goma / Mediana - Variedad",
+    "categoria": "petshop",
+    "precio": 1.5
+  },
+  {
+    "codigo": "PTS-0063",
+    "nombre": "Pelota de Goma / Pequeña - Variedad",
+    "descripcion": "Pelota de Goma / Pequeña - Variedad",
+    "categoria": "petshop",
+    "precio": 1
+  },
+  {
+    "codigo": "PTS-0064",
+    "nombre": "Peluche de vaca - Variedad",
+    "descripcion": "Peluche de vaca - Variedad",
+    "categoria": "petshop",
+    "precio": 3.5
+  },
+  {
+    "codigo": "PTS-0065",
+    "nombre": "Plato de Aluminio",
+    "descripcion": "Plato de Aluminio",
+    "categoria": "petshop",
+    "precio": 2.5
+  },
+  {
+    "codigo": "PTS-0066",
+    "nombre": "Plato entrenador - Variado",
+    "descripcion": "Plato entrenador - Variado",
+    "categoria": "petshop",
+    "precio": 5
+  },
+  {
+    "codigo": "PTS-0067",
+    "nombre": "Platos Plegables",
+    "descripcion": "Platos Plegables",
+    "categoria": "petshop",
+    "precio": 3.5
+  },
+  {
+    "codigo": "PTS-0068",
+    "nombre": "Pollo Grande",
+    "descripcion": "Pollo Grande",
+    "categoria": "petshop",
+    "precio": 3.75
+  },
+  {
+    "codigo": "PTS-0069",
+    "nombre": "Pollo Mediano",
+    "descripcion": "Pollo Mediano",
+    "categoria": "petshop",
+    "precio": 2.75
+  },
+  {
+    "codigo": "PTS-0070",
+    "nombre": "Pollo pequeño",
+    "descripcion": "Pollo pequeño",
+    "categoria": "petshop",
+    "precio": 1.75
+  },
+  {
+    "codigo": "PTS-0071",
+    "nombre": "Poop Bags - Ecofriendly Caja",
+    "descripcion": "Poop Bags - Ecofriendly Caja",
+    "categoria": "petshop",
+    "precio": 5
+  },
+  {
+    "codigo": "PTS-0072",
+    "nombre": "Poop Bags - Ecofriendly Unidad",
+    "descripcion": "Poop Bags - Ecofriendly Unidad",
+    "categoria": "petshop",
+    "precio": 1
+  },
+  {
+    "codigo": "PTS-0073",
+    "nombre": "Purina Proplan Raza Pequeña Puppy Perro - 1 kg",
+    "descripcion": "Purina Proplan Raza Pequeña Puppy Perro - 1 kg",
+    "categoria": "petshop",
+    "precio": 13
+  },
+  {
+    "codigo": "PTS-0074",
+    "nombre": "Set de cepillos",
+    "descripcion": "Set de cepillos",
+    "categoria": "petshop",
+    "precio": 20
+  },
+  {
+    "codigo": "PTS-0075",
+    "nombre": "Small Naill Clippers",
+    "descripcion": "Small Naill Clippers",
+    "categoria": "petshop",
+    "precio": 17.5
+  },
+  {
+    "codigo": "PTS-0076",
+    "nombre": "Sobre Purina Porplan Gato Adulto Urinary - Pollo en salsa",
+    "descripcion": "Sobre Purina Porplan Gato Adulto Urinary - Pollo en salsa",
+    "categoria": "petshop",
+    "precio": 1.75
+  },
+  {
+    "codigo": "PTS-0077",
+    "nombre": "Sobre Purina Proplan Adult- Carne en salsa",
+    "descripcion": "Sobre Purina Proplan Adult- Carne en salsa",
+    "categoria": "petshop",
+    "precio": 1.75
+  },
+  {
+    "codigo": "PTS-0078",
+    "nombre": "Sobre Purina Proplan Gato Adulto - Salmon en salsa",
+    "descripcion": "Sobre Purina Proplan Gato Adulto - Salmon en salsa",
+    "categoria": "petshop",
+    "precio": 1.75
+  },
+  {
+    "codigo": "PTS-0079",
+    "nombre": "Sobre Purina Proplan Puppy - Pollo en salsa",
+    "descripcion": "Sobre Purina Proplan Puppy - Pollo en salsa",
+    "categoria": "petshop",
+    "precio": 1.75
+  },
+  {
+    "codigo": "PTS-0080",
+    "nombre": "Sueter Talla XL - Variedad",
+    "descripcion": "Sueter Talla XL - Variedad",
+    "categoria": "petshop",
+    "precio": 6
+  },
+  {
+    "codigo": "PTS-0081",
+    "nombre": "Touch Light / Variedad",
+    "descripcion": "Touch Light / Variedad",
+    "categoria": "petshop",
+    "precio": 12
+  }
+]

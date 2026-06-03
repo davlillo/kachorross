@@ -8,9 +8,10 @@ import { Badge } from '@/components/atoms/ui/badge'
 import { cn } from '@/lib/utils'
 import {
   CheckCircle, X, PawPrint, User, Phone, Clock, FileText,
-  Stethoscope, Pill, Syringe, ShoppingBag, FlaskConical, Printer,
+  Stethoscope, Printer,
 } from 'lucide-react'
 import type { Consulta, Mascota } from '@/types'
+import { getCategoriaConfig, getCategoriaLabel } from '@/lib/catalogo-categorias'
 import { useAuth } from '@/context/AuthContext'
 import { imprimirTratamiento } from '@/lib/printTratamiento'
 import { generarPdfTratamiento } from '@/lib/pdfTratamiento'
@@ -26,14 +27,6 @@ interface DetailRecepcionDialogProps {
   consulta: Consulta | undefined
   mascota?: Mascota
   onTerminado?: (consultaId: string) => void
-}
-
-const categoriaConfig: Record<string, { icon: React.ElementType; color: string; bg: string; border: string }> = {
-  servicio:    { icon: Stethoscope,  color: 'text-blue-700',   bg: 'bg-blue-50',   border: 'border-blue-300' },
-  vacuna:      { icon: Syringe,      color: 'text-violet-700', bg: 'bg-violet-50', border: 'border-violet-300' },
-  medicamento: { icon: Pill,         color: 'text-amber-700',  bg: 'bg-amber-50',  border: 'border-amber-300' },
-  petshop:     { icon: ShoppingBag,  color: 'text-pink-700',   bg: 'bg-pink-50',   border: 'border-pink-300' },
-  laboratorio: { icon: FlaskConical, color: 'text-purple-700', bg: 'bg-purple-50', border: 'border-purple-300' },
 }
 
 export function DetailRecepcionDialog({
@@ -242,7 +235,7 @@ export function DetailRecepcionDialog({
 
                     {/* Filas */}
                     {consulta.detalles.map((detalle, idx) => {
-                      const cat = categoriaConfig[detalle.producto.categoria] ?? categoriaConfig.servicio
+                      const cat = getCategoriaConfig(detalle.producto.categoria, detalle.producto.codigo)
                       const CatIcon = cat.icon
                       return (
                         <div
@@ -262,7 +255,7 @@ export function DetailRecepcionDialog({
                           <div className="col-span-4 min-w-0 pr-1">
                             <p className="text-xs font-semibold truncate leading-tight">{detalle.producto.nombre}</p>
                             <Badge className={`text-[9px] px-1 py-0 ${cat.bg} ${cat.color} border-0 mt-0.5`}>
-                              {detalle.producto.categoria}
+                              {getCategoriaLabel(detalle.producto.categoria, detalle.producto.codigo)}
                             </Badge>
                           </div>
 

@@ -13,6 +13,7 @@ import type {
   Vacuna,
 } from '@/types'
 import { AuthController } from './auth.controller'
+import { normalizeCategoria } from '@/lib/catalogo-categorias'
 
 let instance: MascotaController | null = null
 
@@ -57,7 +58,7 @@ export class MascotaController {
       codigo: row.catalogo?.codigo ?? 'MANUAL',
       nombre: row.catalogo?.nombre ?? row.nombre_personalizado ?? 'Item sin catálogo',
       descripcion: row.catalogo?.descripcion ?? '',
-      categoria: (row.catalogo?.categoria ?? 'servicio') as Producto['categoria'],
+      categoria: normalizeCategoria(row.catalogo?.categoria ?? 'consulta', row.catalogo?.codigo),
       precio: Number(row.catalogo?.precio ?? row.precio_aplicado ?? 0),
       activo: row.catalogo?.activo ?? true,
     }

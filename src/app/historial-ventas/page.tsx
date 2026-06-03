@@ -6,27 +6,11 @@ import { PageHeader } from '@/components/molecules/PageHeader';
 import { ConsultaController } from '@/controllers/consulta.controller';
 import { MascotaController } from '@/controllers/mascota.controller';
 import type { Consulta, Mascota } from '@/types';
+import { getCategoriaConfig } from '@/lib/catalogo-categorias';
 import {
   History, Search, TrendingUp, DollarSign,
-  Calendar, Receipt, ChevronRight, Stethoscope, Pill,
-  Syringe, ShoppingBag, FlaskConical,
+  Calendar, Receipt, ChevronRight, Stethoscope,
 } from 'lucide-react';
-
-const categoriaIcon: Record<string, React.ElementType> = {
-  servicio: Stethoscope,
-  medicamento: Pill,
-  vacuna: Syringe,
-  petshop: ShoppingBag,
-  laboratorio: FlaskConical,
-};
-
-const categoriaColor: Record<string, string> = {
-  servicio:    'text-blue-600 bg-blue-50',
-  medicamento: 'text-amber-600 bg-amber-50',
-  vacuna:      'text-violet-600 bg-violet-50',
-  petshop:     'text-pink-600 bg-pink-50',
-  laboratorio: 'text-purple-600 bg-purple-50',
-};
 
 export default function HistorialVentasPage() {
   const consultaCtrl = ConsultaController.getInstance();
@@ -191,8 +175,9 @@ export default function HistorialVentasPage() {
                             <div className="col-span-2 text-right">Total</div>
                           </div>
                           {consulta.detalles.map((d: any, i: number) => {
-                            const CatIcon = categoriaIcon[d.producto.categoria] ?? Stethoscope;
-                            const colorClass = categoriaColor[d.producto.categoria] ?? categoriaColor.servicio;
+                            const cat = getCategoriaConfig(d.producto.categoria, d.producto.codigo)
+                            const CatIcon = cat.icon
+                            const colorClass = `${cat.bg} ${cat.color} ${cat.border} border`
                             return (
                               <div
                                 key={d.id}
