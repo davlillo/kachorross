@@ -18,6 +18,7 @@ import { TimeClockPicker, TratamientoHoja } from '@/components/molecules';
 import { ProductSelectorDialog } from '@/components/organisms/ProductSelectorDialog';
 import { Badge } from '@/components/atoms/ui/badge';
 
+import { todayLocal } from '@/lib/utils';
 import { toast } from 'sonner';
 import {
   Stethoscope,
@@ -273,6 +274,7 @@ export default function NuevaConsultaPage() {
                           value={proximaCita}
                           onChange={(e) => setProximaCita(e.target.value)}
                           className="mt-0.5 h-10 bg-white"
+                          min={todayLocal()}
                         />
                       </div>
                       <div>

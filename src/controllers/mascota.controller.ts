@@ -14,6 +14,7 @@ import type {
 } from '@/types'
 import { AuthController } from './auth.controller'
 import { normalizeCategoria } from '@/lib/catalogo-categorias'
+import { todayLocal } from '@/lib/utils'
 
 let instance: MascotaController | null = null
 
@@ -47,7 +48,7 @@ export class MascotaController {
       propietario,
       alergias: (row.alergias ?? []) as string[],
       notasEspeciales: row.notas_especiales ?? undefined,
-      fechaRegistro: row.fecha_registro ?? new Date().toISOString().split('T')[0],
+      fechaRegistro: row.fecha_registro ?? todayLocal(),
     }
   }
 
@@ -481,6 +482,7 @@ export class MascotaController {
         propietario_id: propietarioRow.id,
         alergias: data.mascota.alergias ?? [],
         notas_especiales: data.mascota.notasEspeciales,
+        fecha_registro: todayLocal(),
       })
       .select('id')
       .single()

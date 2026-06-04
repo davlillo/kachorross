@@ -4,9 +4,10 @@ import { Badge } from '@/components/atoms/ui/badge'
 import { Separator } from '@/components/atoms/ui/separator'
 import { PawPrint, Camera, Weight, Calendar, Clock, User, Phone, MapPin, AlertCircle, FileText, Loader2 } from 'lucide-react'
 import type { Mascota } from '@/types'
+import { parseDateLocal, formatDateLocal } from '@/lib/utils'
 
 function getAge(birthDate: string) {
-  const birth = new Date(birthDate)
+  const birth = parseDateLocal(birthDate)
   const today = new Date()
   const years = today.getFullYear() - birth.getFullYear()
   const months = today.getMonth() - birth.getMonth()
@@ -76,9 +77,9 @@ export function PatientInfoCard({ mascota, onSubirFotoPerfil, subiendoFotoPerfil
 
         <div className="space-y-3">
           <InfoRow icon={Weight} label="Peso" value={`${mascota.peso} kg`} />
-          <InfoRow icon={Calendar} label="Nacimiento" value={new Date(mascota.fechaNacimiento).toLocaleDateString('es-ES')} />
+          <InfoRow icon={Calendar} label="Nacimiento" value={formatDateLocal(mascota.fechaNacimiento)} />
           <InfoRow icon={Clock} label="Edad" value={getAge(mascota.fechaNacimiento)} />
-          <InfoRow icon={Calendar} label="Registro" value={new Date(mascota.fechaRegistro).toLocaleDateString('es-ES')} />
+          <InfoRow icon={Calendar} label="Registro" value={formatDateLocal(mascota.fechaRegistro)} />
           <InfoRow icon={User} label="Sexo" value={mascota.sexo === 'macho' ? 'Macho' : 'Hembra'} />
         </div>
 
