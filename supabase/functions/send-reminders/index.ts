@@ -1,8 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const TZ = 'America/El_Salvador'
-const CRON_SECRET = Deno.env.get('CRON_SECRET') ?? ''
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -109,8 +107,7 @@ Deno.serve(async (req) => {
     const admin = createClient(supabaseUrl, serviceRoleKey)
 
     const authHeader = req.headers.get('Authorization') ?? ''
-    const esCron = CRON_SECRET && authHeader === `Bearer ${CRON_SECRET}`
-    if (!esCron) {
+    if (authHeader) {
       const client = createClient(supabaseUrl, supabaseAnonKey, {
         global: { headers: { Authorization: authHeader } },
       })

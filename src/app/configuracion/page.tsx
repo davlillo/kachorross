@@ -10,7 +10,7 @@ import { Label } from '@/components/atoms/ui/label';
 import { Separator } from '@/components/atoms/ui/separator';
 import {
   Settings, Upload, Building, Mail, Phone, MapPin, Loader2, PawPrint,
-  Key, Save, Send, Info, Eye, EyeOff, HelpCircle, Calendar,
+  Key, Save, Send, Info, Eye, EyeOff, HelpCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -27,7 +27,6 @@ export default function ConfiguracionPage() {
   const [emailLoading, setEmailLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
-  const [isSendingReminders, setIsSendingReminders] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [emailForm, setEmailForm] = useState({
     smtpUser: '',
@@ -157,40 +156,6 @@ export default function ConfiguracionPage() {
       toast.error(err.message || 'Error de conexión');
     } finally {
       setIsTesting(false);
-    }
-  };
-
-  const handleRecordatorios = async () => {
-    setIsSendingReminders(true);
-    try {
-      const result = await emailCtrl.enviarRecordatoriosAgenda();
-      if (!result.ok) {
-        toast.error(result.error || 'No se pudieron enviar recordatorios');
-        return;
-      }
-      if (result.enviados && result.enviados > 0) {
-        toast.success(`Recordatorios enviados: ${result.enviados}`, {
-          description: `Controles/vacunas programados para ${result.fechaManana ?? 'mañana'}`,
-        });
-      } else if (result.omitidos && result.omitidos > 0) {
-        toast.info('Ya se enviaron recordatorios hoy a esos propietarios');
-      } else if (result.grupos === 0) {
-        toast.info('No hay citas programadas para mañana', {
-          description: result.detalle?.[0] ?? 'El próximo control debe ser para mañana (fecha en agenda).',
-        });
-      } else if (result.errores?.length) {
-        toast.warning(result.errores[0], {
-          description: result.detalle?.slice(0, 2).join(' · ') || undefined,
-        });
-      } else {
-        toast.info('No se envió ningún recordatorio', {
-          description: result.detalle?.slice(0, 3).join(' · ') || `Controles mañana: ${result.controlesEncontrados ?? 0}`,
-        });
-      }
-    } catch (err: any) {
-      toast.error(err.message || 'Error al enviar recordatorios');
-    } finally {
-      setIsSendingReminders(false);
     }
   };
 
@@ -405,18 +370,6 @@ export default function ConfiguracionPage() {
                   Probar
                 </Button>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isSendingReminders}
-                onClick={() => void handleRecordatorios()}
-                className="w-full h-9 border-purpura-200 text-purpura-700 hover:bg-purpura-50"
-              >
-                {isSendingReminders
-                  ? <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                  : <Calendar className="w-4 h-4 mr-1" />}
-                Enviar recordatorios de mañana
-              </Button>
             </CardFooter>
           )}
         </Card>
