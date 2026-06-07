@@ -1,0 +1,38 @@
+# OpenSpec — kachorross
+# Initialized: 2026-06-05
+# Mode: hybrid (OpenSpec files + Engram memory)
+
+context: |
+  Kachorro's — Veterinary clinic management system (React 19 + Vite 7 + TypeScript 5.9 + Tailwind 3.4 + Radix UI + React Router 7).
+  3-layer architecture: Pages → Hooks (React state) → Controllers (singletons, mock data → Supabase planned).
+  Atomic Design components: atoms/ui (shadcn/ui new-york) + atoms/custom → molecules → organisms.
+  Multi-tenancy via `veterinarias` table. Roles: doctora, recepcion, admin, super_admin.
+  Mock data in `src/data/mockData.ts` reinicia al recargar. Supabase schema exists in `supabase_schema.sql`.
+  Zod 4 + React Hook Form 7 for validation. Recharts for charts.
+
+strict_tdd: false
+strict_tdd_reason: "No test runner installed. project has zero test infrastructure. vitest/jest must be configured before enabling strict TDD."
+
+testing:
+  runner: none
+  framework: none
+  layers:
+    unit: { available: false, tool: "—" }
+    integration: { available: false, tool: "—" }
+    e2e: { available: false, tool: "—" }
+  coverage:
+    available: false
+    command: "—"
+  quality:
+    linter: { available: true, tool: "ESLint 9 + typescript-eslint 8", command: "npm run lint" }
+    type_checker: { available: true, tool: "TypeScript 5.9 strict mode", command: "tsc -b" }
+    formatter: { available: false, tool: "—", command: "—" }
+
+phase_rules:
+  proposal: "Require sdd-propose skill. Scope must reference src/ layers: app, hooks, controllers, types. No test impact until runner is configured."
+  spec: "Require sdd-spec skill. Write delta specs under specs/. Relate to existing domain types in src/types/index.ts."
+  design: "Require sdd-design skill. Follow Atomic Design layers. No new framework/pattern without tradeoff justification."
+  tasks: "Require sdd-tasks skill. Break by layer: types → controller → hook → page → component."
+  apply: "Require sdd-apply skill. Follow work-unit-commits for commit splitting."
+  verify: "Require sdd-verify skill. Currently limited to lint + type-check pass until test runner is added."
+  archive: "Require sdd-archive skill. Sync delta specs after verification."

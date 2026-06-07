@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AuthController } from '@/controllers/auth.controller';
 import { MascotaController } from '@/controllers/mascota.controller';
 import { supabase } from '@/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/atoms/ui/card';
@@ -94,8 +95,13 @@ export default function NuevoExpedientePage() {
   const subirFotoMascota = async (): Promise<string | undefined> => {
     if (!fotoFile) return undefined;
 
+    const authCtrl = AuthController.getInstance();
+    const currentUser = await authCtrl.resolveUser();
+    const veterinariaId = currentUser?.veterinariaId;
+    if (!veterinariaId) throw new Error('No se encontró veterinaria activa');
+
     const ext = (fotoFile.name.split('.').pop() || 'jpg').toLowerCase();
-    const fileName = `mascotas/${crypto.randomUUID()}.${ext}`;
+    const fileName = `${veterinariaId}/${crypto.randomUUID()}.${ext}`;
     const contentType = fotoFile.type || `image/${ext}`;
 
     const { error: uploadError } = await supabase.storage
