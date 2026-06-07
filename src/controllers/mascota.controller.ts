@@ -152,22 +152,47 @@ export class MascotaController {
     const veterinariaId = await this.getVeterinariaId()
     if (!veterinariaId) return []
 
-    let request = supabase
-      .from('mascotas')
-      .select('id,nombre,especie,raza,fecha_nacimiento,sexo,color,peso,foto,alergias,notas_especiales,fecha_registro,activo,veterinaria_id,propietarios(id,nombre,telefono,email,direccion,veterinaria_id)')
-      .eq('veterinaria_id', veterinariaId)
-      .eq('activo', true)
-      .order('created_at', { ascending: false })
+    const selectFields = 'id,nombre,especie,raza,fecha_nacimiento,sexo,color,peso,foto,alergias,notas_especiales,fecha_registro,activo,veterinaria_id,propietarios(id,nombre,telefono,email,direccion,veterinaria_id)'
 
-    if (q) {
-      request = request.or(
-        `nombre.ilike.%${q}%,raza.ilike.%${q}%`
-      )
+    const base = () =>
+      supabase
+        .from('mascotas')
+        .select(selectFields)
+        .eq('veterinaria_id', veterinariaId)
+        .eq('activo', true)
+        .order('created_at', { ascending: false })
+
+    if (!q) {
+      const { data, error } = await base()
+      if (error) throw new Error(`No se pudieron buscar mascotas: ${error.message}`)
+      return (data ?? []).map(row => this.mapMascota(row))
     }
 
-    const { data, error } = await request
-    if (error) throw new Error(`No se pudieron buscar mascotas: ${error.message}`)
-    return (data ?? []).map(row => this.mapMascota(row))
+    // Query A: buscar por nombre o raza de la mascota
+    const { data: petData } = await base()
+      .or(`nombre.ilike.%${q}%,raza.ilike.%${q}%`)
+
+    const map = new Map<string, any>()
+    for (const row of petData ?? []) map.set(row.id, row)
+
+    // Query B: buscar propietarios por nombre o teléfono
+    const { data: ownerData } = await supabase
+      .from('propietarios')
+      .select('id')
+      .eq('veterinaria_id', veterinariaId)
+      .or(`nombre.ilike.%${q}%,telefono.ilike.%${q}%`)
+
+    if (ownerData && ownerData.length > 0) {
+      const ownerIds = ownerData.map(o => o.id)
+      const { data: ownerPetData } = await base()
+        .in('propietario_id', ownerIds)
+
+      for (const row of ownerPetData ?? []) {
+        if (!map.has(row.id)) map.set(row.id, row)
+      }
+    }
+
+    return Array.from(map.values()).map(row => this.mapMascota(row))
   }
 
   async listarExpedientesResumen(query = ''): Promise<ExpedienteResumen[]> {

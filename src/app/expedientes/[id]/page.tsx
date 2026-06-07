@@ -19,12 +19,13 @@ import {
 } from '@/components/atoms/ui/select';
 import { PatientInfoCard } from '@/components/organisms/PatientInfoCard';
 import { EmptyState } from '@/components/molecules/EmptyState';
+import { VerConsultaDialog } from '@/components/organisms/VerConsultaDialog';
 import {
   Stethoscope, Syringe, Camera, FileText, Plus, ArrowLeft,
   Pencil, Trash2, AlertTriangle, Filter, CalendarDays,
   Pill, Stamp, ChevronDown,
 } from 'lucide-react';
-import type { Expediente, Mascota, Vacuna, Desparasitacion } from '@/types';
+import type { Consulta, Expediente, Mascota, Vacuna, Desparasitacion } from '@/types';
 import {
   formatTelefono,
   formatPeso,
@@ -250,6 +251,7 @@ export default function ExpedienteDetailPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [fotoOpen, setFotoOpen] = useState(false);
   const [fotoModo, setFotoModo] = useState<'perfil' | 'evolucion'>('evolucion');
+  const [consultaDetalle, setConsultaDetalle] = useState<Consulta | null>(null);
 
   // ── Subida de fotos ────────────────────────────────────────────────────────────
   const [fotoPendiente, setFotoPendiente] = useState<File | null>(null);
@@ -607,7 +609,11 @@ export default function ExpedienteDetailPage() {
                   ) : (
                     <div className="space-y-4 max-h-[480px] overflow-y-auto pr-1">
                       {consultasFiltradas.map(consulta => (
-                        <div key={consulta.id} className="p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
+                        <div
+                          key={consulta.id}
+                          className="p-4 rounded-xl bg-muted/50 hover:bg-muted cursor-pointer transition-colors"
+                          onClick={() => setConsultaDetalle(consulta)}
+                        >
                           <div className="flex items-start justify-between mb-3">
                             <div>
                               <div className="flex items-center gap-2 flex-wrap">
@@ -664,6 +670,12 @@ export default function ExpedienteDetailPage() {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            <VerConsultaDialog
+              open={!!consultaDetalle}
+              onOpenChange={(v) => { if (!v) setConsultaDetalle(null) }}
+              consulta={consultaDetalle}
+            />
 
             {/* ── Tab: Vacunas (Cartilla) ── */}
             <TabsContent value="vacunas" className="mt-4 space-y-4">
