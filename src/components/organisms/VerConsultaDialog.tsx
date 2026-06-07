@@ -1,14 +1,18 @@
+import { useState } from 'react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import {
   Dialog, DialogPortal, DialogOverlay, DialogTitle,
 } from '@/components/atoms/ui/dialog'
 import { Badge } from '@/components/atoms/ui/badge'
+import { Button } from '@/components/atoms/ui/button'
 import { cn } from '@/lib/utils'
 import {
-  X, Stethoscope, CalendarDays, FileText, AlertCircle,
+  X, ArrowLeft, Stethoscope, CalendarDays, FileText, AlertCircle, Eye,
 } from 'lucide-react'
 import type { Consulta } from '@/types'
 import { getCategoriaConfig, getCategoriaLabel } from '@/lib/catalogo-categorias'
+import { generarPdfTratamiento } from '@/lib/pdfTratamiento'
+import { useAuth } from '@/context/AuthContext'
 
 interface VerConsultaDialogProps {
   open: boolean
@@ -17,6 +21,10 @@ interface VerConsultaDialogProps {
 }
 
 export function VerConsultaDialog({ open, onOpenChange, consulta }: VerConsultaDialogProps) {
+  const { veterinaria } = useAuth()
+  const [cargandoPDF, setCargandoPDF] = useState<boolean>(false)
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null)
+
   if (!consulta) return null
 
   const fecha = new Date(consulta.fecha)
@@ -24,6 +32,30 @@ export function VerConsultaDialog({ open, onOpenChange, consulta }: VerConsultaD
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   })
   const horaStr = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+
+  const handleVisualizarPDF = async () => {
+    setCargandoPDF(true)
+    try {
+      const base64 = await generarPdfTratamiento(consulta.tratamiento, veterinaria?.logoUrl)
+      const byteCharacters = atob(base64)
+      const byteNumbers = new Array(byteCharacters.length)
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i)
+      }
+      const byteArray = new Uint8Array(byteNumbers)
+      const blob = new Blob([byteArray], { type: 'application/pdf' })
+      setPdfPreviewUrl(URL.createObjectURL(blob))
+    } catch (error) {
+      console.error('Error al generar PDF:', error)
+    } finally {
+      setCargandoPDF(false)
+    }
+  }
+
+  const handleCerrarPDF = () => {
+    if (pdfPreviewUrl) URL.revokeObjectURL(pdfPreviewUrl)
+    setPdfPreviewUrl(null)
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -44,19 +76,32 @@ export function VerConsultaDialog({ open, onOpenChange, consulta }: VerConsultaD
           {/* ── Header degradado ── */}
           <div className="relative bg-gradient-to-r from-purpura-600 to-violet-700 px-6 py-4 text-white">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-                  <Stethoscope className="w-5 h-5" />
+              {pdfPreviewUrl ? (
+                <button
+                  onClick={handleCerrarPDF}
+                  className="flex items-center gap-1.5 text-sm font-semibold text-white/90 hover:text-white transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Volver
+                </button>
+              ) : (
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                    <Stethoscope className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="font-bold text-lg leading-tight truncate">{consulta.motivo}</h2>
+                    <p className="text-xs text-white/70 truncate">
+                      {fechaStr} &middot; {horaStr} &middot; {consulta.doctora}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <h2 className="font-bold text-lg leading-tight truncate">{consulta.motivo}</h2>
-                  <p className="text-xs text-white/70 truncate">
-                    {fechaStr} &middot; {horaStr} &middot; {consulta.doctora}
-                  </p>
-                </div>
-              </div>
+              )}
               <button
-                onClick={() => onOpenChange(false)}
+                onClick={() => {
+                  if (pdfPreviewUrl) handleCerrarPDF()
+                  onOpenChange(false)
+                }}
                 className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors shrink-0"
               >
                 <X className="w-4 h-4" />
@@ -65,6 +110,15 @@ export function VerConsultaDialog({ open, onOpenChange, consulta }: VerConsultaD
           </div>
 
           {/* ── Cuerpo ── */}
+          {pdfPreviewUrl ? (
+            <div className="w-full h-[80vh] max-h-[80vh] bg-white flex flex-col">
+              <embed
+                src={pdfPreviewUrl}
+                type="application/pdf"
+                className="w-full flex-1"
+              />
+            </div>
+          ) : (
           <div className="p-5 space-y-4 max-h-[65vh] overflow-y-auto">
             {/* Síntomas + Diagnóstico */}
             <div className="grid grid-cols-2 gap-3">
@@ -85,12 +139,31 @@ export function VerConsultaDialog({ open, onOpenChange, consulta }: VerConsultaD
             </div>
 
             {/* Tratamiento */}
-            <div className="flex items-start gap-2 p-3 rounded-xl bg-blue-50 border border-blue-100">
-              <FileText className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs text-muted-foreground">Tratamiento</p>
-                <p className="font-semibold text-sm mt-1 whitespace-pre-wrap">{consulta.tratamiento}</p>
+            <div className="p-3 rounded-xl bg-blue-50 border border-blue-100 space-y-3">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-blue-600 shrink-0" />
+                <p className="text-xs text-muted-foreground font-medium">Tratamiento</p>
               </div>
+              {consulta.tratamiento ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full h-9 text-xs border-blue-200 text-blue-700 hover:bg-blue-100"
+                  onClick={handleVisualizarPDF}
+                  disabled={cargandoPDF}
+                >
+                  {cargandoPDF ? (
+                    <span className="flex items-center gap-1.5">Generando...</span>
+                  ) : (
+                    <>
+                      <Eye className="w-3.5 h-3.5 mr-1.5" />
+                      Visualizar PDF
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <p className="text-sm text-muted-foreground">Sin tratamiento registrado.</p>
+              )}
             </div>
 
             {/* Notas */}
@@ -179,6 +252,7 @@ export function VerConsultaDialog({ open, onOpenChange, consulta }: VerConsultaD
               </div>
             )}
           </div>
+          )}
         </DialogPrimitive.Content>
       </DialogPortal>
     </Dialog>
