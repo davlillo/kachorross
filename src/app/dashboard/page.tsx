@@ -191,12 +191,12 @@ export default function DashboardPage() {
 
   // ── Tipos de animales ────────────────────────────────────────────────────────
   const animalStats = [
-    { label: 'Perros',  value: mascotas.filter(m => m.especie === 'perro').length,  icon: '🐕', color: 'from-blue-400 to-blue-600',     bg: 'bg-blue-50',   text: 'text-blue-700' },
-    { label: 'Gatos',   value: mascotas.filter(m => m.especie === 'gato').length,   icon: '🐱', color: 'from-pink-400 to-pink-600',     bg: 'bg-pink-50',   text: 'text-pink-700' },
-    { label: 'Conejos', value: mascotas.filter(m => m.especie === 'conejo').length, icon: '🐰', color: 'from-amber-400 to-amber-600',   bg: 'bg-amber-50',  text: 'text-amber-700' },
-    { label: 'Aves',    value: mascotas.filter(m => m.especie === 'ave').length,    icon: '🦜', color: 'from-emerald-400 to-emerald-600',bg: 'bg-emerald-50',text: 'text-emerald-700' },
-    { label: 'Otros',   value: mascotas.filter(m => !['perro','gato','conejo','ave'].includes(m.especie)).length, icon: '🐾', color: 'from-violet-400 to-violet-600', bg: 'bg-violet-50', text: 'text-violet-700' },
-    { label: 'Total',   value: mascotas.length, icon: '📋', color: 'from-slate-400 to-slate-600', bg: 'bg-slate-50', text: 'text-slate-700' },
+    { label: 'Perros',  value: mascotas.filter(m => m.especie === 'perro').length,  icon: '🐕', color: 'from-blue-400 to-blue-600',     bg: 'bg-blue-50 dark:bg-blue-950',   text: 'text-blue-700 dark:text-blue-300' },
+    { label: 'Gatos',   value: mascotas.filter(m => m.especie === 'gato').length,   icon: '🐱', color: 'from-pink-400 to-pink-600',     bg: 'bg-pink-50 dark:bg-pink-950',   text: 'text-pink-700 dark:text-pink-300' },
+    { label: 'Conejos', value: mascotas.filter(m => m.especie === 'conejo').length, icon: '🐰', color: 'from-amber-400 to-amber-600',   bg: 'bg-amber-50 dark:bg-amber-950', text: 'text-amber-700 dark:text-amber-300' },
+    { label: 'Aves',    value: mascotas.filter(m => m.especie === 'ave').length,    icon: '🦜', color: 'from-emerald-400 to-emerald-600',bg: 'bg-emerald-50 dark:bg-emerald-950', text: 'text-emerald-700 dark:text-emerald-300' },
+    { label: 'Otros',   value: mascotas.filter(m => !['perro','gato','conejo','ave'].includes(m.especie)).length, icon: '🐾', color: 'from-violet-400 to-violet-600', bg: 'bg-violet-50 dark:bg-violet-950', text: 'text-violet-700 dark:text-violet-300' },
+    { label: 'Total',   value: mascotas.length, icon: '📋', color: 'from-slate-400 to-slate-600', bg: 'bg-slate-50 dark:bg-slate-800', text: 'text-slate-700 dark:text-slate-300' },
   ];
 
   // ── Lógica calendario ────────────────────────────────────────────────────────
@@ -284,7 +284,7 @@ export default function DashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
-            {getGreeting()}, <span className="text-purpura-600">{user?.nombre.split(' ')[0]}</span>
+            {getGreeting()}, <span className="text-brand-primary">{user?.nombre.split(' ')[0]}</span>
           </h1>
           <p className="text-muted-foreground mt-1">
             {getRoleLabel(user?.rol || '')} • {new Date().toLocaleDateString('es-ES', {
@@ -295,14 +295,14 @@ export default function DashboardPage() {
         <div className="flex gap-2">
           {user?.rol === 'doctora' && (
             <Link to="/consulta/nueva">
-              <Button className="bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700">
+              <Button className="bg-gradient-to-r from-brand-primary to-brand-primary hover:from-brand-primary hover:to-brand-primary">
                 <Stethoscope className="w-4 h-4 mr-2" />Nueva Consulta
               </Button>
             </Link>
           )}
           {user?.rol === 'recepcion' && (
             <Link to="/recepcion">
-              <Button className="bg-gradient-to-r from-azure-blue to-blue-violet">
+              <Button className="bg-gradient-to-r from-brand-secondary to-brand-primary">
                 <Clock className="w-4 h-4 mr-2" />Ver Monitor
               </Button>
             </Link>
@@ -320,7 +320,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 gap-4">
 
             {/* Pacientes Hoy */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purpura-500 via-violet-600 to-violet-800 p-6 shadow-lg text-white min-h-[140px]">
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-primary via-brand-primary to-brand-primary p-6 shadow-lg text-white min-h-[140px]">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.15),transparent_60%)]" />
               <Users className="absolute -right-4 -bottom-4 w-28 h-28 opacity-[0.08]" />
               <div className="relative z-10 flex flex-col h-full justify-between">
@@ -395,11 +395,11 @@ export default function DashboardPage() {
           <div className="bg-card rounded-2xl shadow-soft px-4 py-3">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <PawPrint className="w-4 h-4 text-blue-violet" />
+                <PawPrint className="w-4 h-4 text-brand-primary" />
                 Pacientes Recientes
               </p>
               <Link to="/expedientes">
-                <Button variant="ghost" size="sm" className="text-purpura-600 text-xs h-6 px-2">
+                <Button variant="ghost" size="sm" className="text-brand-primary text-xs h-6 px-2">
                   Ver todos <ArrowRight className="w-3 h-3 ml-1" />
                 </Button>
               </Link>
@@ -423,12 +423,12 @@ export default function DashboardPage() {
           <CardHeader className="pb-2 pt-4 px-4 shrink-0">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-purpura-500" />
+                <Calendar className="w-4 h-4 text-brand-primary" />
                 Agenda
               </CardTitle>
               <Button
                 size="sm"
-                className="h-7 px-2 text-xs bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700"
+                className="h-7 px-2 text-xs bg-gradient-to-r from-brand-primary to-brand-primary hover:from-brand-primary hover:to-brand-primary"
                 onClick={() => setMostrarForm(true)}
                 disabled={!diaSeleccionado}
               >
@@ -468,7 +468,7 @@ export default function DashboardPage() {
                   return (
                     <button key={key} onClick={() => setDiaSeleccionado(dia)}
                       className={`flex flex-col items-center rounded-lg py-1 min-h-[36px] transition-all
-                        ${esSel ? 'bg-purpura-500 text-white shadow-md scale-105' : esHoy ? 'bg-purpura-100 text-purpura-700 font-bold' : 'hover:bg-muted'}`}
+                        ${esSel ? 'bg-brand-primary text-white shadow-md scale-105' : esHoy ? 'bg-brand-primary/10 text-brand-primary font-bold' : 'hover:bg-muted'}`}
                     >
                       <span className="text-xs leading-tight">{format(dia, 'd')}</span>
                       <div className="flex gap-0.5 flex-wrap justify-center mt-0.5">
@@ -516,7 +516,7 @@ export default function DashboardPage() {
                         return (
                           <div
                             key={ev.id}
-                            className={`flex items-center gap-3 rounded-lg border border-border/70 bg-white shadow-sm border-l-[3px] ${col.border} px-3 py-2 group`}
+                            className={`flex items-center gap-3 rounded-lg border border-border/70 bg-card shadow-sm border-l-[3px] ${col.border} px-3 py-2 group`}
                           >
                             <div className="shrink-0 min-w-[3.25rem] text-center flex flex-col justify-center">
                               {ev.hora && (
@@ -634,7 +634,7 @@ export default function DashboardPage() {
             >
               Cancelar
             </Button>
-            <Button className="bg-purpura-500 hover:bg-purpura-600" onClick={() => void agregarEvento()} disabled={guardandoEvento}>
+            <Button className="bg-brand-primary hover:bg-brand-primary" onClick={() => void agregarEvento()} disabled={guardandoEvento}>
               {guardandoEvento ? 'Guardando...' : 'Guardar'}
             </Button>
           </DialogFooter>
@@ -649,14 +649,14 @@ export default function DashboardPage() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <Stethoscope className="w-4 h-4 text-purpura-500" />
+                <Stethoscope className="w-4 h-4 text-brand-primary" />
                 Consultas Realizadas
                 <Badge variant="outline" className="text-xs font-normal">{totalConsultas} total</Badge>
               </CardTitle>
               <div className="flex gap-1">
                 {(['semana','mes'] as const).map(p => (
                   <Button key={p} size="sm" variant={periodoGrafica === p ? 'default' : 'ghost'}
-                    className={`h-6 px-2 text-xs ${periodoGrafica === p ? 'bg-purpura-500 hover:bg-purpura-600' : ''}`}
+                    className={`h-6 px-2 text-xs ${periodoGrafica === p ? 'bg-brand-primary hover:bg-brand-primary' : ''}`}
                     onClick={() => setPeriodoGrafica(p)}>
                     {p === 'semana' ? 'Semana' : 'Mes'}
                   </Button>

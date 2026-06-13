@@ -25,7 +25,7 @@ export function PageHeader({ title, description, icon: Icon, backHref, actions, 
         )}
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold text-foreground flex items-center gap-2">
-            {Icon && <Icon className="w-7 h-7 text-purpura-500" />}
+            {Icon && <Icon className="w-7 h-7 text-brand-primary" />}
             {title}
             {badge}
           </h1>

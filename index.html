@@ -4,6 +4,28 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Veterinaria Kachorro's</title>
+    <!-- Anti-FOUT: inject Púrpura default CSS vars before React hydrates -->
+    <script>
+      (function() {
+        try {
+          var m = localStorage.getItem('kachorros-theme-mode');
+          if (m === 'dark') document.documentElement.classList.add('dark');
+        } catch(e) {}
+        var r = document.documentElement.style;
+        r.setProperty('--brand-primary', '270 75% 42%');
+        r.setProperty('--brand-secondary', '45 100% 52%');
+        r.setProperty('--brand-surface', '270 25% 98%');
+        r.setProperty('--brand-text', '270 20% 15%');
+        r.setProperty('--brand-muted', '270 20% 95%');
+        r.setProperty('--brand-accent', '45 100% 52%');
+        r.setProperty('--brand-border', '270 20% 88%');
+        r.setProperty('--brand-destructive', '0 84.2% 60.2%');
+        r.setProperty('--brand-sidebar', '0 0% 98%');
+        r.setProperty('--brand-sidebar-foreground', '270 20% 25%');
+        r.setProperty('--brand-sidebar-primary', '270 75% 42%');
+        r.setProperty('--brand-sidebar-accent', '45 100% 52%');
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

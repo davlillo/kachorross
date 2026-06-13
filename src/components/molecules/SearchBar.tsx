@@ -41,7 +41,7 @@ export function SearchBar({ placeholder, value, onChange, filters, currentFilter
                   variant={currentFilter === f.value ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => onFilterChange(f.value)}
-                  className={currentFilter === f.value ? (f.activeClass || 'bg-purpura-500') : ''}
+                  className={currentFilter === f.value ? (f.activeClass || 'bg-brand-primary') : ''}
                 >
                   {f.label}
                 </Button>

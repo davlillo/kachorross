@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/theme/ThemeContext';
 import { Button } from '@/components/atoms/ui/button';
 import {
   DropdownMenu,
@@ -27,6 +28,8 @@ import {
   Users,
   Shield,
   History,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useState } from 'react';
 import type { Perfil } from '@/types';
@@ -80,6 +83,7 @@ const navItems: NavItem[] = [
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, veterinaria, logout } = useAuth();
+  const { mode, toggleMode } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -131,11 +135,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               {hasCustomLogo ? (
                 <img src={customLogoUrl} alt="Logo" className="w-full h-full object-contain p-1" />
               ) : (
-                <PawPrint className="w-7 h-7 text-purpura-500" />
+                <PawPrint className="w-7 h-7 text-brand-primary" />
               )}
             </div>
             <div>
-              <h1 className="font-bold text-base leading-tight text-blue-violet line-clamp-2">
+              <h1 className="font-bold text-base leading-tight text-brand-primary line-clamp-2">
                 {brandName}
               </h1>
             </div>
@@ -154,7 +158,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 className={`
                   flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
                   ${isActive 
-                    ? 'bg-gradient-to-r from-purpura-500 to-purpura-600 text-white shadow-md' 
+                    ? 'bg-gradient-to-r from-brand-primary to-brand-primary text-white shadow-md' 
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   }
                 `}
@@ -164,7 +168,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 {item.badge && (
                   <Badge 
                     variant={isActive ? "secondary" : "default"}
-                    className={`ml-auto text-xs ${isActive ? 'bg-white/20 text-white' : 'bg-neon-pink text-white'}`}
+                    className={`ml-auto text-xs ${isActive ? 'bg-white/20 text-white' : 'bg-brand-accent text-white'}`}
                   >
                     {item.badge}
                   </Badge>
@@ -176,12 +180,26 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
         {/* User Card */}
         <div className="p-4 border-t border-border">
+          <button
+            onClick={toggleMode}
+            className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors mb-2"
+            aria-label={mode === 'light' ? 'Activar modo oscuro' : 'Activar modo claro'}
+          >
+            {mode === 'light' ? (
+              <Moon className="w-5 h-5 text-muted-foreground" />
+            ) : (
+              <Sun className="w-5 h-5 text-muted-foreground" />
+            )}
+            <span className="text-sm text-muted-foreground">
+              {mode === 'light' ? 'Modo oscuro' : 'Modo claro'}
+            </span>
+          </button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
-                <Avatar className="w-10 h-10 border-2 border-purpura-200">
+                <Avatar className="w-10 h-10 border-2 border-brand-primary/20">
                   <AvatarImage src={user.avatar} alt={user.nombre} />
-                  <AvatarFallback className="bg-gradient-to-br from-purpura-400 to-purpura-600 text-white">
+                  <AvatarFallback className="bg-gradient-to-br from-brand-primary to-brand-primary text-white">
                     {getInitials(user.nombre)}
                   </AvatarFallback>
                 </Avatar>
@@ -240,15 +258,23 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               {hasCustomLogo ? (
                 <img src={customLogoUrl} alt="Logo" className="w-full h-full object-contain p-0.5" />
               ) : (
-                <PawPrint className="w-5 h-5 text-purpura-500" />
+                <PawPrint className="w-5 h-5 text-brand-primary" />
               )}
             </div>
-            <span className="font-bold text-sm text-blue-violet truncate max-w-[150px]">
+            <span className="font-bold text-sm text-brand-primary truncate max-w-[150px]">
               {brandName}
             </span>
           </Link>
 
           <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleMode}
+              aria-label={mode === 'light' ? 'Activar modo oscuro' : 'Activar modo claro'}
+            >
+              {mode === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+            </Button>
             <Button
               variant="ghost"
               size="icon"
@@ -278,7 +304,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   className={`
                     flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
                     ${isActive 
-                      ? 'bg-purpura-500 text-white' 
+                      ? 'bg-brand-primary text-white' 
                       : 'text-muted-foreground hover:bg-muted'
                     }
                   `}
@@ -286,7 +312,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   <item.icon className="w-5 h-5" />
                   <span>{item.label}</span>
                   {item.badge && (
-                    <Badge className="ml-auto bg-neon-pink text-white">
+                    <Badge className="ml-auto bg-brand-accent text-white">
                       {item.badge}
                     </Badge>
                   )}

@@ -175,7 +175,7 @@ export default function NuevoExpedientePage() {
           <Card className="border-0 shadow-soft">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <User className="w-5 h-5 text-azure-blue" />
+                <User className="w-5 h-5 text-brand-secondary" />
                 Datos del Propietario
               </CardTitle>
             </CardHeader>
@@ -245,7 +245,7 @@ export default function NuevoExpedientePage() {
           <Card className="border-0 shadow-soft">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <PawPrint className="w-5 h-5 text-purpura-500" />
+                <PawPrint className="w-5 h-5 text-brand-primary" />
                 Datos de la Mascota
               </CardTitle>
             </CardHeader>
@@ -354,7 +354,7 @@ export default function NuevoExpedientePage() {
                   <div className="mt-1 flex items-center gap-3">
                     <label
                       htmlFor="mascotaFoto"
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-muted-foreground/30 hover:border-purpura-300 hover:bg-purpura-50 cursor-pointer transition-colors text-sm text-muted-foreground"
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-muted-foreground/30 hover:border-brand-primary/30 hover:bg-brand-primary/5 cursor-pointer transition-colors text-sm text-muted-foreground"
                     >
                       <Camera className="w-4 h-4" />
                       {fotoFile ? fotoFile.name : 'Subir foto'}
@@ -432,7 +432,7 @@ export default function NuevoExpedientePage() {
           <Button
             type="submit"
             disabled={!isValid || isSaving}
-            className="bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700 min-w-[180px]"
+            className="bg-gradient-to-r from-brand-primary to-brand-primary hover:from-brand-primary hover:to-brand-primary min-w-[180px]"
           >
             <Save className="w-4 h-4 mr-2" />
             {isSaving ? 'Guardando...' : 'Guardar Paciente'}

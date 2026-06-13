@@ -154,7 +154,7 @@ export default function NuevaConsultaPage() {
           <Card className="border-0 shadow-soft">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <PawPrint className="w-5 h-5 text-purpura-500" />
+                <PawPrint className="w-5 h-5 text-brand-primary" />
                 Paciente
               </CardTitle>
             </CardHeader>
@@ -189,7 +189,7 @@ export default function NuevaConsultaPage() {
               ) : (
                 <Button 
                   onClick={() => setShowMascotaDialog(true)}
-                  className="w-full h-20 border-dashed border-2 border-muted hover:border-purpura-300 hover:bg-purpura-50"
+                  className="w-full h-20 border-dashed border-2 border-muted hover:border-brand-primary/30 hover:bg-brand-primary/5"
                   variant="outline"
                 >
                   <Plus className="w-5 h-5 mr-2" />
@@ -202,7 +202,7 @@ export default function NuevaConsultaPage() {
           <Card className="border-0 shadow-soft">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <Stethoscope className="w-5 h-5 text-purpura-500" />
+                <Stethoscope className="w-5 h-5 text-brand-primary" />
                 Información Clínica
               </CardTitle>
             </CardHeader>
@@ -257,12 +257,12 @@ export default function NuevaConsultaPage() {
                 </div>
 
                 <div className="flex flex-col">
-                  <Label className="min-h-5 flex items-center gap-2 text-purpura-800">
-                    <Calendar className="w-4 h-4 shrink-0 text-purpura-500" />
+                  <Label className="min-h-5 flex items-center gap-2 text-brand-primary">
+                    <Calendar className="w-4 h-4 shrink-0 text-brand-primary" />
                     Próximo control
                     <span className="text-xs font-normal text-muted-foreground">(opcional)</span>
                   </Label>
-                  <div className="mt-1 flex min-h-[120px] flex-1 flex-col rounded-xl border border-purpura-100 bg-purpura-50/40 p-4 md:min-h-0">
+                  <div className="mt-1 flex min-h-[120px] flex-1 flex-col rounded-xl border border-brand-primary/10 bg-brand-primary/5 p-4 md:min-h-0">
                     <div className="grid grid-cols-2 gap-2">
                       <div>
                         <Label htmlFor="proximaCita" className="text-[11px] text-muted-foreground">
@@ -307,7 +307,7 @@ export default function NuevaConsultaPage() {
                 <span>Servicios y Productos</span>
                 <Button
                   size="sm"
-                  className="bg-purpura-500 hover:bg-purpura-600"
+                  className="bg-brand-primary hover:bg-brand-primary"
                   onClick={() => setShowProductDialog(true)}
                 >
                   <Plus className="w-4 h-4 mr-1" />
@@ -320,7 +320,7 @@ export default function NuevaConsultaPage() {
                 <button
                   type="button"
                   onClick={() => setShowProductDialog(true)}
-                  className="w-full text-center py-8 text-muted-foreground rounded-lg border-2 border-dashed border-muted hover:border-purpura-300 hover:bg-purpura-50 hover:text-purpura-600 transition-colors cursor-pointer"
+                  className="w-full text-center py-8 text-muted-foreground rounded-lg border-2 border-dashed border-muted hover:border-brand-primary/30 hover:bg-brand-primary/5 hover:text-brand-primary transition-colors cursor-pointer"
                 >
                   <Plus className="w-12 h-12 mx-auto mb-2 opacity-50" />
                   <p>Agregue servicios o productos</p>
@@ -371,12 +371,12 @@ export default function NuevaConsultaPage() {
             <CardFooter className="flex-col gap-4 border-t pt-4">
               <div className="w-full flex items-center justify-between text-lg">
                 <span className="font-medium">Total:</span>
-                <span className="font-bold text-2xl text-purpura-600">${total.toFixed(2)}</span>
+                <span className="font-bold text-2xl text-brand-primary">${total.toFixed(2)}</span>
               </div>
               <Button 
                 onClick={handleSubmit}
                 disabled={!isValid}
-                className="w-full h-12 bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700 text-white font-semibold"
+                className="w-full h-12 bg-gradient-to-r from-brand-primary to-brand-primary hover:from-brand-primary hover:to-brand-primary text-white font-semibold"
               >
                 <Save className="w-5 h-5 mr-2" />
                 Guardar Consulta

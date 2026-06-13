@@ -16,8 +16,8 @@ export function ConfirmSalidaDialog({ open, onOpenChange, onConfirm }: ConfirmSa
           <DialogTitle className="text-center">¿Confirmar salida?</DialogTitle>
         </DialogHeader>
         <div className="text-center py-4">
-          <div className="w-16 h-16 rounded-full bg-purpura-100 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-purpura-600" />
+          <div className="w-16 h-16 rounded-full bg-brand-primary/10 flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-8 h-8 text-brand-primary" />
           </div>
           <p className="text-muted-foreground">
             Esta acción marcará la consulta como finalizada y el paciente saldrá de la lista activa.
@@ -27,7 +27,7 @@ export function ConfirmSalidaDialog({ open, onOpenChange, onConfirm }: ConfirmSa
           <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
             Cancelar
           </Button>
-          <Button onClick={onConfirm} className="flex-1 bg-gradient-to-r from-purpura-500 to-purpura-600">
+          <Button onClick={onConfirm} className="flex-1 bg-gradient-to-r from-brand-primary to-brand-primary">
             <CheckCircle className="w-4 h-4 mr-1" />
             Confirmar
           </Button>

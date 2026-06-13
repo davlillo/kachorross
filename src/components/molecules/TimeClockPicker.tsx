@@ -168,7 +168,7 @@ export function TimeClockPicker({
           r={activa ? 18 : 14}
           className={cn(
             'transition-all duration-200',
-            activa ? 'fill-purpura-600' : 'fill-white stroke-purpura-200',
+            activa ? 'fill-brand-primary' : 'fill-white stroke-brand-primary/20',
           )}
           strokeWidth={activa ? 0 : 1.5}
         />
@@ -179,7 +179,7 @@ export function TimeClockPicker({
           dominantBaseline="central"
           className={cn(
             'text-sm font-bold pointer-events-none select-none',
-            activa ? 'fill-white' : 'fill-purpura-800',
+            activa ? 'fill-white' : 'fill-brand-primary',
           )}
         >
           {etiqueta}
@@ -208,7 +208,7 @@ export function TimeClockPicker({
           r={activa ? 20 : 16}
           className={cn(
             'transition-all duration-200',
-            activa ? 'fill-purpura-600' : 'fill-white stroke-purpura-200',
+            activa ? 'fill-brand-primary' : 'fill-white stroke-brand-primary/20',
           )}
           strokeWidth={activa ? 0 : 1.5}
         />
@@ -219,7 +219,7 @@ export function TimeClockPicker({
           dominantBaseline="central"
           className={cn(
             'text-xs font-bold pointer-events-none select-none',
-            activa ? 'fill-white' : 'fill-purpura-800',
+            activa ? 'fill-white' : 'fill-brand-primary',
           )}
         >
           {String(m).padStart(2, '0')}
@@ -237,13 +237,13 @@ export function TimeClockPicker({
           disabled={disabled}
           className={cn(
             'border-input flex h-10 w-full items-center justify-between gap-2 rounded-lg border bg-white px-3 text-sm shadow-sm transition-all',
-            'hover:border-purpura-300 focus-visible:border-purpura-500 focus-visible:ring-[3px] focus-visible:ring-purpura-500/20 outline-none',
+            'hover:border-brand-primary/30 focus-visible:border-brand-primary focus-visible:ring-[3px] focus-visible:ring-brand-primary/20 outline-none',
             'disabled:cursor-not-allowed disabled:opacity-50',
             className,
           )}
         >
           <span className="flex items-center gap-2 min-w-0 text-left">
-            <Clock className="w-3.5 h-3.5 shrink-0 text-purpura-500" />
+            <Clock className="w-3.5 h-3.5 shrink-0 text-brand-primary" />
             <span className={cn(!value && 'text-muted-foreground')}>
               {value ? formatoHoraLegible(value) : placeholder}
             </span>
@@ -252,12 +252,12 @@ export function TimeClockPicker({
         </button>
       </PopoverTrigger>
 
-      <PopoverContent align="start" className="w-auto p-0 rounded-xl border-purpura-100 shadow-lg">
-        <div className="px-4 pt-3 pb-2 border-b border-border/60 bg-purpura-50/40 rounded-t-xl">
-          <p className="text-xs font-semibold text-purpura-800 text-center">
+      <PopoverContent align="start" className="w-auto p-0 rounded-xl border-brand-primary/10 shadow-lg">
+        <div className="px-4 pt-3 pb-2 border-b border-border/60 bg-brand-primary/5 rounded-t-xl">
+          <p className="text-xs font-semibold text-brand-primary text-center">
             {paso === 'hora' ? 'Selecciona la hora' : 'Selecciona los minutos'}
           </p>
-          <p className="text-lg font-bold text-center text-purpura-700 tabular-nums mt-0.5">
+          <p className="text-lg font-bold text-center text-brand-primary tabular-nums mt-0.5">
             {formatoHoraLegible(
               `${String(horaDraft).padStart(2, '0')}:${String(minutoDraft).padStart(2, '0')}`,
             )}
@@ -277,7 +277,7 @@ export function TimeClockPicker({
               cx={CX}
               cy={CY}
               r={98}
-              className="fill-purpura-50/90 stroke-purpura-200"
+              className="fill-brand-primary/5 stroke-brand-primary/20"
               strokeWidth={2}
             />
             {Array.from({ length: 12 }).map((_, i) => {
@@ -290,7 +290,7 @@ export function TimeClockPicker({
                   y1={inner.y}
                   x2={outer.x}
                   y2={outer.y}
-                  className="stroke-purpura-200/70"
+                  className="stroke-brand-primary/20"
                   strokeWidth={i % 3 === 0 ? 2 : 1}
                 />
               )
@@ -304,7 +304,7 @@ export function TimeClockPicker({
                 y1={CY}
                 x2={puntaHora.x}
                 y2={puntaHora.y}
-                className={cn('stroke-purpura-300', estiloAguja)}
+                className={cn('stroke-brand-primary/30', estiloAguja)}
                 strokeWidth={2}
                 strokeLinecap="round"
               />
@@ -315,19 +315,19 @@ export function TimeClockPicker({
               y1={CY}
               x2={paso === 'hora' ? puntaHora.x : puntaMin.x}
               y2={paso === 'hora' ? puntaHora.y : puntaMin.y}
-              className={cn('stroke-purpura-600', estiloAguja)}
+              className={cn('stroke-brand-primary', estiloAguja)}
               strokeWidth={paso === 'hora' ? 3.5 : 3}
               strokeLinecap="round"
             />
 
-            <circle cx={CX} cy={CY} r={6} className="fill-purpura-600" />
+            <circle cx={CX} cy={CY} r={6} className="fill-brand-primary" />
             <circle cx={CX} cy={CY} r={2.5} className="fill-white" />
           </svg>
 
           {paso === 'hora' ? (
             <Button
               type="button"
-              className="w-full mt-3 bg-purpura-600 hover:bg-purpura-700"
+              className="w-full mt-3 bg-brand-primary hover:bg-brand-primary"
               onClick={() => setPaso('minuto')}
             >
               Elegir minutos
@@ -337,7 +337,7 @@ export function TimeClockPicker({
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1 text-purpura-700 border-purpura-200"
+                className="flex-1 text-brand-primary border-brand-primary/20"
                 onClick={() => setPaso('hora')}
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
@@ -345,7 +345,7 @@ export function TimeClockPicker({
               </Button>
               <Button
                 type="button"
-                className="flex-1 bg-purpura-600 hover:bg-purpura-700"
+                className="flex-1 bg-brand-primary hover:bg-brand-primary"
                 onClick={confirmar}
               >
                 Listo

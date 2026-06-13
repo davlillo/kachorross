@@ -8,9 +8,11 @@ import { Button } from '@/components/atoms/ui/button';
 import { Input } from '@/components/atoms/ui/input';
 import { Label } from '@/components/atoms/ui/label';
 import { Separator } from '@/components/atoms/ui/separator';
+import { PaletteSelector } from '@/theme/palette-selector';
+import { useTheme } from '@/theme/ThemeContext';
 import {
   Settings, Upload, Building, Mail, Phone, MapPin, Loader2, PawPrint,
-  Key, Save, Send, Info, Eye, EyeOff, HelpCircle,
+  Key, Save, Send, Info, Eye, EyeOff, HelpCircle, Palette,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -19,10 +21,12 @@ const emailCtrl = EmailController.getInstance();
 
 export default function ConfiguracionPage() {
   const { veterinaria, refreshVeterinaria, user } = useAuth();
+  const { paletteId } = useTheme();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isSavingTheme, setIsSavingTheme] = useState(false);
 
   const [emailLoading, setEmailLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -159,6 +163,22 @@ export default function ConfiguracionPage() {
     }
   };
 
+  const handleThemeSave = async () => {
+    if (!veterinaria) return;
+    setIsSavingTheme(true);
+    try {
+      await vetCtrl.actualizar(veterinaria.id, {
+        tema: { paletteId, updatedAt: new Date().toISOString() },
+      });
+      await refreshVeterinaria();
+      toast.success('Apariencia guardada');
+    } catch (error: any) {
+      toast.error(error.message || 'Error al guardar la apariencia');
+    } finally {
+      setIsSavingTheme(false);
+    }
+  };
+
   if (!veterinaria) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -180,7 +200,7 @@ export default function ConfiguracionPage() {
         <Card className="border-0 shadow-soft gap-2 h-full grid grid-rows-[auto_1fr_auto]">
           <CardHeader className="pb-0">
             <CardTitle className="text-base flex items-center gap-2">
-              <Building className="w-4 h-4 text-purpura-500" />
+              <Building className="w-4 h-4 text-brand-primary" />
               Datos de la Clínica
             </CardTitle>
             <CardDescription>Información general y datos de contacto.</CardDescription>
@@ -192,7 +212,7 @@ export default function ConfiguracionPage() {
                 {veterinaria.logoUrl ? (
                   <img src={veterinaria.logoUrl} alt="Logo" className="w-full h-full object-contain" />
                 ) : (
-                  <PawPrint className="w-10 h-10 text-purpura-300" />
+                  <PawPrint className="w-10 h-10 text-brand-primary/30" />
                 )}
                 <div className={`absolute inset-0 bg-black/50 flex items-center justify-center transition-opacity ${isUploading ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                   {isUploading ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <Upload className="w-4 h-4 text-white" />}
@@ -239,7 +259,7 @@ export default function ConfiguracionPage() {
             </form>
           </CardContent>
           <CardFooter className="border-t pt-4 w-full">
-            <Button type="submit" form="clinic-form" disabled={isLoading} className="bg-purpura-600 hover:bg-purpura-700 h-9 w-full">
+            <Button type="submit" form="clinic-form" disabled={isLoading} className="bg-brand-primary hover:bg-brand-primary h-9 w-full">
               {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Guardar cambios
             </Button>
@@ -250,7 +270,7 @@ export default function ConfiguracionPage() {
         <Card className="border-0 shadow-soft gap-2 h-full grid grid-rows-[auto_1fr_auto]">
           <CardHeader className="pb-0">
             <CardTitle className="text-base flex items-center gap-2">
-              <Mail className="w-4 h-4 text-purpura-500" />
+              <Mail className="w-4 h-4 text-brand-primary" />
               Correo SMTP (Gmail)
             </CardTitle>
             <CardDescription>Configuración para automatizar el envio de correos.</CardDescription>
@@ -258,7 +278,7 @@ export default function ConfiguracionPage() {
           <CardContent className="space-y-4 pt-0 min-h-0">
             {emailLoading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-5 h-5 animate-spin text-purpura-500" />
+                <Loader2 className="w-5 h-5 animate-spin text-brand-primary" />
               </div>
             ) : (
               <>
@@ -338,7 +358,7 @@ export default function ConfiguracionPage() {
                   <Separator />
 
                   <div className="flex items-start gap-2">
-                    <Info className="w-3.5 h-3.5 text-purpura-500 shrink-0 mt-0.5" />
+                    <Info className="w-3.5 h-3.5 text-brand-primary shrink-0 mt-0.5" />
                     <p className="text-[11px] text-muted-foreground">
                       Se usa para enviar invitaciones a nuevos usuarios, recetas a propietarios y notificaciones de controles proximos.
                     </p>
@@ -354,7 +374,7 @@ export default function ConfiguracionPage() {
                   type="submit"
                   form="email-form"
                   disabled={isSaving}
-                  className="flex-1 bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700 h-9"
+                  className="flex-1 bg-gradient-to-r from-brand-primary to-brand-primary hover:from-brand-primary hover:to-brand-primary h-9"
                 >
                   {isSaving ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Save className="w-4 h-4 mr-1" />}
                   Guardar
@@ -374,6 +394,33 @@ export default function ConfiguracionPage() {
           )}
         </Card>
       </div>
+
+      {/* ─── CARD 3: APARIENCIA ─── */}
+      {user?.rol === 'admin' && (
+        <Card className="border-0 shadow-soft gap-2">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Palette className="w-4 h-4 text-brand-primary" />
+              Apariencia
+            </CardTitle>
+            <CardDescription>Elige la paleta de colores de tu clínica.</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <PaletteSelector />
+          </CardContent>
+          <CardFooter className="border-t pt-4">
+            <Button
+              onClick={handleThemeSave}
+              disabled={isSavingTheme}
+              className="bg-brand-primary hover:bg-brand-primary h-9"
+            >
+              {isSavingTheme && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              <Save className="w-4 h-4 mr-1" />
+              Guardar apariencia
+            </Button>
+          </CardFooter>
+        </Card>
+      )}
     </div>
   );
 }

@@ -135,7 +135,7 @@ export default function EstablecerContrasenaPage() {
 
             {status === 'verificando' && (
               <div className="flex flex-col items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-purpura-500 mb-3" />
+                <Loader2 className="w-8 h-8 animate-spin text-brand-primary mb-3" />
                 <p className="text-sm text-muted-foreground">Verificando enlace...</p>
               </div>
             )}
@@ -193,7 +193,7 @@ export default function EstablecerContrasenaPage() {
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="h-11 min-w-[240px] px-6 text-sm bg-gradient-to-r from-purpura-500 to-purpura-600 text-white font-semibold shadow-md"
+                    className="h-11 min-w-[240px] px-6 text-sm bg-gradient-to-r from-brand-primary to-brand-primary text-white font-semibold shadow-md"
                   >
                     {isSubmitting ? (
                       <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Estableciendo...</>

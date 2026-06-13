@@ -55,7 +55,7 @@ export default function HistorialVentasPage() {
         description="Registro completo de consultas facturadas"
         icon={History}
         badge={
-          <Badge variant="outline" className="px-3 py-1 text-purpura-600 border-purpura-200">
+          <Badge variant="outline" className="px-3 py-1 text-brand-primary border-brand-primary/20">
             <Receipt className="w-3 h-3 mr-1" />
             {consultasFiltradas.length} registros
           </Badge>
@@ -64,7 +64,7 @@ export default function HistorialVentasPage() {
 
       {/* Resumen */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-0 shadow-soft bg-gradient-to-br from-purpura-500 to-violet-600 text-white">
+        <Card className="border-0 shadow-soft bg-gradient-to-br from-brand-primary to-brand-primary text-white">
           <CardContent className="p-5 flex items-center gap-4">
             <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
               <DollarSign className="w-6 h-6" />
@@ -76,7 +76,7 @@ export default function HistorialVentasPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-soft bg-gradient-to-br from-azure-blue to-blue-600 text-white">
+        <Card className="border-0 shadow-soft bg-gradient-to-br from-brand-secondary to-brand-primary text-white">
           <CardContent className="p-5 flex items-center gap-4">
             <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
               <TrendingUp className="w-6 h-6" />
@@ -122,7 +122,7 @@ export default function HistorialVentasPage() {
       <Card className="border-0 shadow-soft">
         <CardHeader className="pb-0">
           <CardTitle className="text-base flex items-center gap-2">
-            <History className="w-4 h-4 text-purpura-500" />
+            <History className="w-4 h-4 text-brand-primary" />
             Registros
           </CardTitle>
         </CardHeader>
@@ -144,8 +144,8 @@ export default function HistorialVentasPage() {
                       className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/40 transition-colors text-left"
                       onClick={() => setExpandido(isOpen ? null : consulta.id)}
                     >
-                      <div className="w-9 h-9 rounded-full bg-purpura-100 flex items-center justify-center shrink-0">
-                        <Stethoscope className="w-4 h-4 text-purpura-600" />
+                      <div className="w-9 h-9 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0">
+                        <Stethoscope className="w-4 h-4 text-brand-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -156,7 +156,7 @@ export default function HistorialVentasPage() {
                         <p className="text-xs text-muted-foreground truncate">{consulta.motivo}</p>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="font-bold text-purpura-600">${consulta.total.toFixed(2)}</p>
+                        <p className="font-bold text-brand-primary">${consulta.total.toFixed(2)}</p>
                         <p className="text-[10px] text-muted-foreground">
                           {new Date(consulta.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                         </p>
@@ -194,9 +194,9 @@ export default function HistorialVentasPage() {
                               </div>
                             );
                           })}
-                          <div className="grid grid-cols-12 px-3 py-2 border-t border-border bg-purpura-50">
-                            <div className="col-span-10 text-xs font-semibold text-purpura-700">Total</div>
-                            <div className="col-span-2 text-right text-sm font-black text-purpura-700">${consulta.total.toFixed(2)}</div>
+                          <div className="grid grid-cols-12 px-3 py-2 border-t border-border bg-brand-primary/5">
+                            <div className="col-span-10 text-xs font-semibold text-brand-primary">Total</div>
+                            <div className="col-span-2 text-right text-sm font-black text-brand-primary">${consulta.total.toFixed(2)}</div>
                           </div>
                         </div>
                       </div>

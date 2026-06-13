@@ -15,7 +15,7 @@ const categoriaConfig = CATEGORIAS_CATALOGO.map(c => ({
   value: c.value,
   label: c.label,
   icon: c.icon,
-  gradient: c.value === 'consulta' ? 'from-blue-500 to-azure-blue'
+  gradient: c.value === 'consulta' ? 'from-blue-500 to-brand-secondary'
     : c.value === 'farmacia' ? 'from-amber-500 to-orange-500'
     : c.value === 'peluqueria' ? 'from-teal-500 to-emerald-600'
     : 'from-pink-500 to-rose-500',
@@ -26,7 +26,7 @@ const categoriaConfig = CATEGORIAS_CATALOGO.map(c => ({
 }));
 
 const filtrosCategoria = [
-  { label: 'Todos', value: 'todos', activeClass: 'bg-blue-violet' },
+  { label: 'Todos', value: 'todos', activeClass: 'bg-brand-primary' },
   ...CATEGORIAS_CATALOGO.map(c => ({
     label: c.label,
     value: c.value,
@@ -74,7 +74,7 @@ export default function CatalogoPage() {
         description="Administre servicios, productos y precios del sistema"
         icon={Settings}
         actions={
-          <Button onClick={handleCreate} className="bg-gradient-to-r from-blue-violet to-azure-blue">
+          <Button onClick={handleCreate} className="bg-gradient-to-r from-brand-primary to-brand-secondary">
             <Plus className="w-4 h-4 mr-2" />Nuevo Producto
           </Button>
         }

@@ -151,7 +151,7 @@ export function DetailRecepcionDialog({
           <DialogTitle className="sr-only">Detalle de consulta</DialogTitle>
 
           {/* ── Header degradado ── */}
-          <div className="relative bg-gradient-to-r from-purpura-600 to-violet-700 px-6 py-4 text-white">
+          <div className="relative bg-gradient-to-r from-brand-primary to-brand-primary px-6 py-4 text-white">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
@@ -184,7 +184,7 @@ export function DetailRecepcionDialog({
                 {/* Info paciente + propietario */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/50 border border-border">
-                    <PawPrint className="w-4 h-4 text-purpura-500 shrink-0" />
+                    <PawPrint className="w-4 h-4 text-brand-primary shrink-0" />
                     <div className="min-w-0">
                       <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Paciente</p>
                       <p className="font-bold text-sm truncate">{mascota.nombre}</p>
@@ -192,7 +192,7 @@ export function DetailRecepcionDialog({
                     </div>
                   </div>
                   <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/50 border border-border">
-                    <User className="w-4 h-4 text-azure-blue shrink-0" />
+                    <User className="w-4 h-4 text-brand-secondary shrink-0" />
                     <div className="min-w-0">
                       <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Propietario</p>
                       <p className="font-bold text-sm truncate">{mascota.propietario.nombre}</p>
@@ -280,12 +280,12 @@ export function DetailRecepcionDialog({
                 </div>
 
                 {/* Total */}
-                <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-purpura-50 to-violet-50 border border-purpura-200">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-brand-primary/5 to-brand-primary/5 border border-brand-primary/20">
                   <div>
                     <p className="text-xs text-muted-foreground font-medium">Total a cobrar</p>
                     <p className="text-[10px] text-amber-600 mt-0.5">⚠ Procesar en sistema externo</p>
                   </div>
-                  <p className="text-3xl font-black text-purpura-600">${consulta.total.toFixed(2)}</p>
+                  <p className="text-3xl font-black text-brand-primary">${consulta.total.toFixed(2)}</p>
                 </div>
               </>
             )}
@@ -296,7 +296,7 @@ export function DetailRecepcionDialog({
             <div className="px-5 pb-5 space-y-2">
               <Button
                 variant="outline"
-                className="w-full h-11 text-sm font-semibold border-purpura-300 text-purpura-600 hover:bg-purpura-50"
+                className="w-full h-11 text-sm font-semibold border-brand-primary/30 text-brand-primary hover:bg-brand-primary/5"
                 onClick={() => imprimirTratamiento(consulta.tratamiento, veterinaria?.logoUrl)}
               >
                 <Printer className="w-4 h-4 mr-2" />
@@ -315,7 +315,7 @@ export function DetailRecepcionDialog({
                       Cancelar
                     </Button>
                     <Button
-                      className="flex-1 h-9 text-sm bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700"
+                      className="flex-1 h-9 text-sm bg-gradient-to-r from-brand-primary to-brand-primary hover:from-brand-primary hover:to-brand-primary"
                       onClick={handleTerminado}
                     >
                       <CheckCircle className="w-4 h-4 mr-1.5" />Confirmar salida
@@ -324,7 +324,7 @@ export function DetailRecepcionDialog({
                 </div>
               ) : (
                 <Button
-                  className="w-full h-11 text-sm font-semibold bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700 shadow-md"
+                  className="w-full h-11 text-sm font-semibold bg-gradient-to-r from-brand-primary to-brand-primary hover:from-brand-primary hover:to-brand-primary shadow-md"
                   onClick={handleTerminado}
                 >
                   <CheckCircle className="w-4 h-4 mr-2" />Marcar como Terminado

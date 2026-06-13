@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { getHomeRouteForRole } from '@/lib/auth-routes';
@@ -15,6 +15,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const { login, isLoading, error, user } = useAuth();
+
+  // Force light mode on login page — this screen is always light
+  useEffect(() => {
+    document.documentElement.classList.remove('dark');
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,8 +40,8 @@ export default function LoginPage() {
           <div className="w-full max-w-md">
             <div className="mb-6" />
 
-            <h1 className="text-2xl font-bold text-center mb-1">Iniciar sesión</h1>
-            <p className="text-sm text-center text-muted-foreground mb-6">Ingresa tus credenciales para continuar</p>
+            <h1 className="text-2xl font-bold text-center mb-1 text-gray-900">Iniciar sesión</h1>
+            <p className="text-sm text-center text-gray-500 mb-6">Ingresa tus credenciales para continuar</p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
@@ -73,7 +78,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(v => !v)}
-                    className="absolute inset-y-0 right-0 px-3 text-muted-foreground hover:text-foreground"
+                    className="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-gray-600"
                     aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -84,7 +89,7 @@ export default function LoginPage() {
               <div className="flex justify-center pt-1">
                 <Button
                   type="submit"
-                  className="h-11 min-w-[240px] px-6 text-sm bg-gradient-to-r from-purpura-500 to-purpura-600 text-white font-semibold shadow-md"
+                  className="h-11 min-w-[240px] px-6 text-sm bg-gradient-to-r from-brand-primary to-brand-primary text-white font-semibold shadow-md"
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -99,7 +104,7 @@ export default function LoginPage() {
               </div>
             </form>
 
-            <p className="text-center text-sm text-muted-foreground mt-6">© 2026 Veterinaria Kachorro's</p>
+            <p className="text-center text-sm text-gray-400 mt-6">© 2026 Veterinaria Kachorro's</p>
           </div>
         </div>
       </div>

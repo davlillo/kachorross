@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/atoms/ui/button';
 import { Input } from '@/components/atoms/ui/input';
@@ -27,6 +27,11 @@ export default function RegistroPage() {
 	const [mensaje, setMensaje] = useState('');
 	const [isError, setIsError] = useState(false);
 	const contrasenasCoinciden = !confirmarContrasena || contrasena === confirmarContrasena;
+
+	// Force light mode on register page — this screen is always light
+	useEffect(() => {
+		document.documentElement.classList.remove('dark');
+	}, []);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -71,8 +76,8 @@ export default function RegistroPage() {
 				<div className="w-full md:w-1/2 bg-white p-6 md:p-8 flex items-center justify-center">
 					<div className="w-full max-w-md">
 						<div className="mb-4">
-							<h1 className="text-xl font-bold text-center mb-1">Crear cuenta</h1>
-							<p className="text-xs text-center text-muted-foreground">Completa los datos para registrar un nuevo usuario</p>
+							<h1 className="text-xl font-bold text-center mb-1 text-gray-900">Crear cuenta</h1>
+							<p className="text-xs text-center text-gray-500">Completa los datos para registrar un nuevo usuario</p>
 						</div>
 
 								<form onSubmit={handleSubmit} className="space-y-4">
@@ -140,20 +145,20 @@ export default function RegistroPage() {
 							</div>
 
 									<div className="flex justify-center pt-1">
-										<Button type="submit" className="h-11 min-w-[240px] px-6 text-sm bg-gradient-to-r from-purpura-500 to-purpura-600 text-white font-semibold shadow-md">
+										<Button type="submit" className="h-11 min-w-[240px] px-6 text-sm bg-gradient-to-r from-brand-primary to-brand-primary text-white font-semibold shadow-md">
 											Registrar usuario
 										</Button>
 									</div>
 						</form>
 
-						<div className="mt-4 flex flex-col items-center justify-center gap-1 text-xs text-muted-foreground sm:flex-row sm:gap-2">
+						<div className="mt-4 flex flex-col items-center justify-center gap-1 text-xs text-gray-500 sm:flex-row sm:gap-2">
 							<span>¿Ya tienes cuenta?</span>
-							<button type="button" onClick={() => navigate('/login')} className="font-medium text-purpura-700 hover:underline">
+							<button type="button" onClick={() => navigate('/login')} className="font-medium text-brand-primary hover:underline">
 								Volver al login
 							</button>
 						</div>
 
-						<div className="mt-5 pt-4 border-t border-slate-200 text-center text-xs text-muted-foreground">
+						<div className="mt-5 pt-4 border-t border-slate-200 text-center text-xs text-gray-400">
 							© 2026 Veterinaria Kachorro's
 						</div>
 					</div>

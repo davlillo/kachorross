@@ -43,7 +43,7 @@ export default function RecepcionPage() {
         icon={ClipboardList}
         badge={
           <div className="flex gap-2">
-            <Badge variant="outline" className="px-3 py-1 text-purpura-600 border-purpura-200">
+            <Badge variant="outline" className="px-3 py-1 text-brand-primary border-brand-primary/20">
               <CheckCircle className="w-3 h-3 mr-1" />
               {monitorSalida.filter(m => m.estado === 'listo').length} listos
             </Badge>
@@ -108,13 +108,13 @@ export default function RecepcionPage() {
                 <div className="space-y-3">
                   {consultasDelDia.map((consulta) => (
                     <div key={consulta.id} className="flex items-center gap-4 p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purpura-100 to-purpura-200 flex items-center justify-center">
-                        <Stethoscope className="w-5 h-5 text-purpura-600" />
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-primary/10 to-brand-primary/20 flex items-center justify-center">
+                        <Stethoscope className="w-5 h-5 text-brand-primary" />
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <h4 className="font-semibold">{consulta.motivo}</h4>
-                          <Badge className="bg-purpura-500 text-white">
+                          <Badge className="bg-brand-primary text-white">
                             Procesada
                           </Badge>
                         </div>

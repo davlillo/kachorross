@@ -69,10 +69,10 @@ export function ProductTable({ productos, onEdit, onDelete }: ProductTableProps)
                       </TableCell>
                       <TableCell>
                         <button
-                          className="text-left hover:underline decoration-purpura-400 underline-offset-2"
+                          className="text-left hover:underline decoration-brand-primary underline-offset-2"
                           onClick={() => setVerProducto(producto)}
                         >
-                          <p className="font-semibold text-sm group-hover:text-purpura-600 transition-colors">
+                          <p className="font-semibold text-sm group-hover:text-brand-primary transition-colors">
                             {producto.nombre}
                           </p>
                           <p className="text-xs text-muted-foreground line-clamp-1">{producto.descripcion}</p>
@@ -84,7 +84,7 @@ export function ProductTable({ productos, onEdit, onDelete }: ProductTableProps)
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <p className="font-bold text-purpura-600">${producto.precio.toFixed(2)}</p>
+                        <p className="font-bold text-brand-primary">${producto.precio.toFixed(2)}</p>
                       </TableCell>
                       <TableCell>
                         {producto.activo ? (
@@ -105,7 +105,7 @@ export function ProductTable({ productos, onEdit, onDelete }: ProductTableProps)
                           </Button>
                           <Button variant="ghost" size="icon" className="h-8 w-8 opacity-60 hover:opacity-100"
                             onClick={() => onEdit(producto)} title="Editar">
-                            <Edit2 className="w-4 h-4 text-azure-blue" />
+                            <Edit2 className="w-4 h-4 text-brand-secondary" />
                           </Button>
                           <Button variant="ghost" size="icon" className="h-8 w-8 opacity-60 hover:opacity-100"
                             onClick={() => setEliminarTarget(producto)} title="Eliminar">
@@ -132,7 +132,7 @@ export function ProductTable({ productos, onEdit, onDelete }: ProductTableProps)
               <>
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
-                    <CatIcon className="w-5 h-5 text-purpura-600" />
+                    <CatIcon className="w-5 h-5 text-brand-primary" />
                     {verProducto.nombre}
                   </DialogTitle>
                 </DialogHeader>
@@ -156,7 +156,7 @@ export function ProductTable({ productos, onEdit, onDelete }: ProductTableProps)
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground mb-0.5">Precio</p>
-                      <p className="text-xl font-black text-purpura-600">${verProducto.precio.toFixed(2)}</p>
+                      <p className="text-xl font-black text-brand-primary">${verProducto.precio.toFixed(2)}</p>
                     </div>
                   </div>
                   {verProducto.descripcion && (
@@ -168,7 +168,7 @@ export function ProductTable({ productos, onEdit, onDelete }: ProductTableProps)
                 </div>
                 <DialogFooter className="gap-2">
                   <Button variant="outline" onClick={() => setVerProducto(null)}>Cerrar</Button>
-                  <Button className="bg-azure-blue hover:bg-azure-blue/90"
+                  <Button className="bg-brand-secondary hover:bg-brand-secondary/90"
                     onClick={() => { setVerProducto(null); onEdit(verProducto) }}>
                     <Edit2 className="w-4 h-4 mr-2" />Editar
                   </Button>

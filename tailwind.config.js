@@ -2,6 +2,9 @@
 module.exports = {
   darkMode: ["class"],
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  safelist: [
+    { pattern: /^(bg|text|border|ring|from|to)-brand-/ },
+  ],
   theme: {
     extend: {
       colors: {
@@ -48,24 +51,20 @@ module.exports = {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        // Colores de marca personalizados
-        'amber-gold': '#ffbe0b',
-        'blaze-orange': '#fb5607',
-        'neon-pink': '#ff006e',
-        'blue-violet': '#8338ec',
-        'azure-blue': '#3a86ff',
-        'sky-light': '#87CEEB',
-        'purpura': {
-          50: '#faf5ff',
-          100: '#f3e8ff',
-          200: '#e9d5ff',
-          300: '#d8b4fe',
-          400: '#c084fc',
-          500: '#a855f7',
-          600: '#9333ea',
-          700: '#7e22ce',
-          800: '#6b21a8',
-          900: '#581c87',
+        // Brand tokens — resolved at runtime via CSS custom properties
+        brand: {
+          primary: "hsl(var(--brand-primary) / <alpha-value>)",
+          secondary: "hsl(var(--brand-secondary) / <alpha-value>)",
+          surface: "hsl(var(--brand-surface) / <alpha-value>)",
+          text: "hsl(var(--brand-text) / <alpha-value>)",
+          muted: "hsl(var(--brand-muted) / <alpha-value>)",
+          accent: "hsl(var(--brand-accent) / <alpha-value>)",
+          border: "hsl(var(--brand-border) / <alpha-value>)",
+          destructive: "hsl(var(--brand-destructive) / <alpha-value>)",
+          sidebar: "hsl(var(--brand-sidebar) / <alpha-value>)",
+          "sidebar-foreground": "hsl(var(--brand-sidebar-foreground) / <alpha-value>)",
+          "sidebar-primary": "hsl(var(--brand-sidebar-primary) / <alpha-value>)",
+          "sidebar-accent": "hsl(var(--brand-sidebar-accent) / <alpha-value>)",
         },
       },
       borderRadius: {
