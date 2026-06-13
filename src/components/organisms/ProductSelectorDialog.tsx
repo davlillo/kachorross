@@ -97,7 +97,7 @@ export function ProductSelectorDialog({ open, onOpenChange, onSelect }: ProductS
                   </div>
                   <div className="text-right shrink-0">
                     <p className="font-semibold">${producto.precio.toFixed(2)}</p>
-                    <Plus className="w-4 h-4 text-purpura-500 ml-auto mt-1" />
+                    <Plus className="w-4 h-4 text-brand-primary ml-auto mt-1" />
                   </div>
                 </button>
               )

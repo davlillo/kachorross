@@ -36,7 +36,7 @@ export function PatientInfoCard({ mascota, onSubirFotoPerfil, subiendoFotoPerfil
     <Card className="border-0 shadow-soft lg:col-span-1">
       <CardHeader className="pb-4">
         <CardTitle className="text-lg flex items-center gap-2">
-          <PawPrint className="w-5 h-5 text-purpura-500" />
+          <PawPrint className="w-5 h-5 text-brand-primary" />
           Información del Paciente
         </CardTitle>
       </CardHeader>
@@ -62,7 +62,7 @@ export function PatientInfoCard({ mascota, onSubirFotoPerfil, subiendoFotoPerfil
                   disabled={subiendoFotoPerfil}
                   onClick={() => fileInputRef.current?.click()}
                   title="Actualizar foto de perfil"
-                  className="absolute bottom-0 right-0 w-8 h-8 bg-purpura-500 rounded-full flex items-center justify-center text-white shadow-md hover:bg-purpura-600 transition-colors disabled:opacity-60"
+                  className="absolute bottom-0 right-0 w-8 h-8 bg-brand-primary rounded-full flex items-center justify-center text-white shadow-md hover:bg-brand-primary transition-colors disabled:opacity-60"
                 >
                   {subiendoFotoPerfil ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -87,7 +87,7 @@ export function PatientInfoCard({ mascota, onSubirFotoPerfil, subiendoFotoPerfil
 
         <div>
           <h4 className="font-semibold mb-3 flex items-center gap-2">
-            <User className="w-4 h-4 text-azure-blue" />
+            <User className="w-4 h-4 text-brand-secondary" />
             Propietario
           </h4>
           <div className="space-y-2">
@@ -134,7 +134,7 @@ export function PatientInfoCard({ mascota, onSubirFotoPerfil, subiendoFotoPerfil
           <>
             <Separator />
             <div>
-              <h4 className="font-semibold mb-2 flex items-center gap-2 text-blue-violet">
+              <h4 className="font-semibold mb-2 flex items-center gap-2 text-brand-primary">
                 <FileText className="w-4 h-4" />
                 Notas Especiales
               </h4>

@@ -13,7 +13,7 @@ const colors: Record<string, string> = {
   perro: 'bg-blue-100 text-blue-700 hover:bg-blue-100',
   gato: 'bg-pink-100 text-pink-700 hover:bg-pink-100',
   ave: 'bg-amber-100 text-amber-700 hover:bg-amber-100',
-  conejo: 'bg-purpura-100 text-purpura-700 hover:bg-purpura-100',
+  conejo: 'bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/10',
   otro: 'bg-gray-100 text-gray-700 hover:bg-gray-100',
 }
 

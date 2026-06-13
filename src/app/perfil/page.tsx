@@ -82,7 +82,7 @@ export default function PerfilPage() {
       <Card className="border-0 shadow-soft">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <KeyRound className="w-4 h-4 text-purpura-500" />
+            <KeyRound className="w-4 h-4 text-brand-primary" />
             Cambiar contraseña
           </CardTitle>
         </CardHeader>
@@ -145,7 +145,7 @@ export default function PerfilPage() {
             <Button
               onClick={guardarContrasena}
               disabled={isSaving}
-              className="bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700"
+              className="bg-gradient-to-r from-brand-primary to-brand-primary hover:from-brand-primary hover:to-brand-primary"
             >
               {isSaving ? 'Guardando...' : 'Actualizar contraseña'}
             </Button>

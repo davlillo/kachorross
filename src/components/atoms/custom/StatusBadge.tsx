@@ -5,13 +5,13 @@ type ConsultaEstado = Consulta['estado']
 type MonitorEstado = MonitorSalida['estado']
 
 const consultaConfig: Record<ConsultaEstado, { label: string; className: string }> = {
-  pendiente: { label: 'Pendiente', className: 'bg-amber-gold text-amber-900 hover:bg-amber-gold' },
-  finalizado: { label: 'Finalizado', className: 'bg-purpura-500 hover:bg-purpura-500' },
+  pendiente: { label: 'Pendiente', className: 'bg-amber-500 text-amber-900 hover:bg-amber-500' },
+  finalizado: { label: 'Finalizado', className: 'bg-brand-primary hover:bg-brand-primary' },
 }
 
 const monitorConfig: Record<MonitorEstado, { label: string; className: string }> = {
-  listo: { label: 'Listo para pago', className: 'bg-purpura-500 hover:bg-purpura-500' },
-  pagando: { label: 'En proceso de pago', className: 'bg-amber-gold text-amber-900 hover:bg-amber-gold' },
+  listo: { label: 'Listo para pago', className: 'bg-brand-primary hover:bg-brand-primary' },
+  pagando: { label: 'En proceso de pago', className: 'bg-amber-500 text-amber-900 hover:bg-amber-500' },
   entregado: { label: 'Entregado', className: 'bg-gray-400 hover:bg-gray-400' },
 }
 

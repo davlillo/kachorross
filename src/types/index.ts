@@ -1,5 +1,10 @@
 // Tipos principales del sistema veterinario
 
+export interface ClinicTheme {
+  paletteId: string;
+  updatedAt?: string;
+}
+
 export interface Veterinaria {
   id: string;
   nombre: string;
@@ -8,6 +13,7 @@ export interface Veterinaria {
   email?: string;
   logoUrl?: string;
   estado: 'activo' | 'suspendido';
+  tema?: ClinicTheme;
   createdAt: string;
 }
 

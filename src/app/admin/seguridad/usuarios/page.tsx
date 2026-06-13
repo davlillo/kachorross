@@ -159,7 +159,7 @@ export default function SeguridadUsuariosPage() {
           />
         </div>
         <Button
-          className="bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700 shrink-0"
+          className="bg-gradient-to-r from-brand-primary to-brand-primary hover:from-brand-primary hover:to-brand-primary shrink-0"
           onClick={abrirCrear}
         >
           <Plus className="w-4 h-4 mr-2" />Nueva cuenta
@@ -174,12 +174,12 @@ export default function SeguridadUsuariosPage() {
           const esTuCuenta = u.id === currentUser?.id;
 
           return (
-            <Card key={u.id} className={`border-0 shadow-soft hover:shadow-lg transition-all ${esTuCuenta ? 'ring-2 ring-purpura-400' : ''}`}>
+            <Card key={u.id} className={`border-0 shadow-soft hover:shadow-lg transition-all ${esTuCuenta ? 'ring-2 ring-brand-primary' : ''}`}>
               <CardContent className="p-5">
                 <div className="flex items-center gap-3 mb-4">
                   <Avatar className="w-14 h-14 border-2 border-white shadow-md">
                     <AvatarImage src={u.avatar} alt={u.nombre} />
-                    <AvatarFallback className="bg-gradient-to-br from-purpura-400 to-purpura-600 text-white font-bold">
+                    <AvatarFallback className="bg-gradient-to-br from-brand-primary to-brand-primary text-white font-bold">
                       {getInitials(u.nombre)}
                     </AvatarFallback>
                   </Avatar>
@@ -187,7 +187,7 @@ export default function SeguridadUsuariosPage() {
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <p className="font-bold text-sm truncate">{u.nombre}</p>
                       {esTuCuenta && (
-                        <Badge className="text-[9px] px-1.5 py-0 bg-purpura-100 text-purpura-700 border-0">
+                        <Badge className="text-[9px] px-1.5 py-0 bg-brand-primary/10 text-brand-primary border-0">
                           Tú
                         </Badge>
                       )}
@@ -219,7 +219,7 @@ export default function SeguridadUsuariosPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-8 text-xs text-purpura-600 hover:bg-purpura-50 hover:border-purpura-300"
+                    className="h-8 text-xs text-brand-primary hover:bg-brand-primary/5 hover:border-brand-primary/30"
                     disabled={enviandoInvitacion === u.id}
                     onClick={() => reenviarInvitacion(u.id)}
                     title="Reenviar invitación"
@@ -256,8 +256,8 @@ export default function SeguridadUsuariosPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {editTarget
-                ? <><Pencil className="w-4 h-4 text-purpura-500" />Editar cuenta</>
-                : <><Plus className="w-4 h-4 text-purpura-500" />Nueva cuenta</>}
+                ? <><Pencil className="w-4 h-4 text-brand-primary" />Editar cuenta</>
+                : <><Plus className="w-4 h-4 text-brand-primary" />Nueva cuenta</>}
             </DialogTitle>
           </DialogHeader>
 
@@ -337,7 +337,7 @@ export default function SeguridadUsuariosPage() {
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setShowForm(false)}>Cancelar</Button>
             <Button
-              className="bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700"
+              className="bg-gradient-to-r from-brand-primary to-brand-primary hover:from-brand-primary hover:to-brand-primary"
               onClick={guardar}
               disabled={isSaving}
             >

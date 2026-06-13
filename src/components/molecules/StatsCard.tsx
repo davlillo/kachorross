@@ -10,7 +10,7 @@ interface StatsCardProps {
   trendColor?: string
 }
 
-export function StatsCard({ label, value, icon: Icon, gradient, trend, trendColor = 'text-purpura-600' }: StatsCardProps) {
+export function StatsCard({ label, value, icon: Icon, gradient, trend, trendColor = 'text-brand-primary' }: StatsCardProps) {
   return (
     <Card className="border-0 shadow-soft hover:shadow-lg transition-shadow">
       <CardContent className="p-6">

@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS veterinarias (
     telefono VARCHAR(20),
     email VARCHAR(100),
     logo_url TEXT,
+    tema JSONB DEFAULT NULL,
     estado VARCHAR(20) DEFAULT 'activo' CHECK (estado IN ('activo', 'suspendido')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

@@ -34,13 +34,64 @@
     --sidebar-border: 270 20% 88%;
     --sidebar-ring: 270 75% 42%;
 
-    /* Colores personalizados de la marca */
-    --amber-gold: 45 100% 52%;
-    --blaze-orange: 19 97% 50%;
-    --neon-pink: 336 100% 50%;
-    --blue-violet: 262 82% 58%;
-    --azure-blue: 217 100% 61%;
-    --sky-light: 195 71% 77%;
+    /* Brand tokens — static fallback (Púrpura light). Runtime ThemeProvider overrides via style attr. */
+    --brand-primary: 270 75% 42%;
+    --brand-secondary: 45 100% 52%;
+    --brand-surface: 270 25% 98%;
+    --brand-text: 270 20% 15%;
+    --brand-muted: 270 20% 95%;
+    --brand-accent: 45 100% 52%;
+    --brand-border: 270 20% 88%;
+    --brand-destructive: 0 84.2% 60.2%;
+    --brand-sidebar: 0 0% 98%;
+    --brand-sidebar-foreground: 270 20% 25%;
+    --brand-sidebar-primary: 270 75% 42%;
+    --brand-sidebar-accent: 45 100% 52%;
+  }
+
+  .dark {
+    /* shadcn/ui base tokens — dark mode */
+    --background: 270 15% 8%;
+    --foreground: 270 20% 90%;
+    --card: 270 15% 12%;
+    --card-foreground: 270 20% 90%;
+    --popover: 270 15% 12%;
+    --popover-foreground: 270 20% 90%;
+    --primary: 270 70% 60%;
+    --primary-foreground: 270 20% 8%;
+    --secondary: 45 70% 45%;
+    --secondary-foreground: 270 20% 8%;
+    --muted: 270 15% 18%;
+    --muted-foreground: 270 15% 65%;
+    --accent: 45 70% 45%;
+    --accent-foreground: 270 20% 8%;
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 270 15% 22%;
+    --input: 270 15% 22%;
+    --ring: 270 70% 60%;
+    --sidebar-background: 270 15% 6%;
+    --sidebar-foreground: 270 20% 80%;
+    --sidebar-primary: 270 70% 60%;
+    --sidebar-primary-foreground: 270 20% 8%;
+    --sidebar-accent: 45 70% 45%;
+    --sidebar-accent-foreground: 270 20% 8%;
+    --sidebar-border: 270 15% 22%;
+    --sidebar-ring: 270 70% 60%;
+
+    /* Brand tokens — static fallback (Púrpura dark). Runtime ThemeProvider overrides via style attr. */
+    --brand-primary: 270 70% 60%;
+    --brand-secondary: 45 80% 48%;
+    --brand-surface: 270 15% 10%;
+    --brand-text: 270 20% 90%;
+    --brand-muted: 270 15% 18%;
+    --brand-accent: 45 80% 48%;
+    --brand-border: 270 15% 22%;
+    --brand-destructive: 0 62.8% 50%;
+    --brand-sidebar: 270 15% 8%;
+    --brand-sidebar-foreground: 270 20% 80%;
+    --brand-sidebar-primary: 270 70% 60%;
+    --brand-sidebar-accent: 45 80% 48%;
   }
 }
 
@@ -82,50 +133,7 @@
   }
 }
 
-/* Clases de utilidad para colores de marca */
-@layer utilities {
-  .text-amber-gold {
-    color: hsl(var(--amber-gold));
-  }
-  .bg-amber-gold {
-    background-color: hsl(var(--amber-gold));
-  }
-  .text-blaze-orange {
-    color: hsl(var(--blaze-orange));
-  }
-  .bg-blaze-orange {
-    background-color: hsl(var(--blaze-orange));
-  }
-  .text-neon-pink {
-    color: hsl(var(--neon-pink));
-  }
-  .bg-neon-pink {
-    background-color: hsl(var(--neon-pink));
-  }
-  .text-blue-violet {
-    color: hsl(var(--blue-violet));
-  }
-  .bg-blue-violet {
-    background-color: hsl(var(--blue-violet));
-  }
-  .text-azure-blue {
-    color: hsl(var(--azure-blue));
-  }
-  .bg-azure-blue {
-    background-color: hsl(var(--azure-blue));
-  }
-  .text-sky-light {
-    color: hsl(var(--sky-light));
-  }
-  .bg-sky-light {
-    background-color: hsl(var(--sky-light));
-  }
-  .border-sky-light {
-    border-color: hsl(var(--sky-light));
-  }
-}
-
-/* Animaciones personalizadas */
+/* Animaciones */
 @keyframes pulse-soft {
   0%, 100% {
     opacity: 1;

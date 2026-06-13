@@ -71,9 +71,9 @@ function EmptySlot() {
 
 function VacunaSlot({ vacuna }: { vacuna: Vacuna }) {
   return (
-    <div className="border-b border-gray-200 py-2.5 px-3 flex items-center gap-3 hover:bg-purpura-50/40 transition-colors">
-      <div className="w-6 h-6 rounded-full bg-purpura-100 flex items-center justify-center shrink-0">
-        <Syringe className="w-3 h-3 text-purpura-600" />
+    <div className="border-b border-gray-200 py-2.5 px-3 flex items-center gap-3 hover:bg-brand-primary/5 transition-colors">
+      <div className="w-6 h-6 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0">
+        <Syringe className="w-3 h-3 text-brand-primary" />
       </div>
       <div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -153,9 +153,9 @@ function CartillaPageView({
       </div>
 
       <div className="grid grid-cols-3 divide-x-2 divide-gray-200">
-        <div className="col-span-2 bg-purpura-100/80 px-4 py-2 border-b border-purpura-200 flex items-center justify-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-purpura-600" />
-          <span className="font-bold text-sm uppercase tracking-wider text-purpura-800">Vacunas</span>
+        <div className="col-span-2 bg-brand-primary/10 px-4 py-2 border-b border-brand-primary/20 flex items-center justify-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-brand-primary" />
+          <span className="font-bold text-sm uppercase tracking-wider text-brand-primary">Vacunas</span>
         </div>
         <div className="bg-emerald-50 px-4 py-2 border-b border-emerald-200 flex items-center justify-start gap-2 pl-4">
           <div className="w-2 h-2 rounded-full bg-emerald-600" />
@@ -539,14 +539,14 @@ export default function ExpedienteDetailPage() {
           </div>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <Button variant="outline" onClick={abrirEdicion} className="border-purpura-200 text-purpura-600 hover:bg-purpura-50">
+          <Button variant="outline" onClick={abrirEdicion} className="border-brand-primary/20 text-brand-primary hover:bg-brand-primary/5">
             <Pencil className="w-4 h-4 mr-2" />Editar
           </Button>
           <Button variant="outline" onClick={() => setDeleteOpen(true)} className="border-red-200 text-red-600 hover:bg-red-50">
             <Trash2 className="w-4 h-4 mr-2" />Eliminar
           </Button>
           <Link to={`/consulta/nueva?mascota=${mascota.id}`}>
-            <Button className="bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700">
+            <Button className="bg-gradient-to-r from-brand-primary to-brand-primary hover:from-brand-primary hover:to-brand-primary">
               <Plus className="w-4 h-4 mr-2" />Nueva Consulta
             </Button>
           </Link>
@@ -620,7 +620,7 @@ export default function ExpedienteDetailPage() {
                                 <h4 className="font-semibold">{consulta.motivo}</h4>
                                 <Badge
                                   variant={consulta.estado === 'finalizado' ? 'default' : 'secondary'}
-                                  className={consulta.estado === 'finalizado' ? 'bg-purpura-500' : 'bg-amber-gold text-amber-900'}
+                                  className={consulta.estado === 'finalizado' ? 'bg-brand-primary/50' : 'bg-amber-500 text-amber-900'}
                                 >
                                   {consulta.estado === 'finalizado' ? 'Finalizado' : 'Pendiente'}
                                 </Badge>
@@ -691,7 +691,7 @@ export default function ExpedienteDetailPage() {
                   <div className="flex items-center gap-2 flex-wrap justify-end">
                     <Button
                     size="sm"
-                    className="bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700 shadow-sm shadow-purpura-500/20"
+                    className="bg-gradient-to-r from-brand-primary to-brand-primary hover:from-brand-primary hover:to-brand-primary shadow-sm shadow-brand-primary/20"
                     onClick={() => setAgregarOpen(true)}
                   >
                     <Plus className="w-3.5 h-3.5 mr-1" />Agregar
@@ -728,7 +728,7 @@ export default function ExpedienteDetailPage() {
                           onClick={() => setActivePage(isActive ? null : page.pageIndex)}
                           className={`flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all shrink-0 whitespace-nowrap ${
                             isActive
-                              ? 'bg-purpura-100 text-purpura-800 shadow-sm ring-1 ring-purpura-300'
+                              ? 'bg-brand-primary/10 text-brand-primary shadow-sm ring-1 ring-brand-primary/30'
                               : 'bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
                           }`}
                         >
@@ -779,7 +779,7 @@ export default function ExpedienteDetailPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="border-purpura-200 text-purpura-600 hover:bg-purpura-50"
+                          className="border-brand-primary/20 text-brand-primary hover:bg-brand-primary/5"
                           disabled={subiendoFoto}
                           onClick={() => evolucionInputRef.current?.click()}
                         >
@@ -820,7 +820,7 @@ export default function ExpedienteDetailPage() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Pencil className="w-5 h-5 text-purpura-500" />
+              <Pencil className="w-5 h-5 text-brand-primary" />
               Editar Paciente — {mascota.nombre}
             </DialogTitle>
           </DialogHeader>
@@ -947,7 +947,7 @@ export default function ExpedienteDetailPage() {
             <Button
               onClick={guardarEdicion}
               disabled={!editFormValid}
-              className="bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700"
+              className="bg-gradient-to-r from-brand-primary to-brand-primary hover:from-brand-primary hover:to-brand-primary"
             >
               <Pencil className="w-4 h-4 mr-2" />Guardar Cambios
             </Button>
@@ -969,7 +969,7 @@ export default function ExpedienteDetailPage() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Camera className="w-5 h-5 text-purpura-500" />
+              <Camera className="w-5 h-5 text-brand-primary" />
               {fotoModo === 'perfil' ? 'Actualizar foto de perfil' : 'Nueva foto de evolución'}
             </DialogTitle>
             <DialogDescription>
@@ -1006,7 +1006,7 @@ export default function ExpedienteDetailPage() {
             <Button
               onClick={confirmarSubirFoto}
               disabled={!fotoPendiente || subiendoFoto}
-              className="bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700"
+              className="bg-gradient-to-r from-brand-primary to-brand-primary hover:from-brand-primary hover:to-brand-primary"
             >
               {subiendoFoto
                 ? 'Subiendo...'
@@ -1047,8 +1047,8 @@ export default function ExpedienteDetailPage() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${agregarTipo === 'vacuna' ? 'bg-purpura-100' : 'bg-emerald-100'}`}>
-                {agregarTipo === 'vacuna' ? <Syringe className="w-4 h-4 text-purpura-600" /> : <Pill className="w-4 h-4 text-emerald-600" />}
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${agregarTipo === 'vacuna' ? 'bg-brand-primary/10' : 'bg-emerald-100'}`}>
+                {agregarTipo === 'vacuna' ? <Syringe className="w-4 h-4 text-brand-primary" /> : <Pill className="w-4 h-4 text-emerald-600" />}
               </div>
               {agregarTipo === 'vacuna' ? 'Nueva Vacuna' : 'Nueva Desparasitación'}
             </DialogTitle>
@@ -1060,7 +1060,7 @@ export default function ExpedienteDetailPage() {
                 type="button"
                 onClick={() => setAgregarTipo('vacuna')}
                 className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-all ${
-                  agregarTipo === 'vacuna' ? 'bg-white text-purpura-700 shadow-sm ring-1 ring-purpura-200' : 'text-gray-500 hover:text-gray-700'
+                  agregarTipo === 'vacuna' ? 'bg-white text-brand-primary shadow-sm ring-1 ring-brand-primary/20' : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 <Syringe className="w-3.5 h-3.5" /> Vacuna
@@ -1158,7 +1158,7 @@ export default function ExpedienteDetailPage() {
             <Button
               onClick={handleAgregar}
               disabled={agregarTipo === 'vacuna' ? (!agregarForm.nombre || !agregarForm.fechaAplicacion) : (!agregarForm.tipo || !agregarForm.viaAdministracion || !agregarForm.fechaAplicacion)}
-              className="bg-gradient-to-r from-purpura-500 to-purpura-600"
+              className="bg-gradient-to-r from-brand-primary to-brand-primary"
             >
               <Plus className="w-4 h-4 mr-2" />Agregar
             </Button>

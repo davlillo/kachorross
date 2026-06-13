@@ -17,6 +17,7 @@ export class VeterinariaController {
       telefono: row.telefono ?? undefined,
       email: row.email ?? undefined,
       logoUrl: row.logo_url ?? undefined,
+      tema: row.tema ?? undefined,
       estado: row.estado as Veterinaria['estado'],
       createdAt: row.created_at,
     }
@@ -70,6 +71,7 @@ export class VeterinariaController {
     if (data.telefono !== undefined) payload.telefono = data.telefono
     if (data.email !== undefined) payload.email = data.email
     if (data.logoUrl !== undefined) payload.logo_url = data.logoUrl
+    if (data.tema !== undefined) payload.tema = data.tema
     if (data.estado !== undefined) payload.estado = data.estado
 
     payload.updated_at = new Date().toISOString()

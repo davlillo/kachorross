@@ -42,7 +42,7 @@ export function VerConsultaDialog({ open, onOpenChange, consulta }: VerConsultaD
           <DialogTitle className="sr-only">Detalle de consulta</DialogTitle>
 
           {/* ── Header degradado ── */}
-          <div className="relative bg-gradient-to-r from-purpura-600 to-violet-700 px-6 py-4 text-white">
+          <div className="relative bg-gradient-to-r from-brand-primary to-brand-primary px-6 py-4 text-white">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
@@ -172,9 +172,9 @@ export function VerConsultaDialog({ open, onOpenChange, consulta }: VerConsultaD
                 </div>
 
                 {/* Total */}
-                <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-purpura-50 to-violet-50 border border-purpura-200 mt-3">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-brand-primary/5 to-brand-primary/5 border border-brand-primary/20 mt-3">
                   <p className="text-xs text-muted-foreground font-medium">Total</p>
-                  <p className="text-3xl font-black text-purpura-600">${consulta.total.toFixed(2)}</p>
+                  <p className="text-3xl font-black text-brand-primary">${consulta.total.toFixed(2)}</p>
                 </div>
               </div>
             )}

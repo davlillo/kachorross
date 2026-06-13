@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { AuthController } from '@/controllers/auth.controller';
 import { VeterinariaController } from '@/controllers/veterinaria.controller';
 import { supabase } from '@/supabase/client';
+import { ThemeProvider } from '@/theme/ThemeContext';
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import type { Perfil, Veterinaria } from '@/types';
 
@@ -237,7 +238,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider value={{ user, veterinaria, login, logout, refreshUser, refreshVeterinaria, isLoading, error }}>
-      {children}
+      <ThemeProvider>
+        {children}
+      </ThemeProvider>
     </AuthContext.Provider>
   );
 }

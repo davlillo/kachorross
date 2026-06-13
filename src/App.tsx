@@ -52,7 +52,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
 
-        <Loader2 className="h-8 w-8 animate-spin text-purpura-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
 
       </div>
 

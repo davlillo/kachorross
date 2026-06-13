@@ -13,8 +13,8 @@ interface MonitorCardProps {
 }
 
 const estadoConfig = {
-  listo: { label: 'Listo para pago', className: 'bg-purpura-500' },
-  pagando: { label: 'En proceso de pago', className: 'bg-amber-gold text-amber-900' },
+  listo: { label: 'Listo para pago', className: 'bg-brand-primary' },
+  pagando: { label: 'En proceso de pago', className: 'bg-amber-500 text-amber-900' },
   entregado: { label: 'Entregado', className: 'bg-gray-400' },
 }
 
@@ -70,12 +70,12 @@ export function MonitorCard({ item, onVerDetalle, consultaTerminada }: MonitorCa
 
         <div className="flex items-center justify-between mb-4">
           <span className="text-muted-foreground">Total a pagar:</span>
-          <span className="text-2xl font-bold text-purpura-600">${item.total.toFixed(2)}</span>
+          <span className="text-2xl font-bold text-brand-primary">${item.total.toFixed(2)}</span>
         </div>
 
         <div className="flex gap-2">
           <Button
-            className="flex-1 bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700"
+            className="flex-1 bg-gradient-to-r from-brand-primary to-brand-primary hover:from-brand-primary hover:to-brand-primary"
             onClick={() => onVerDetalle(item.consultaId)}
             disabled={consultaTerminada === item.consultaId}
           >

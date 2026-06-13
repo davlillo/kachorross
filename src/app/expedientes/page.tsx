@@ -36,12 +36,12 @@ const especieColors: Record<string, string> = {
   perro: 'bg-blue-100 text-blue-700',
   gato: 'bg-pink-100 text-pink-700',
   ave: 'bg-amber-100 text-amber-700',
-  conejo: 'bg-purpura-100 text-purpura-700',
+  conejo: 'bg-brand-primary/10 text-brand-primary',
   otro: 'bg-gray-100 text-gray-700'
 };
 
 const filtrosEspecie = [
-  { label: 'Todos', value: 'todos', activeClass: 'bg-purpura-500' },
+  { label: 'Todos', value: 'todos', activeClass: 'bg-brand-primary' },
   { label: '🐕 Perros', value: 'perro', activeClass: 'bg-blue-500' },
   { label: '🐱 Gatos', value: 'gato', activeClass: 'bg-pink-500' },
 ];
@@ -88,7 +88,7 @@ export default function ExpedientesPage() {
         }
         actions={
           <Link to="/expedientes/nuevo">
-            <Button className="bg-gradient-to-r from-purpura-500 to-purpura-600 hover:from-purpura-600 hover:to-purpura-700">
+            <Button className="bg-gradient-to-r from-brand-primary to-brand-primary hover:from-brand-primary hover:to-brand-primary">
               <Plus className="w-4 h-4 mr-2" />
               Nuevo Expediente
             </Button>
@@ -165,13 +165,13 @@ export default function ExpedientesPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Stethoscope className="w-4 h-4 text-purpura-500" />
+                        <Stethoscope className="w-4 h-4 text-brand-primary" />
                         <span className="font-medium">{expediente.consultasCount}</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <Link to={`/expedientes/${expediente.mascotaId}`}>
-                        <Button variant="ghost" size="sm" className="text-purpura-600 hover:text-purpura-700">
+                        <Button variant="ghost" size="sm" className="text-brand-primary hover:text-brand-primary">
                           Ver expediente
                           <ArrowRight className="w-4 h-4 ml-1" />
                         </Button>

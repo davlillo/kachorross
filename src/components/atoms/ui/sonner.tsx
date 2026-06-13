@@ -10,25 +10,24 @@ import { Toaster as Sonner, type ToasterProps } from "sonner"
 const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
-      theme="light"
       className="toaster group"
       icons={{
-        success: <CircleCheckIcon className="size-4 text-purpura-600" />,
-        info: <InfoIcon className="size-4 text-azure-blue" />,
-        warning: <TriangleAlertIcon className="size-4 text-amber-600" />,
-        error: <OctagonXIcon className="size-4 text-red-600" />,
-        loading: <Loader2Icon className="size-4 animate-spin text-purpura-500" />,
+        success: <CircleCheckIcon className="size-4 text-brand-primary" />,
+        info: <InfoIcon className="size-4 text-brand-secondary" />,
+        warning: <TriangleAlertIcon className="size-4 text-amber-500 dark:text-amber-400" />,
+        error: <OctagonXIcon className="size-4 text-red-500 dark:text-red-400" />,
+        loading: <Loader2Icon className="size-4 animate-spin text-brand-primary" />,
       }}
       toastOptions={{
         classNames: {
           toast:
-            'group toast !bg-white !text-foreground !border !border-border !shadow-lg !rounded-xl',
+            'group toast !bg-card !text-foreground !border !border-border !shadow-lg !rounded-xl',
           title: '!text-sm !font-semibold',
           description: '!text-xs !text-muted-foreground',
-          success: '!border-purpura-200 !bg-purpura-50/80',
-          error: '!border-red-200 !bg-red-50/80',
-          warning: '!border-amber-200 !bg-amber-50/80',
-          info: '!border-blue-200 !bg-blue-50/80',
+          success: '!border-brand-primary/30 dark:!border-brand-primary/20 !bg-brand-primary/10 dark:!bg-brand-primary/15',
+          error: '!border-red-300 dark:!border-red-800 !bg-red-50 dark:!bg-red-950/60',
+          warning: '!border-amber-300 dark:!border-amber-800 !bg-amber-50 dark:!bg-amber-950/60',
+          info: '!border-blue-300 dark:!border-blue-800 !bg-blue-50 dark:!bg-blue-950/60',
         },
       }}
       {...props}

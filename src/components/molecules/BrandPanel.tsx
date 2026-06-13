@@ -2,7 +2,7 @@ import logo from '@/media/logo.png'
 
 export function BrandPanel() {
   return (
-    <div className="hidden md:flex w-full md:w-1/2 bg-gradient-to-br from-purpura-700 to-purpura-500 p-12 md:p-12 flex-col justify-center items-start gap-8 text-white relative overflow-hidden">
+    <div className="hidden md:flex w-full md:w-1/2 bg-brand-primary p-12 md:p-12 flex-col justify-center items-start gap-8 text-white relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-white/0 pointer-events-none" aria-hidden="true" />
       <svg className="absolute -right-24 -bottom-24 opacity-20" width="420" height="420" viewBox="0 0 420 420" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
         <defs>
