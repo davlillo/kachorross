@@ -28,6 +28,7 @@ import {
   TELEFONO_PLACEHOLDER,
 } from '@/lib/input-validators';
 import { cn, todayLocal } from '@/lib/utils';
+import { toast } from 'sonner';
 
 const especies: { value: Mascota['especie']; label: string }[] = [
   { value: 'perro', label: 'Perro' },
@@ -62,7 +63,6 @@ export default function NuevoExpedientePage() {
   const [mascotaAlergias, setMascotaAlergias] = useState('');
   const [mascotaNotas, setMascotaNotas] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [touched, setTouched] = useState({
     telefono: false,
     email: false,
@@ -124,7 +124,6 @@ export default function NuevoExpedientePage() {
     e.preventDefault();
     setTouched({ telefono: true, email: true, peso: true });
     if (!isValid) return;
-    setError(null);
 
     try {
       setIsSaving(true);
@@ -153,9 +152,10 @@ export default function NuevoExpedientePage() {
         },
       });
 
+      toast.success('Paciente registrado correctamente');
       navigate(`/expedientes/${expediente.mascotaId}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo guardar el paciente.');
+      toast.error(err instanceof Error ? err.message : 'No se pudo guardar el paciente.');
     } finally {
       setIsSaving(false);
     }
@@ -171,11 +171,6 @@ export default function NuevoExpedientePage() {
       />
 
       <form onSubmit={handleSubmit}>
-        {error && (
-          <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="border-0 shadow-soft">
             <CardHeader>

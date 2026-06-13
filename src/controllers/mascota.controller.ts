@@ -478,6 +478,19 @@ export class MascotaController {
     const currentUser = await auth.resolveUser()
     if (!currentUser?.veterinariaId) throw new Error('No hay veterinaria activa')
 
+    const { data: duplicado } = await supabase
+      .from('mascotas')
+      .select('id, propietarios!inner(nombre)')
+      .eq('veterinaria_id', currentUser.veterinariaId)
+      .eq('nombre', data.mascota.nombre)
+      .eq('activo', true)
+      .eq('propietarios.nombre', data.propietario.nombre)
+      .maybeSingle()
+
+    if (duplicado) {
+      throw new Error('Ya existe un paciente con ese nombre y propietario.')
+    }
+
     const { data: propietarioRow, error: propietarioError } = await supabase
       .from('propietarios')
       .insert({
