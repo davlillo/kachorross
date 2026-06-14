@@ -24,9 +24,8 @@ SCREENSHOTS = [
 VIEWPORT = {"width": 1440, "height": 900}
 BASE_URL = "http://localhost:5173"
 
-# -- Cambia estas credenciales por unas validas en tu Supabase --
-EMAIL = "admin@kachorros.com"
-PASSWORD = "123456"
+EMAIL = "hg23008@ues.edu.sv"
+PASSWORD = "sdavidhg15"
 
 
 def login(page):
