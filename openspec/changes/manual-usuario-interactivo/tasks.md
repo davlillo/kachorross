@@ -29,7 +29,7 @@ Chain strategy: pending
 
 ## Phase 3: Integration
 
-- [ ] T-008 Create `ManualPage` — state: `activeSessionId`, `stepIndex`, `completedSteps` (localStorage), `accessibleMode`. Filters by `useAuth().user.rol`. Arrow-key step nav. Mobile banner. Register `/manual` route in `App.tsx` (`ProtectedRoute` all roles). Add `BookOpen` navItem in `Layout.tsx`. **Files:** `src/app/manual/page.tsx` (new), `src/App.tsx` (modify), `src/components/organisms/Layout.tsx` (modify). **Depends:** T-002, T-004, T-005, T-006, T-007. **Vfy:** full nav flow; role filtering correct. **~150L.**
+- [x] T-008 Create `ManualPage` — state: `activeSessionId`, `stepIndex`, `completedSteps` (localStorage), `accessibleMode`. Filters by `useAuth().user.rol`. Arrow-key step nav. Mobile banner. Register `/manual` route in `App.tsx` (`ProtectedRoute` all roles). Add `BookOpen` navItem in `Layout.tsx`. **Files:** `src/app/manual/page.tsx` (new), `src/App.tsx` (modify), `src/components/organisms/Layout.tsx` (modify). **Depends:** T-002, T-004, T-005, T-006, T-007. **Vfy:** full nav flow; role filtering correct. **~150L.**
 
 ## Phase 4: Animations
 

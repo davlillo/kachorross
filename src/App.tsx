@@ -34,6 +34,8 @@ import SuperAdminPage from '@/app/super-admin/page';
 
 import PerfilPage from '@/app/perfil/page';
 
+import ManualPage from '@/app/manual/page';
+
 import { Toaster } from '@/components/atoms/ui/sonner';
 
 import { Loader2 } from 'lucide-react';
@@ -283,6 +285,12 @@ function AppRoutes() {
       } />
 
 
+
+      <Route path="/manual" element={
+        <ProtectedRoute allowedRoles={['doctora', 'recepcion', 'admin', 'super_admin']}>
+          <Layout><ManualPage /></Layout>
+        </ProtectedRoute>
+      } />
 
       <Route path="*" element={<Navigate to="/login" replace />} />
 

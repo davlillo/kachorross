@@ -30,6 +30,7 @@ import {
   History,
   Sun,
   Moon,
+  BookOpen,
 } from 'lucide-react';
 import { useState } from 'react';
 import type { Perfil } from '@/types';
@@ -78,6 +79,12 @@ const navItems: NavItem[] = [
     href: '/admin/seguridad/usuarios',
     icon: Users,
     roles: ['admin'],
+  },
+  {
+    label: 'Manual de Usuario',
+    href: '/manual',
+    icon: BookOpen,
+    roles: ['doctora', 'recepcion', 'admin'],
   },
 ];
 
