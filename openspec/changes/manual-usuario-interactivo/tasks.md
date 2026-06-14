@@ -33,7 +33,7 @@ Chain strategy: pending
 
 ## Phase 4: Animations
 
-- [ ] T-009 Add `hotspot-pop` and `step-enter` keyframes + animation utilities to `tailwind.config.js`. **Files:** `tailwind.config.js` (modify). **Depends:** T-003, T-005, T-008. **Vfy:** `npm run build`; hotspots stagger-animate at runtime. **~14L.**
+- [x] T-009 Add `hotspot-pop` and `step-enter` keyframes + animation utilities to `tailwind.config.js`. **Files:** `tailwind.config.js` (modify). **Depends:** T-003, T-005, T-008. **Vfy:** `npm run build`; hotspots stagger-animate at runtime. **~14L.**
 
 ## Phase 5: Screenshots
 
