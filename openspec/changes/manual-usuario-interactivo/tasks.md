@@ -21,11 +21,11 @@ Chain strategy: pending
 
 ## Phase 2: Molecules
 
-- [ ] T-003 Create `Hotspot.tsx` — positioned `<Popover>` trigger, staggered `animationDelay: index * 120ms`, `animate-hotspot-pop`. **Files:** `src/components/molecules/Hotspot.tsx` (new). **Depends:** T-001. **Vfy:** renders with test props. **~55L.**
-- [ ] T-004 Create `StepNavigator.tsx` — Prev/Next + "N/M" indicator, hides Next on last step, completion badge. **Files:** `src/components/molecules/StepNavigator.tsx` (new). **Depends:** none. **Vfy:** `onPrev`/`onNext` fire; last step hides Next. **~45L.**
-- [ ] T-005 Create `TutorialSession.tsx` — screenshot `<img>` + `<Hotspot>` overlays + step title/desc + text-only `<dl>` fallback via `accessibleMode` prop. **Files:** `src/components/molecules/TutorialSession.tsx` (new). **Depends:** T-001, T-003. **Vfy:** screenshot renders; hotspots overlay correctly. **~90L.**
-- [ ] T-006 Create `SessionList.tsx` — filtered sidebar with title, description, progress (N/M from localStorage), active highlight. **Files:** `src/components/molecules/SessionList.tsx` (new). **Depends:** T-001. **Vfy:** click fires `onSelect`; active session highlighted. **~60L.**
-- [ ] T-007 Add barrel exports for Hotspot, TutorialSession, StepNavigator, SessionList. **Files:** `src/components/molecules/index.ts` (modify). **Depends:** T-003–T-006. **Vfy:** build passes. **~4L.**
+- [x] T-003 Create `Hotspot.tsx` — positioned `<Popover>` trigger, staggered `animationDelay: index * 120ms`, `animate-hotspot-pop`. **Files:** `src/components/molecules/Hotspot.tsx` (new). **Depends:** T-001. **Vfy:** renders with test props. **~55L.**
+- [x] T-004 Create `StepNavigator.tsx` — Prev/Next + "N/M" indicator, hides Next on last step, completion badge. **Files:** `src/components/molecules/StepNavigator.tsx` (new). **Depends:** none. **Vfy:** `onPrev`/`onNext` fire; last step hides Next. **~45L.**
+- [x] T-005 Create `TutorialSession.tsx` — screenshot `<img>` + `<Hotspot>` overlays + step title/desc + text-only `<dl>` fallback via `accessibleMode` prop. **Files:** `src/components/molecules/TutorialSession.tsx` (new). **Depends:** T-001, T-003. **Vfy:** screenshot renders; hotspots overlay correctly. **~90L.**
+- [x] T-006 Create `SessionList.tsx` — filtered sidebar with title, description, progress (N/M from localStorage), active highlight. **Files:** `src/components/molecules/SessionList.tsx` (new). **Depends:** T-001. **Vfy:** click fires `onSelect`; active session highlighted. **~60L.**
+- [x] T-007 Add barrel exports for Hotspot, TutorialSession, StepNavigator, SessionList. **Files:** `src/components/molecules/index.ts` (modify). **Depends:** T-003–T-006. **Vfy:** build passes. **~4L.**
 
 ## Phase 3: Integration
 
