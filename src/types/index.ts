@@ -204,3 +204,34 @@ export interface RegistroEnvio {
   estado: 'enviado' | 'entregado' | 'fallido' | 'pendiente';
   codigoError?: string;
 }
+
+// ─── Manual de Usuario Interactivo ───
+
+export interface HotspotDef {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  title: string;
+  description: string;
+  placement?: 'top' | 'bottom' | 'left' | 'right';
+}
+
+export interface TutorialStep {
+  id: string;
+  title: string;
+  description: string;
+  screenshot: string;
+  hotspots: HotspotDef[];
+}
+
+export interface ManualSession {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  route: string;
+  roles: ('doctora' | 'recepcion' | 'admin')[];
+  steps: TutorialStep[];
+}
