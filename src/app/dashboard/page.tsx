@@ -353,7 +353,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div>
-                  <p className="text-5xl font-black leading-none tabular-nums">${dashboardStats.ingresosHoy.toFixed(0)}</p>
+                  <p className="text-5xl font-black leading-none tabular-nums">${dashboardStats.ingresosHoy.toFixed(2)}</p>
                   <div className="flex items-center gap-1.5 mt-3">
                     <span className="flex items-center gap-0.5 text-[11px] font-semibold bg-white/20 rounded-full px-2 py-0.5">
                       <TrendingUp className="w-3 h-3" /> Prefacturado
@@ -691,7 +691,7 @@ export default function DashboardPage() {
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <DollarSign className="w-4 h-4 text-emerald-500" />
                 Ingresos por Prefacturas
-                <Badge variant="outline" className="text-xs font-normal text-emerald-600">${ingresosTotales.toFixed(0)}</Badge>
+                <Badge variant="outline" className="text-xs font-normal text-emerald-600">${ingresosTotales.toFixed(2)}</Badge>
               </CardTitle>
               <div className="flex gap-1">
                 {(['semana','mes'] as const).map(p => (
