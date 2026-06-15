@@ -47,10 +47,7 @@ export default function RecepcionPage() {
               <CheckCircle className="w-3 h-3 mr-1" />
               {monitorSalida.filter(m => m.estado === 'listo').length} listos
             </Badge>
-            <Badge variant="outline" className="px-3 py-1 text-amber-600 border-amber-200">
-              <Clock className="w-3 h-3 mr-1" />
-              {monitorSalida.filter(m => m.estado === 'pagando').length} pagando
-            </Badge>
+            
           </div>
         }
       />
