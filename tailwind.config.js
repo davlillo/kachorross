@@ -92,11 +92,22 @@ module.exports = {
           "0%,70%,100%": { opacity: "1" },
           "20%,50%": { opacity: "0" },
         },
+        "hotspot-pop": {
+          "0%":   { transform: "scale(0)", opacity: "0" },
+          "60%":  { transform: "scale(1.3)" },
+          "100%": { transform: "scale(1)", opacity: "1" },
+        },
+        "step-enter": {
+          "0%":   { opacity: "0", transform: "translateY(8px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "caret-blink": "caret-blink 1.25s ease-out infinite",
+        "hotspot-pop": "hotspot-pop 0.4s ease-out both",
+        "step-enter":  "step-enter 0.3s ease-out",
       },
     },
   },
