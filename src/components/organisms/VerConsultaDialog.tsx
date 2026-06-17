@@ -3,16 +3,16 @@ import * as DialogPrimitive from '@radix-ui/react-dialog'
 import {
   Dialog, DialogPortal, DialogOverlay, DialogTitle,
 } from '@/components/atoms/ui/dialog'
-import { Badge } from '@/components/atoms/ui/badge'
 import { Button } from '@/components/atoms/ui/button'
 import { cn } from '@/lib/utils'
 import {
   X, ArrowLeft, Stethoscope, CalendarDays, FileText, AlertCircle, Eye,
 } from 'lucide-react'
 import type { Consulta } from '@/types'
-import { getCategoriaConfig, getCategoriaLabel } from '@/lib/catalogo-categorias'
+import { getCategoriaConfig } from '@/lib/catalogo-categorias'
 import { generarPdfTratamiento } from '@/lib/pdfTratamiento'
 import { useAuth } from '@/context/AuthContext'
+import { DetalleProductoCell } from '@/components/molecules/DetalleProductoCell'
 
 interface VerConsultaDialogProps {
   open: boolean
@@ -205,9 +205,9 @@ export function VerConsultaDialog({ open, onOpenChange, consulta }: VerConsultaD
                   <div className="grid grid-cols-12 bg-muted px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                     <div className="col-span-3">Código</div>
                     <div className="col-span-4">Descripción</div>
-                    <div className="col-span-2 text-center">Cant.</div>
+                    <div className="col-span-1 text-center">Cant.</div>
                     <div className="col-span-2 text-right">P.Unit.</div>
-                    <div className="col-span-1 text-right">Sub.</div>
+                    <div className="col-span-2 text-right">Sub.</div>
                   </div>
 
                   {consulta.detalles.map((detalle, idx) => {
@@ -216,7 +216,7 @@ export function VerConsultaDialog({ open, onOpenChange, consulta }: VerConsultaD
                     return (
                       <div
                         key={detalle.id}
-                        className={`grid grid-cols-12 items-center px-3 py-2.5 border-t border-border transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-muted/20'} hover:bg-muted/40`}
+                        className={`grid grid-cols-12 items-start px-3 py-2.5 border-t border-border transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-muted/20'} hover:bg-muted/40`}
                       >
                         <div className="col-span-3">
                           <span className={`inline-flex items-center gap-1 text-xs font-black font-mono px-2 py-1 rounded-lg ${cat.bg} ${cat.color} ${cat.border} border`}>
@@ -224,19 +224,16 @@ export function VerConsultaDialog({ open, onOpenChange, consulta }: VerConsultaD
                             {detalle.producto.codigo}
                           </span>
                         </div>
-                        <div className="col-span-4 min-w-0 pr-1">
-                          <p className="text-xs font-semibold truncate leading-tight">{detalle.producto.nombre}</p>
-                          <Badge className={`text-[9px] px-1 py-0 ${cat.bg} ${cat.color} border-0 mt-0.5`}>
-                            {getCategoriaLabel(detalle.producto.categoria, detalle.producto.codigo)}
-                          </Badge>
+                        <div className="col-span-4">
+                          <DetalleProductoCell producto={detalle.producto} />
                         </div>
-                        <div className="col-span-2 text-center">
+                        <div className="col-span-1 text-center pt-0.5">
                           <span className="text-sm font-bold">{detalle.cantidad}</span>
                         </div>
-                        <div className="col-span-2 text-right">
+                        <div className="col-span-2 text-right pt-0.5">
                           <span className="text-xs text-muted-foreground">${detalle.precioAplicado.toFixed(2)}</span>
                         </div>
-                        <div className="col-span-1 text-right">
+                        <div className="col-span-2 text-right pt-0.5">
                           <span className="text-xs font-bold">${detalle.subtotal.toFixed(2)}</span>
                         </div>
                       </div>
