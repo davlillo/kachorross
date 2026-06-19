@@ -1,5 +1,6 @@
 import html2canvas from 'html2canvas'
 import { jsPDF } from 'jspdf'
+import { sanitizeHTML } from '@/lib/sanitize'
 
 function buildHtml(tratamiento: string, logoUrl?: string): string {
   const logoHtml = logoUrl
@@ -80,7 +81,7 @@ function buildHtml(tratamiento: string, logoUrl?: string): string {
         </div>
       </div>
       <div class="separator"></div>
-      <div class="content">${tratamiento || 'Sin tratamiento registrado.'}</div>
+      <div class="content">${sanitizeHTML(tratamiento || 'Sin tratamiento registrado.')}</div>
       <div>
         <div class="footer-sep"></div>
         <p class="address">AV. MONTECRISTO POLIG. C, COL. MONTEBELLO, # 1-A, MEJICANOS, SAN SALVADOR</p>

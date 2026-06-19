@@ -8,6 +8,7 @@ import { Button } from '@/components/atoms/ui/button';
 import { Alert, AlertDescription } from '@/components/atoms/ui/alert';
 import { useAuth } from '@/context/AuthContext';
 import { AuthController } from '@/controllers/auth.controller';
+import { validatePassword } from '@/lib/sanitize';
 
 const authCtrl = AuthController.getInstance();
 
@@ -21,12 +22,7 @@ export default function PerfilPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const passwordValidation = useMemo(() => {
-    if (!nuevaContrasena) return { ok: false, reason: 'Ingresa una nueva contraseña.' };
-    if (nuevaContrasena.length < 6) return { ok: false, reason: 'La contraseña debe tener al menos 6 caracteres.' };
-    if (nuevaContrasena !== confirmarContrasena) return { ok: false, reason: 'Las contraseñas no coinciden.' };
-    return { ok: true, reason: null };
-  }, [nuevaContrasena, confirmarContrasena]);
+  const passwordValidation = useMemo(() => validatePassword(nuevaContrasena), [nuevaContrasena]);
 
   const guardarContrasena = async () => {
     setMessage(null);
@@ -34,6 +30,11 @@ export default function PerfilPage() {
 
     if (!passwordValidation.ok) {
       setError(passwordValidation.reason);
+      return;
+    }
+
+    if (nuevaContrasena !== confirmarContrasena) {
+      setError('Las contraseñas no coinciden.');
       return;
     }
 
@@ -106,7 +107,7 @@ export default function PerfilPage() {
                 type={showNuevaContrasena ? 'text' : 'password'}
                 value={nuevaContrasena}
                 onChange={(e) => setNuevaContrasena(e.target.value)}
-                placeholder="Mínimo 6 caracteres"
+                placeholder="Mínimo 8 caracteres con mayúscula, minúscula, número y especial"
                 className="pr-10"
               />
               <button
