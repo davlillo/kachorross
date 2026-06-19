@@ -1,6 +1,7 @@
 import { supabase } from '@/supabase/client'
 import type { Producto } from '@/types'
 import { normalizeCategoria, categoriaFromCodigo } from '@/lib/catalogo-categorias'
+import { escapeILike } from '@/lib/sanitize'
 import { AuthController } from './auth.controller'
 
 let instance: CatalogoController | null = null
@@ -80,7 +81,7 @@ export class CatalogoController {
       .select('id,codigo,nombre,descripcion,categoria,precio,activo,veterinaria_id')
       .eq('veterinaria_id', currentUser.veterinariaId)
       .eq('activo', true)
-      .or(`nombre.ilike.%${q}%,codigo.ilike.%${q}%,descripcion.ilike.%${q}%`)
+      .or(`nombre.ilike.%${escapeILike(q)}%,codigo.ilike.%${escapeILike(q)}%,descripcion.ilike.%${escapeILike(q)}%`)
       .order('codigo', { ascending: true })
 
     if (error) throw new Error(`No se pudo buscar en catálogo: ${error.message}`)
