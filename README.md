@@ -73,13 +73,19 @@ src/
 
 ## 👥 Usuarios de Demo
 
-El sistema incluye datos simulados para probar todas las funcionalidades:
+El sistema incluye datos simulados para probar todas las funcionalidades (usuarios del mock, no existen en la base local):
 
 | Rol | Email | Contraseña |
 |-----|-------|------------|
 | Doctora | doctora@kachorros.com | 123456 |
 | Recepción | recepcion@kachorros.com | 123456 |
 | Admin | admin@kachorros.com | 123456 |
+
+Con Supabase local (Docker), la migración inicial crea un administrador real para entrar a la app:
+
+| Rol | Email | Contraseña |
+|-----|-------|------------|
+| Admin | admin@kachorros.com | 12345678 |
 
 ## 🎨 Paleta de Colores
 
