@@ -59,6 +59,16 @@ VITE_SUPABASE_URL=http://127.0.0.1:54321
 
 `.env` no se versiona. Cada integrante arma su copia local con su propio `ANON_KEY` (es distinto por máquina).
 
+## Usuario admin (incluido en la migración)
+
+La migración inicial crea el primer administrador, listo para entrar a la app sin pasos extra:
+
+| Rol | Email | Contraseña |
+|-----|-------|------------|
+| Admin | admin@kachorros.com | 12345678 |
+
+Queda asociado a la veterinaria local "Kachorros local". Los usuarios del mock (`doctora@`, `recepcion@`) no existen en la base local: solo funcionan cuando se usa la autenticación mock de desarrollo.
+
 ## Base de datos y migraciones
 
 La migración inicial versionada está en:

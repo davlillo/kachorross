@@ -402,6 +402,65 @@ INSERT INTO veterinarias (id, nombre, estado)
 VALUES ('00000000-0000-0000-0000-000000000001', 'Kachorros local', 'activo')
 ON CONFLICT (id) DO NOTHING;
 
+-- =====================================================
+-- ADMIN LOCAL (dev)
+-- =====================================================
+-- Primer administrador de desarrollo: admin@kachorros.com / 12345678
+-- Solo local. En producción el usuario se crea desde el panel de Supabase Auth.
+-- GoTrue lee algunas columnas de auth.users como texto y revienta con NULL,
+-- por eso se rellenan explícitamente (mismo patrón que aseisi).
+INSERT INTO auth.users (
+    id, instance_id, aud, role, email,
+    encrypted_password, email_confirmed_at,
+    confirmation_token, recovery_token,
+    email_change_token_new, email_change_token_current, email_change,
+    phone_change, phone_change_token, reauthentication_token,
+    raw_app_meta_data, raw_user_meta_data,
+    created_at, updated_at
+)
+SELECT
+    gen_random_uuid(),
+    '00000000-0000-0000-0000-000000000000',
+    'authenticated',
+    'authenticated',
+    'admin@kachorros.com',
+    extensions.crypt('12345678', extensions.gen_salt('bf')),
+    now(),
+    '', '', '', '', '', '', '', '',
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{"rol":"admin","veterinaria_id":"00000000-0000-0000-0000-000000000001"}'::jsonb,
+    now(), now()
+WHERE NOT EXISTS (
+    SELECT 1 FROM auth.users WHERE email = 'admin@kachorros.com'
+);
+
+-- Sin una identidad de tipo 'email', el login por contraseña no encuentra al
+-- usuario aunque exista en auth.users.
+INSERT INTO auth.identities (
+    provider_id, user_id, identity_data, provider,
+    last_sign_in_at, created_at, updated_at
+)
+SELECT
+    u.id::text,
+    u.id,
+    jsonb_build_object('sub', u.id::text, 'email', u.email, 'email_verified', true),
+    'email',
+    now(), now(), now()
+FROM auth.users u
+WHERE u.email = 'admin@kachorros.com'
+  AND NOT EXISTS (
+      SELECT 1 FROM auth.identities i
+      WHERE i.user_id = u.id AND i.provider = 'email'
+  );
+
+-- Perfil con rol admin de la clínica local. El trigger handle_new_user ya lo
+-- crea al insertar el usuario; este upsert garantiza rol y veterinaria.
+INSERT INTO public.perfiles (id, nombre, email, rol, veterinaria_id)
+SELECT id, 'admin', email, 'admin', '00000000-0000-0000-0000-000000000001'
+FROM auth.users
+WHERE email = 'admin@kachorros.com'
+ON CONFLICT (id) DO UPDATE SET rol = 'admin', veterinaria_id = '00000000-0000-0000-0000-000000000001';
+
 CREATE OR REPLACE FUNCTION public.local_default_veterinaria_id()
 RETURNS UUID AS $$
 BEGIN
