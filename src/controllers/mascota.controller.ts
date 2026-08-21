@@ -14,6 +14,7 @@ import type {
 } from '@/types'
 import { AuthController } from './auth.controller'
 import { normalizeCategoria } from '@/lib/catalogo-categorias'
+import { escapeILike } from '@/lib/sanitize'
 import { todayLocal } from '@/lib/utils'
 
 let instance: MascotaController | null = null
@@ -170,7 +171,7 @@ export class MascotaController {
 
     // Query A: buscar por nombre o raza de la mascota
     const { data: petData } = await base()
-      .or(`nombre.ilike.%${q}%,raza.ilike.%${q}%`)
+      .or(`nombre.ilike.%${escapeILike(q)}%,raza.ilike.%${escapeILike(q)}%`)
 
     const map = new Map<string, any>()
     for (const row of petData ?? []) map.set(row.id, row)
@@ -180,7 +181,7 @@ export class MascotaController {
       .from('propietarios')
       .select('id')
       .eq('veterinaria_id', veterinariaId)
-      .or(`nombre.ilike.%${q}%,telefono.ilike.%${q}%`)
+      .or(`nombre.ilike.%${escapeILike(q)}%,telefono.ilike.%${escapeILike(q)}%`)
 
     if (ownerData && ownerData.length > 0) {
       const ownerIds = ownerData.map(o => o.id)
