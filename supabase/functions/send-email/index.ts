@@ -135,6 +135,12 @@ Deno.serve(async (req) => {
     if (text) mailOptions.text = text
     if (html) mailOptions.html = html
 
+    if (html) {
+      mailOptions.headers = {
+        'Content-Language': 'es',
+      }
+    }
+
     if (attachment) {
       mailOptions.attachments = [{
         filename: attachment.filename,

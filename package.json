@@ -13,6 +13,7 @@
     "supabase:reset": "npx supabase db reset",
     "supabase:status": "npx supabase status",
     "supabase:migration": "npx supabase migration up",
+    "supabase:activar-recordatorios": "powershell -ExecutionPolicy Bypass -File scripts/activar-recordatorios-cloud.ps1",
     "parse-catalogo": "node scripts/parse-codigo-vete.mjs",
     "apply-catalogo": "node scripts/apply-catalogo-migration.mjs"
   },

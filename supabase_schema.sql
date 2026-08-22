@@ -174,6 +174,9 @@ CREATE TABLE IF NOT EXISTS consultas (
     estado VARCHAR(20) DEFAULT 'pendiente' CHECK (estado IN ('pendiente', 'en_recepcion', 'pagada', 'finalizado')),
     total DECIMAL(10,2) DEFAULT 0,
     proxima_cita TIMESTAMP WITH TIME ZONE,
+    tipo_seguimiento VARCHAR(30) CHECK (tipo_seguimiento IS NULL OR tipo_seguimiento IN (
+        'control', 'vacuna', 'desparasitacion', 'revision_general'
+    )),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -957,10 +960,11 @@ CREATE POLICY "Consultas visibles para usuarios de la misma veterinaria" ON cons
     );
 
 DROP POLICY IF EXISTS "Consultas insertables para doctora de la misma veterinaria" ON consultas;
-CREATE POLICY "Consultas insertables para doctora de la misma veterinaria" ON consultas
+DROP POLICY IF EXISTS "Consultas insertables para doctora y admin de la misma veterinaria" ON consultas;
+CREATE POLICY "Consultas insertables para doctora y admin de la misma veterinaria" ON consultas
     FOR INSERT TO authenticated WITH CHECK (
-        veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid()) AND
-        EXISTS (SELECT 1 FROM perfiles WHERE id = auth.uid() AND rol = 'doctora')
+        veterinaria_id = public.current_user_veterinaria()
+        AND public.current_user_rol() IN ('doctora', 'admin')
     );
 
 DROP POLICY IF EXISTS "Consultas actualizables para usuarios de la misma veterinaria" ON consultas;
@@ -977,10 +981,11 @@ CREATE POLICY "Detalles visibles para usuarios de la misma veterinaria" ON detal
     );
 
 DROP POLICY IF EXISTS "Detalles insertables para doctora de la misma veterinaria" ON detalles_consulta;
-CREATE POLICY "Detalles insertables para doctora de la misma veterinaria" ON detalles_consulta
+DROP POLICY IF EXISTS "Detalles insertables para doctora y admin de la misma veterinaria" ON detalles_consulta;
+CREATE POLICY "Detalles insertables para doctora y admin de la misma veterinaria" ON detalles_consulta
     FOR INSERT TO authenticated WITH CHECK (
-        EXISTS (SELECT 1 FROM consultas WHERE id = detalles_consulta.consulta_id AND veterinaria_id = (SELECT veterinaria_id FROM perfiles WHERE id = auth.uid())) AND
-        EXISTS (SELECT 1 FROM perfiles WHERE id = auth.uid() AND rol = 'doctora')
+        EXISTS (SELECT 1 FROM consultas WHERE id = detalles_consulta.consulta_id AND veterinaria_id = public.current_user_veterinaria()) AND
+        public.current_user_rol() IN ('doctora', 'admin')
     );
 
 -- Fotos

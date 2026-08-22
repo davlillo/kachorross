@@ -39,3 +39,9 @@ export function formatoFechaLegibleClave(fecha: string): string {
     year: 'numeric',
   })
 }
+
+/** ISO para citas solo-día (mediodía en El Salvador; evita saltos de fecha por TZ) */
+export function fechaClaveToIsoDia(fecha: string): string {
+  const [y, m, d] = fecha.split('-').map(Number)
+  return new Date(Date.UTC(y, m - 1, d, 18, 0, 0)).toISOString()
+}

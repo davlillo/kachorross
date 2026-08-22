@@ -92,6 +92,7 @@ export class MascotaController {
       total: Number(row.total ?? 0),
       detalles,
       proximaCita: row.proxima_cita ?? undefined,
+      tipoSeguimiento: (row.tipo_seguimiento as Consulta['tipoSeguimiento']) ?? undefined,
     }
   }
 
@@ -246,7 +247,7 @@ export class MascotaController {
       await Promise.all([
         supabase
           .from('consultas')
-          .select('id,mascota_id,fecha,motivo,sintomas,diagnostico,tratamiento,notas,estado,total,proxima_cita,veterinaria_id,doctora:perfiles(nombre)')
+          .select('id,mascota_id,fecha,motivo,sintomas,diagnostico,tratamiento,notas,estado,total,proxima_cita,tipo_seguimiento,veterinaria_id,doctora:perfiles(nombre)')
           .eq('mascota_id', mascota.id)
           .eq('veterinaria_id', veterinariaId)
           .order('fecha', { ascending: false }),

@@ -1,5 +1,7 @@
 // Tipos principales del sistema veterinario
 
+export type TipoSeguimiento = 'control' | 'vacuna' | 'desparasitacion' | 'revision_general'
+
 export interface ClinicTheme {
   paletteId: string;
   updatedAt?: string;
@@ -84,8 +86,8 @@ export interface Consulta {
   total: number;
   detalles: DetalleConsulta[];
   proximaCita?: string;
-  /** HH:mm — al crear consulta con próximo control */
-  proximaCitaHora?: string;
+  /** Tipo de cita de seguimiento (solo fecha, sin hora fija) */
+  tipoSeguimiento?: TipoSeguimiento;
 }
 
 export interface DetalleConsulta {
