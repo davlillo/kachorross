@@ -18,6 +18,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/atoms/ui/select';
 import { PatientInfoCard } from '@/components/organisms/PatientInfoCard';
+import { ProximasCitasCard } from '@/components/molecules';
 import { EmptyState } from '@/components/molecules/EmptyState';
 import { VerConsultaDialog } from '@/components/organisms/VerConsultaDialog';
 import {
@@ -563,6 +564,7 @@ export default function ExpedienteDetailPage() {
         />
 
         <div className="lg:col-span-2">
+          {expediente && <ProximasCitasCard expediente={expediente} />}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="historial" className="flex items-center gap-2">

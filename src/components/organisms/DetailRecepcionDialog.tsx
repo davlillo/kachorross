@@ -102,6 +102,7 @@ export function DetailRecepcionDialog({
             propietarioNombre,
             mascotaNombre,
             proximaCitaIso: proximaCita,
+            tipoSeguimiento: consulta.tipoSeguimiento,
             motivo: consulta.motivo,
           })
           if (!rec.ok) {

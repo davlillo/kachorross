@@ -1,10 +1,10 @@
 import { supabase } from '@/supabase/client'
 import {
   formatoFechaLegibleClave,
-  horaDesdeIsoEnElSalvador,
   mananaEnElSalvador,
 } from '@/lib/fechaAgenda'
-import { formatoHoraLegible } from '@/lib/horariosClinica'
+import { buildRecordatorioEmail } from '@/lib/emailRecordatorio'
+import { textoRecordatorioSeguimiento } from '@/lib/tipoSeguimiento'
 import type { EmailConfig } from '@/types'
 
 const GMAIL_HOST = 'smtp.gmail.com'
@@ -189,6 +189,7 @@ ${params.veterinariaNombre}
     propietarioNombre: string
     mascotaNombre: string
     proximaCitaIso: string
+    tipoSeguimiento?: string
     motivo?: string
   }): Promise<{ ok: boolean; error?: string }> {
     try {
@@ -199,31 +200,22 @@ ${params.veterinariaNombre}
 
       const fechaManana = mananaEnElSalvador()
       const fechaLegible = formatoFechaLegibleClave(fechaManana)
-      const hhmm = horaDesdeIsoEnElSalvador(params.proximaCitaIso)
-      const horaLegible = formatoHoraLegible(hhmm)
-      const titulo = params.motivo ? `Control: ${params.motivo}` : 'Control de seguimiento'
-
-      const text = `Estimado/a ${params.propietarioNombre},
-
-Le recordamos que mañana ${fechaLegible} tiene programado en ${params.veterinariaNombre}:
-
-🐾 ${params.mascotaNombre}:
-  • Control: ${titulo} (${horaLegible})
-
-Si necesita reprogramar o tiene alguna consulta, no dude en contactarnos.
-
-Atentamente,
-${params.veterinariaNombre}
-
----
-© ${new Date().getFullYear()} ${params.veterinariaNombre} | Gracias por confiar en nosotros 🐾`
+      const lineaCita = textoRecordatorioSeguimiento(params.tipoSeguimiento, params.motivo)
+      const { subject, text, html } = buildRecordatorioEmail({
+        propietarioNombre: params.propietarioNombre,
+        veterinariaNombre: params.veterinariaNombre,
+        fechaLegible,
+        fechaClave: fechaManana,
+        items: [{ mascotaNombre: params.mascotaNombre, lineas: [lineaCita] }],
+      })
 
       const { error: fnError } = await supabase.functions.invoke('send-email', {
         body: {
           veterinariaId: params.veterinariaId,
           to: params.propietarioEmail,
-          subject: `${params.veterinariaNombre} — Recordatorio para mañana`,
+          subject,
           text,
+          html,
           tipoNotificacion: 'recordatorio',
         },
       })

@@ -1,4 +1,4 @@
-export type TipoEvento = 'control' | 'vacuna' | 'desparasitante' | 'urgencia';
+export type TipoEvento = 'control' | 'vacuna' | 'desparasitante' | 'revision_general' | 'urgencia';
 
 export interface Evento {
   id: string;
@@ -15,8 +15,9 @@ export interface Evento {
 export const colorEvento: Record<TipoEvento, { bg: string; text: string; dot: string; label: string; border: string }> = {
   control:        { bg: 'bg-violet-50', text: 'text-violet-700', dot: 'bg-violet-500', label: 'Control', border: 'border-l-violet-500' },
   vacuna:         { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500', label: 'Vacuna', border: 'border-l-emerald-500' },
-  desparasitante: { bg: 'bg-teal-50', text: 'text-teal-700', dot: 'bg-teal-500', label: 'Desparasitante', border: 'border-l-teal-500' },
-  urgencia:       { bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-500', label: 'Urgencia', border: 'border-l-red-500' },
+  desparasitante:    { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500', label: 'Desparasitación', border: 'border-l-amber-500' },
+  revision_general:  { bg: 'bg-sky-50', text: 'text-sky-700', dot: 'bg-sky-500', label: 'Revisión general', border: 'border-l-sky-500' },
+  urgencia:          { bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-500', label: 'Urgencia', border: 'border-l-red-500' },
 };
 
 // ── Datos de gráficas (mock legacy — dashboard usa consultas reales) ──────────
