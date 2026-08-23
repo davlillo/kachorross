@@ -2,7 +2,8 @@ import { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { MascotaController } from '@/controllers/mascota.controller';
 import { ConsultaController } from '@/controllers/consulta.controller';
-import { compararEventosAgenda } from '@/controllers/agenda.controller';
+import { VacunaController } from '@/controllers/vacuna.controller';
+import { AgendaController, compararEventosAgenda, type EventoAgenda, type VacunaProxima } from '@/controllers/agenda.controller';
 import { useAgenda } from '@/hooks/useAgenda';
 import { AgendaDiaPanel } from '@/components/molecules';
 import {
@@ -11,6 +12,7 @@ import {
 } from '@/data/eventosData';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/atoms/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/atoms/ui/alert';
 import { Badge } from '@/components/atoms/ui/badge';
 import { Button } from '@/components/atoms/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/atoms/ui/dialog';
@@ -30,11 +32,11 @@ import {
 import { Link } from 'react-router-dom';
 import {
   format, startOfMonth, endOfMonth, eachDayOfInterval,
-  isSameDay, addMonths, subMonths, getDay, subDays, isWithinInterval
+  isSameDay, addMonths, subMonths, addDays, getDay, subDays, isWithinInterval
 } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { Consulta } from '@/types';
-import { fechaLocalClave, hoyLocalClave } from '@/lib/utils';
+import { fechaLocalClave, formatDateLocal, parseDateLocal, todayLocal } from '@/lib/utils';
 
 // ── Leyenda colores calendario ────────────────────────────────────────────────
 const tiposEvento: { tipo: TipoEvento; icon: React.ElementType }[] = [
@@ -56,6 +58,8 @@ const formVacio: FormEvento = {
   titulo: '', mascotaId: '', tipo: 'control', notas: ''
 };
 
+const ALERTA_VACUNAS_VISIBLES = 3;
+
 // ── Componente principal ───────────────────────────────────────────────────────
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -76,7 +80,7 @@ export default function DashboardPage() {
         mascotaCtrl.getAll(),
         consultaCtrl.getAll(),
       ]);
-      const hoy = hoyLocalClave();
+      const hoy = todayLocal();
       const consultasHoy = consultasData.filter(c => c.fecha && fechaLocalClave(c.fecha) === hoy);
       const pendientes = consultasData.filter(c => c.estado === 'pendiente');
 
@@ -99,7 +103,34 @@ export default function DashboardPage() {
   const [mostrarAgendaDia, setMostrarAgendaDia] = useState(false);
   const [formEvento, setFormEvento] = useState<FormEvento>(formVacio);
   const [guardandoEvento, setGuardandoEvento] = useState(false);
-  const { eventos, isLoading: agendaLoading, crearEvento, eliminarEvento } = useAgenda(mesActual);
+  const { eventos, isLoading: agendaLoading, crearEvento, eliminarEvento, refresh: refrescarAgenda } = useAgenda(mesActual);
+
+  const agendaCtrl = AgendaController.getInstance();
+  const vacunaCtrl = VacunaController.getInstance();
+  const [vacunasProximas, setVacunasProximas] = useState<VacunaProxima[]>([]);
+  const [vacunasKey, setVacunasKey] = useState(0);
+  const [marcandoVacunaId, setMarcandoVacunaId] = useState<string | null>(null);
+  const [alertaExpandida, setAlertaExpandida] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const hoy = todayLocal();
+        const hasta = format(addDays(parseDateLocal(hoy), 2), 'yyyy-MM-dd');
+        setVacunasProximas(await agendaCtrl.getVacunasProximas(hoy, hasta));
+      } catch {
+        setVacunasProximas([]);
+      }
+    };
+    void load();
+    // Se reintenta al terminar cada carga de la agenda: garantiza que la alerta
+    // aparezca aunque la sesión aún no estuviera resuelta en el primer intento.
+  }, [agendaCtrl, vacunasKey, agendaLoading]);
+
+  const hoyClave = todayLocal();
+  const mananaClave = format(addDays(parseDateLocal(hoyClave), 1), 'yyyy-MM-dd');
+  const etiquetaFechaVacuna = (fecha: string) =>
+    fecha === hoyClave ? 'hoy' : fecha === mananaClave ? 'mañana' : formatDateLocal(fecha);
 
   // ── Gráficas ────────────────────────────────────────────────────────────────
   const [periodoGrafica, setPeriodoGrafica] = useState<'semana' | 'mes'>('semana');
@@ -265,6 +296,20 @@ export default function DashboardPage() {
       toast.success('Evento eliminado');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'No se pudo eliminar');
+    }
+  };
+
+  const handleMarcarVacuna = async (ev: EventoAgenda) => {
+    setMarcandoVacunaId(ev.id);
+    try {
+      await vacunaCtrl.quitarProximaDosis(ev.origenId);
+      toast.success(`"${ev.titulo.replace(/^Vacuna:\s*/, '')}" marcada como aplicada`);
+      await refrescarAgenda();
+      setVacunasKey(k => k + 1);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'No se pudo marcar la vacuna');
+    } finally {
+      setMarcandoVacunaId(null);
     }
   };
 
@@ -497,6 +542,33 @@ export default function DashboardPage() {
               </div>
             </div>
 
+            {vacunasProximas.length > 0 && (
+              <Alert className="shrink-0 border-amber-500/50 bg-amber-50 text-amber-900 py-2.5 dark:border-amber-500/40 dark:bg-amber-950 dark:text-amber-100">
+                <Syringe className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <AlertTitle className="text-[11px] font-bold uppercase tracking-wide text-amber-800 dark:text-amber-200">
+                  Vacunas por aplicar ({vacunasProximas.length})
+                </AlertTitle>
+                <AlertDescription className="text-xs text-amber-800 dark:text-amber-200">
+                  {(alertaExpandida ? vacunasProximas : vacunasProximas.slice(0, ALERTA_VACUNAS_VISIBLES)).map(v => (
+                    <p key={v.id}>
+                      <span className="font-semibold">{v.mascota}</span> · {v.vacuna} — {etiquetaFechaVacuna(v.fecha)}
+                    </p>
+                  ))}
+                  {vacunasProximas.length > ALERTA_VACUNAS_VISIBLES && (
+                    <button
+                      type="button"
+                      onClick={() => setAlertaExpandida(e => !e)}
+                      className="mt-0.5 text-[11px] font-semibold underline underline-offset-2 hover:opacity-80"
+                    >
+                      {alertaExpandida
+                        ? 'Ver menos'
+                        : `+${vacunasProximas.length - ALERTA_VACUNAS_VISIBLES} más`}
+                    </button>
+                  )}
+                </AlertDescription>
+              </Alert>
+            )}
+
             <AgendaDiaPanel
               open={mostrarAgendaDia}
               onClose={() => setMostrarAgendaDia(false)}
@@ -504,6 +576,8 @@ export default function DashboardPage() {
               eventos={eventosDiaSeleccionado}
               isLoading={agendaLoading}
               onEliminar={(id, origen) => void handleEliminarEvento(id, origen)}
+              onMarcarVacuna={ev => void handleMarcarVacuna(ev)}
+              idEnProceso={marcandoVacunaId}
             />
           </CardContent>
         </Card>

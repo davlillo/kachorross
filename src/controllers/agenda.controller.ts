@@ -28,6 +28,14 @@ export interface EventoAgenda {
   estado?: string
 }
 
+export interface VacunaProxima {
+  id: string
+  vacuna: string
+  mascota: string
+  /** Clave 'yyyy-MM-dd' de la próxima dosis */
+  fecha: string
+}
+
 type PropietarioRow = { nombre?: string; email?: string | null }
 type MascotaRow = { id: string; nombre: string; foto?: string | null; propietarios?: PropietarioRow | PropietarioRow[] | null }
 
@@ -101,6 +109,33 @@ export class AgendaController {
     ])
 
     return [...controles, ...vacunas, ...desparas, ...manuales].sort(compararEventosAgenda)
+  }
+
+  async getVacunasProximas(desdeKey: string, hastaKey: string): Promise<VacunaProxima[]> {
+    const veterinariaId = await this.getVeterinariaId()
+    if (!veterinariaId) return []
+
+    const { data, error } = await supabase
+      .from('vacunas')
+      .select('id, nombre, fecha_proxima_dosis, mascotas(id, nombre)')
+      .eq('veterinaria_id', veterinariaId)
+      .not('fecha_proxima_dosis', 'is', null)
+      .gte('fecha_proxima_dosis', desdeKey)
+      .lte('fecha_proxima_dosis', hastaKey)
+      .order('fecha_proxima_dosis')
+
+    if (error) throw new Error(`No se pudieron cargar vacunas próximas: ${error.message}`)
+
+    return (data ?? []).flatMap(row => {
+      if (!row.fecha_proxima_dosis) return []
+      const mascota = row.mascotas as unknown as MascotaRow | null
+      return [{
+        id: row.id,
+        vacuna: row.nombre,
+        mascota: mascota?.nombre ?? 'Mascota',
+        fecha: row.fecha_proxima_dosis,
+      }]
+    })
   }
 
   private async fetchControles(vetId: string, desde: Date, hasta: Date): Promise<EventoAgenda[]> {

@@ -34,7 +34,7 @@ export interface Mascota {
   nombre: string;
   especie: 'perro' | 'gato' | 'ave' | 'conejo' | 'otro';
   raza: string;
-  fechaNacimiento: string;
+  fechaNacimiento: string | null;
   sexo: 'macho' | 'hembra';
   color: string;
   peso: number;
@@ -129,6 +129,7 @@ export interface Vacuna {
   dosis?: string;
   proximaDosis?: string;
   lote?: string;
+  aplicadaPor?: string;
 }
 
 export interface Desparasitacion {
@@ -169,7 +170,7 @@ export interface CrearMascotaDTO {
   nombre: string;
   especie: Mascota['especie'];
   raza: string;
-  fechaNacimiento: string;
+  fechaNacimiento?: string | null;
   sexo: Mascota['sexo'];
   color?: string;
   peso?: number;

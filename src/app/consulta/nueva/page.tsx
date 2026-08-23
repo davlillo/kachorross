@@ -173,7 +173,7 @@ export default function NuevaConsultaPage() {
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg">{selectedMascota.nombre}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {selectedMascota.raza} • {selectedMascota.especie} • {selectedMascota.peso}kg
+                      {selectedMascota.raza} • {selectedMascota.especie}{selectedMascota.peso ? ` • ${selectedMascota.peso} lb` : ''}
                     </p>
                     <div className="flex items-center gap-2 mt-1 text-sm">
                       <User className="w-4 h-4 text-muted-foreground" />
