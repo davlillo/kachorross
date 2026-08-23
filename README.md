@@ -73,13 +73,19 @@ src/
 
 ## 👥 Usuarios de Demo
 
-El sistema incluye datos simulados para probar todas las funcionalidades:
+El sistema incluye datos simulados para probar todas las funcionalidades (usuarios del mock, no existen en la base local):
 
 | Rol | Email | Contraseña |
 |-----|-------|------------|
 | Doctora | doctora@kachorros.com | 123456 |
 | Recepción | recepcion@kachorros.com | 123456 |
 | Admin | admin@kachorros.com | 123456 |
+
+Con Supabase local (Docker), la migración inicial crea un administrador real para entrar a la app:
+
+| Rol | Email | Contraseña |
+|-----|-------|------------|
+| Admin | admin@kachorros.com | 12345678 |
 
 ## 🎨 Paleta de Colores
 
@@ -126,20 +132,11 @@ El sistema utiliza una paleta vibrante y amigable:
 - Control de stock
 - Activación/desactivación de productos
 
-## 🗄️ Configuración de Supabase (Futuro)
+## 🗄️ Configuración de Supabase local
 
-Para conectar con una base de datos real:
+El desarrollo usa Supabase local en Docker. Consultá [`LOCAL-SUPABASE.md`](LOCAL-SUPABASE.md) para instalar los requisitos, levantar los contenedores, configurar `.env` y ejecutar las migraciones.
 
-1. Crear proyecto en [Supabase](https://supabase.com)
-2. Ejecutar el script `supabase_schema.sql` en el SQL Editor
-3. Configurar variables de entorno:
-
-```env
-VITE_SUPABASE_URL=tu_url_aqui
-VITE_SUPABASE_ANON_KEY=tu_key_aqui
-```
-
-4. Habilitar Realtime en la tabla `consultas` para actualizaciones en vivo
+La migración inicial versionada está en `supabase/migrations/00000000000000_initial_schema.sql`. El archivo `supabase_schema.sql` se conserva como referencia del esquema completo.
 
 ### Tablas Principales
 

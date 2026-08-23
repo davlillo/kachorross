@@ -1,10 +1,9 @@
 import { supabase } from '@/supabase/client'
-import { AgendaController } from './agenda.controller'
 import type { Consulta, DetalleConsulta, MonitorSalida, Producto } from '@/types'
 import { normalizeCategoria } from '@/lib/catalogo-categorias'
 import { MascotaController } from './mascota.controller'
 import { AuthController } from './auth.controller'
-import { hoyEnElSalvador } from '@/lib/fechaAgenda'
+import { fechaClaveToIsoDia, hoyEnElSalvador } from '@/lib/fechaAgenda'
 
 let instance: ConsultaController | null = null
 
@@ -21,6 +20,7 @@ type ConsultaRow = {
   estado: string | null
   total: number | string | null
   proxima_cita: string | null
+  tipo_seguimiento: string | null
 }
 
 type DetalleRow = {
@@ -110,6 +110,7 @@ export class ConsultaController {
       total: Number(row.total ?? 0),
       detalles,
       proximaCita: row.proxima_cita ?? undefined,
+      tipoSeguimiento: (row.tipo_seguimiento as Consulta['tipoSeguimiento']) ?? undefined,
     }
   }
 
@@ -127,7 +128,7 @@ export class ConsultaController {
 
     let query = supabase
       .from('consultas')
-      .select('id,mascota_id,fecha,motivo,sintomas,diagnostico,tratamiento,notas,doctora_id,estado,total,proxima_cita,veterinaria_id')
+      .select('id,mascota_id,fecha,motivo,sintomas,diagnostico,tratamiento,notas,doctora_id,estado,total,proxima_cita,tipo_seguimiento,veterinaria_id')
       .eq('veterinaria_id', veterinariaId)
       .order('fecha', { ascending: false })
 
@@ -162,16 +163,13 @@ export class ConsultaController {
     if (!currentUser?.veterinariaId) throw new Error('No hay veterinaria activa')
 
     let proxima_cita: string | null = null
+    let tipo_seguimiento: string | null = null
     if (data.proximaCita) {
       if (data.proximaCita < hoyEnElSalvador()) {
         throw new Error('La fecha del próximo control no puede estar en el pasado')
       }
-      const hora = data.proximaCitaHora || '09:00'
-      const agenda = AgendaController.getInstance()
-      const { conflicto, detalle } = await agenda.verificarConflicto(data.proximaCita, hora)
-      if (conflicto) throw new Error(detalle ?? 'Ese horario ya está ocupado')
-      const [y, m, d] = data.proximaCita.split('-').map(Number)
-      proxima_cita = new Date(y, m - 1, d, parseInt(hora), 0).toISOString()
+      proxima_cita = fechaClaveToIsoDia(data.proximaCita)
+      tipo_seguimiento = data.tipoSeguimiento ?? 'control'
     }
 
     const payload = {
@@ -185,12 +183,13 @@ export class ConsultaController {
       estado: 'pendiente',
       total: data.total || 0,
       proxima_cita,
+      tipo_seguimiento,
     }
 
     const { data: inserted, error } = await supabase
       .from('consultas')
       .insert(payload)
-      .select('id,mascota_id,fecha,motivo,sintomas,diagnostico,tratamiento,notas,doctora_id,estado,total,proxima_cita,veterinaria_id')
+      .select('id,mascota_id,fecha,motivo,sintomas,diagnostico,tratamiento,notas,doctora_id,estado,total,proxima_cita,tipo_seguimiento,veterinaria_id')
       .single()
 
     if (error) throw new Error(`No se pudo crear consulta: ${error.message}`)

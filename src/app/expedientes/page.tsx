@@ -8,6 +8,8 @@ import { Badge } from '@/components/atoms/ui/badge';
 import { PageHeader } from '@/components/molecules/PageHeader';
 import { SearchBar } from '@/components/molecules/SearchBar';
 import { EmptyState } from '@/components/molecules/EmptyState';
+import { Skeleton } from '@/components/atoms/ui/skeleton';
+import { formatTelefono } from '@/lib/input-validators';
 
 import {
   Table,
@@ -109,20 +111,53 @@ export default function ExpedientesPage() {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/50 hover:bg-muted/50">
-                <TableHead className="w-[80px]">Foto</TableHead>
-                <TableHead>Paciente</TableHead>
-                <TableHead>Especie</TableHead>
-                <TableHead>Propietario</TableHead>
-                <TableHead>Contacto</TableHead>
-                <TableHead>Consultas</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
+              <TableRow className="border-b border-border/70 bg-muted/40 hover:bg-muted/40">
+                <TableHead className="w-[90px] py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Foto
+                </TableHead>
+                <TableHead className="py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Paciente
+                </TableHead>
+                <TableHead className="py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Especie
+                </TableHead>
+                <TableHead className="py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Propietario
+                </TableHead>
+                <TableHead className="py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Contacto
+                </TableHead>
+                <TableHead className="py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Consultas
+                </TableHead>
+                <TableHead className="py-3 pl-4 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Acciones
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {expedientesPorEspecie.length === 0 ? (
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={`sk-${i}`}>
+                    <TableCell>
+                      <Skeleton className="mx-auto h-11 w-11 rounded-full" />
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1.5 py-1">
+                        <Skeleton className="h-4 w-28" />
+                        <Skeleton className="h-3 w-20" />
+                      </div>
+                    </TableCell>
+                    <TableCell><Skeleton className="h-6 w-16 rounded-full" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-6 w-12 rounded-full" /></TableCell>
+                    <TableCell><Skeleton className="h-8 w-28 rounded-md" /></TableCell>
+                  </TableRow>
+                ))
+              ) : expedientesPorEspecie.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12">
+                  <TableCell colSpan={7} className="py-12 text-center">
                     <EmptyState
                       icon={Search}
                       message="No se encontraron expedientes"
@@ -132,48 +167,61 @@ export default function ExpedientesPage() {
                 </TableRow>
               ) : (
                 expedientesPorEspecie.map((expediente) => (
-                  <TableRow key={expediente.id} className="hover:bg-muted/50">
-                    <TableCell>
-                      <img
-                        src={expediente.mascota.foto}
-                        alt={expediente.mascota.nombre}
-                        className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
-                      />
+                  <TableRow
+                    key={expediente.id}
+                    className="group border-b border-border/50 transition-colors hover:bg-brand-primary/[0.04]"
+                  >
+                    <TableCell className="text-center">
+                      {expediente.mascota.foto ? (
+                        <img
+                          src={expediente.mascota.foto}
+                          alt={expediente.mascota.nombre}
+                          className="inline-block h-11 w-11 rounded-full object-cover shadow-sm ring-2 ring-border"
+                        />
+                      ) : (
+                        <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-brand-primary/15 to-brand-secondary/15 text-brand-primary ring-2 ring-border">
+                          <PawPrint className="w-5 h-5" />
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <p className="font-semibold transition-colors group-hover:text-brand-primary">
+                        {expediente.mascota.nombre}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{expediente.mascota.raza}</p>
                     </TableCell>
                     <TableCell>
-                      <div>
-                        <p className="font-semibold">{expediente.mascota.nombre}</p>
-                        <p className="text-xs text-muted-foreground">{expediente.mascota.raza}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={especieColors[expediente.mascota.especie] || especieColors.otro}>
+                      <Badge className={`rounded-full px-2.5 font-medium ${especieColors[expediente.mascota.especie] || especieColors.otro}`}>
                         {especieIcons[expediente.mascota.especie] || '🐾'} {expediente.mascota.especie.charAt(0).toUpperCase() + expediente.mascota.especie.slice(1)}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-muted-foreground" />
-                        <span>{expediente.mascota.propietario.nombre}</span>
+                        <User className="w-4 h-4 shrink-0 text-muted-foreground" />
+                        <span className="text-sm">{expediente.mascota.propietario.nombre}</span>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm">{expediente.mascota.propietario.telefono}</span>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Phone className="w-4 h-4 shrink-0" />
+                        <span className="text-sm tabular-nums">{formatTelefono(expediente.mascota.propietario.telefono)}</span>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Stethoscope className="w-4 h-4 text-brand-primary" />
-                        <span className="font-medium">{expediente.consultasCount}</span>
-                      </div>
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-primary/10 px-2.5 py-1 text-xs font-semibold text-brand-primary">
+                        <Stethoscope className="w-3.5 h-3.5" />
+                        {expediente.consultasCount}
+                      </span>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="pl-4">
                       <Link to={`/expedientes/${expediente.mascotaId}`}>
-                        <Button variant="ghost" size="sm" className="text-brand-primary hover:text-brand-primary">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 rounded-md border-border/70 text-brand-primary hover:bg-brand-primary hover:text-white"
+                        >
                           Ver expediente
-                          <ArrowRight className="w-4 h-4 ml-1" />
+                          <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                         </Button>
                       </Link>
                     </TableCell>

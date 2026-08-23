@@ -18,6 +18,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/atoms/ui/select';
 import { PatientInfoCard } from '@/components/organisms/PatientInfoCard';
+import { ProximasCitasCard } from '@/components/molecules';
 import { EmptyState } from '@/components/molecules/EmptyState';
 import { VerConsultaDialog } from '@/components/organisms/VerConsultaDialog';
 import {
@@ -71,22 +72,29 @@ function EmptySlot() {
 
 function VacunaSlot({ vacuna }: { vacuna: Vacuna }) {
   return (
-    <div className="border-b border-gray-200 py-2.5 px-3 flex items-center gap-3 hover:bg-brand-primary/5 transition-colors">
-      <div className="w-6 h-6 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0">
-        <Syringe className="w-3 h-3 text-brand-primary" />
-      </div>
+    <div className="border-b border-gray-200 py-2.5 px-3 hover:bg-brand-primary/5 transition-colors">
       <div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <Syringe className="w-3.5 h-3.5 text-brand-primary shrink-0" />
           <span className="font-semibold text-sm text-gray-800">{vacuna.nombre}</span>
         </div>
         <div className="mt-0.5 flex items-center gap-2 flex-wrap text-[9px] font-mono text-gray-500">
           <span className="bg-gray-100 px-1.5 py-0.5 rounded">Lote: {vacuna.lote ?? 'N/A'}</span>
           <span className="bg-gray-100 px-1.5 py-0.5 rounded">Dosis: {vacuna.dosis ?? 'N/A'}</span>
         </div>
-        <div className="flex items-center gap-3 text-[11px] text-gray-500">
+        <div className="mt-0.5 flex items-center gap-3 flex-wrap text-[11px] text-gray-500">
           <span>{formatDateShort(vacuna.fechaAplicacion)}</span>
           {vacuna.proximaDosis && <span className="text-amber-600">→ {formatDateShort(vacuna.proximaDosis)}</span>}
         </div>
+        {vacuna.aplicadaPor && (
+          <div
+            className="mt-0.5 flex min-w-0 items-center gap-1 text-[11px] text-brand-primary/80"
+            title={`Médico encargado: ${vacuna.aplicadaPor}`}
+          >
+            <Stethoscope className="w-3 h-3 shrink-0" />
+            <span className="truncate">Médico: {vacuna.aplicadaPor}</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -242,7 +250,7 @@ export default function ExpedienteDetailPage() {
   const [agregarOpen, setAgregarOpen] = useState(false);
   const [agregarTipo, setAgregarTipo] = useState<'vacuna' | 'desparasitacion'>('vacuna');
   const [agregarForm, setAgregarForm] = useState({
-    nombre: '', fechaAplicacion: '', dosis: '', proximaDosis: '', lote: '',
+    nombre: '', fechaAplicacion: '', dosis: '', proximaDosis: '', lote: '', aplicadaPor: '',
     tipo: '', viaAdministracion: '', fechaProximoTratamiento: '',
   });
 
@@ -311,7 +319,8 @@ export default function ExpedienteDetailPage() {
   const getEspecieIcon = (especie: string) =>
     ({ perro: '🐕', gato: '🐱', ave: '🦜', conejo: '🐰', otro: '🐾' }[especie] ?? '🐾');
 
-  const getAge = (birthDate: string) => {
+  const getAge = (birthDate: string | null | undefined) => {
+    if (!birthDate) return '—';
     const birth = parseDateLocal(birthDate);
     const today = new Date();
     const years = today.getFullYear() - birth.getFullYear();
@@ -382,6 +391,7 @@ export default function ExpedienteDetailPage() {
           dosis: agregarForm.dosis || undefined,
           proximaDosis: agregarForm.proximaDosis || undefined,
           lote: agregarForm.lote || undefined,
+          aplicadaPor: agregarForm.aplicadaPor || undefined,
         });
       } else {
         await vacunaCtrl.crearDesparasitacion({
@@ -392,7 +402,7 @@ export default function ExpedienteDetailPage() {
           fechaProximoTratamiento: agregarForm.fechaProximoTratamiento || undefined,
         });
       }
-      setAgregarForm({ nombre: '', fechaAplicacion: '', dosis: '', proximaDosis: '', lote: '', tipo: '', viaAdministracion: '', fechaProximoTratamiento: '' });
+      setAgregarForm({ nombre: '', fechaAplicacion: '', dosis: '', proximaDosis: '', lote: '', aplicadaPor: '', tipo: '', viaAdministracion: '', fechaProximoTratamiento: '' });
       setAgregarOpen(false);
       setRefresh(r => r + 1);
       toast.success(`Se agregó ${agregarTipo === 'vacuna' ? 'vacuna' : 'desparasitación'} correctamente`);
@@ -408,7 +418,7 @@ export default function ExpedienteDetailPage() {
     setEditNombre(mascota.nombre);
     setEditEspecie(mascota.especie);
     setEditRaza(mascota.raza);
-    setEditFechaNac(mascota.fechaNacimiento);
+    setEditFechaNac(mascota.fechaNacimiento ?? '');
     setEditSexo(mascota.sexo);
     setEditColor(mascota.color ?? '');
     setEditPeso(mascota.peso ? String(mascota.peso) : '');
@@ -432,7 +442,7 @@ export default function ExpedienteDetailPage() {
         nombre: editNombre.trim(),
         especie: editEspecie,
         raza: editRaza.trim(),
-        fechaNacimiento: editFechaNac,
+        fechaNacimiento: editFechaNac || null,
         sexo: editSexo,
         color: editColor.trim(),
         peso: editPeso ? parseFloat(editPeso) : undefined,
@@ -534,7 +544,9 @@ export default function ExpedienteDetailPage() {
               {getEspecieIcon(mascota.especie)} {mascota.nombre}
             </h1>
             <p className="text-muted-foreground">
-              {mascota.raza} • {getAge(mascota.fechaNacimiento)} • {mascota.sexo === 'macho' ? 'Macho' : 'Hembra'}
+              {mascota.raza}
+              {mascota.fechaNacimiento && <> • {getAge(mascota.fechaNacimiento)}</>}
+              {' • '}{mascota.sexo === 'macho' ? 'Macho' : 'Hembra'}
             </p>
           </div>
         </div>
@@ -563,6 +575,7 @@ export default function ExpedienteDetailPage() {
         />
 
         <div className="lg:col-span-2">
+          {expediente && <ProximasCitasCard expediente={expediente} />}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="historial" className="flex items-center gap-2">
@@ -914,7 +927,7 @@ export default function ExpedienteDetailPage() {
               <Input value={editColor} onChange={e => setEditColor(e.target.value)} />
             </div>
             <div className="space-y-1">
-              <Label>Peso (kg)</Label>
+              <Label>Peso (libras)</Label>
               <Input
                 type="text"
                 inputMode="decimal"
@@ -1106,6 +1119,10 @@ export default function ExpedienteDetailPage() {
                         ml
                       </span>
                     </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Médico Encargado</Label>
+                    <Input placeholder="Nombre del médico que aplicó" value={agregarForm.aplicadaPor} onChange={e => setAgregarForm(prev => ({ ...prev, aplicadaPor: e.target.value }))} />
                   </div>
                   <div className="space-y-1.5">
                     <Label>Fecha de Aplicación *</Label>

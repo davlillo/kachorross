@@ -67,7 +67,7 @@ export function ProductFormDialog({ open, onOpenChange, onSave, initialData, mod
         <div className="space-y-4 py-2">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="codigo">Código</Label>
+              <Label htmlFor="codigo" className="mb-1">Código</Label>
               <div className="relative">
                 <Input
                   id="codigo"
@@ -81,7 +81,7 @@ export function ProductFormDialog({ open, onOpenChange, onSave, initialData, mod
               </div>
             </div>
             <div>
-              <Label htmlFor="categoria">Categoría</Label>
+              <Label htmlFor="categoria" className="mb-1">Categoría</Label>
               <Select value={form.categoria} onValueChange={(v) => update('categoria', v)}>
                 <SelectTrigger id="categoria"><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -95,7 +95,7 @@ export function ProductFormDialog({ open, onOpenChange, onSave, initialData, mod
           </div>
 
           <div>
-            <Label htmlFor="nombre">Nombre</Label>
+            <Label htmlFor="nombre" className="mb-1">Nombre</Label>
             <Input
               id="nombre"
               value={form.nombre}
@@ -105,7 +105,7 @@ export function ProductFormDialog({ open, onOpenChange, onSave, initialData, mod
           </div>
 
           <div>
-            <Label htmlFor="descripcion">Descripción</Label>
+            <Label htmlFor="descripcion" className="mb-1">Descripción</Label>
             <Input
               id="descripcion"
               value={form.descripcion}
@@ -115,7 +115,7 @@ export function ProductFormDialog({ open, onOpenChange, onSave, initialData, mod
           </div>
 
           <div>
-            <Label htmlFor="precio">Precio ($)</Label>
+            <Label htmlFor="precio" className="mb-1">Precio ($)</Label>
             <Input
               id="precio"
               type="number"

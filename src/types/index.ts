@@ -1,5 +1,7 @@
 // Tipos principales del sistema veterinario
 
+export type TipoSeguimiento = 'control' | 'vacuna' | 'desparasitacion' | 'revision_general'
+
 export interface ClinicTheme {
   paletteId: string;
   updatedAt?: string;
@@ -32,7 +34,7 @@ export interface Mascota {
   nombre: string;
   especie: 'perro' | 'gato' | 'ave' | 'conejo' | 'otro';
   raza: string;
-  fechaNacimiento: string;
+  fechaNacimiento: string | null;
   sexo: 'macho' | 'hembra';
   color: string;
   peso: number;
@@ -84,8 +86,8 @@ export interface Consulta {
   total: number;
   detalles: DetalleConsulta[];
   proximaCita?: string;
-  /** HH:mm — al crear consulta con próximo control */
-  proximaCitaHora?: string;
+  /** Tipo de cita de seguimiento (solo fecha, sin hora fija) */
+  tipoSeguimiento?: TipoSeguimiento;
 }
 
 export interface DetalleConsulta {
@@ -127,6 +129,7 @@ export interface Vacuna {
   dosis?: string;
   proximaDosis?: string;
   lote?: string;
+  aplicadaPor?: string;
 }
 
 export interface Desparasitacion {
@@ -167,7 +170,7 @@ export interface CrearMascotaDTO {
   nombre: string;
   especie: Mascota['especie'];
   raza: string;
-  fechaNacimiento: string;
+  fechaNacimiento?: string | null;
   sexo: Mascota['sexo'];
   color?: string;
   peso?: number;
