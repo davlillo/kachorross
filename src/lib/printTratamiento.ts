@@ -1,7 +1,11 @@
+import { sanitizeHTML } from '@/lib/sanitize'
+
 export function imprimirTratamiento(tratamiento: string, logoUrl?: string) {
   const logoHtml = logoUrl
     ? `<img src="${logoUrl}" alt="Logo" style="max-height:56px;width:auto;object-fit:contain;" />`
     : '';
+
+  const sanitizedTratamiento = sanitizeHTML(tratamiento || 'Sin tratamiento registrado.');
 
   const container = document.createElement('div');
   container.className = 'print-ka-container';
@@ -30,7 +34,7 @@ export function imprimirTratamiento(tratamiento: string, logoUrl?: string) {
     </div>
   </div>
   <div class="separator"></div>
-  <div class="content">${tratamiento || 'Sin tratamiento registrado.'}</div>
+  <div class="content">${sanitizedTratamiento}</div>
   <div>
     <div class="footer-sep"></div>
     <p class="address">AV. MONTECRISTO POLIG. C, COL. MONTEBELLO, # 1-A, MEJICANOS, SAN SALVADOR</p>

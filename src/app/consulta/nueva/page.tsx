@@ -14,9 +14,10 @@ import {
   DialogTitle,
 } from '@/components/atoms/ui/dialog';
 import { PageHeader } from '@/components/molecules/PageHeader';
-import { TimeClockPicker, TratamientoHoja } from '@/components/molecules';
+import { TratamientoHoja } from '@/components/molecules';
 import { ProductSelectorDialog } from '@/components/organisms/ProductSelectorDialog';
 import { Badge } from '@/components/atoms/ui/badge';
+import { TIPOS_SEGUIMIENTO } from '@/lib/tipoSeguimiento';
 
 import { todayLocal } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -24,15 +25,15 @@ import {
   Stethoscope,
   Search,
   Calendar,
-  Clock,
   PawPrint,
   User,
   Save,
   Plus,
   CheckCircle,
   X,
+  Loader2,
 } from 'lucide-react';
-import type { DetalleConsulta, Producto } from '@/types';
+import type { DetalleConsulta, Producto, TipoSeguimiento } from '@/types';
 
 export default function NuevaConsultaPage() {
   const [searchParams] = useSearchParams();
@@ -57,9 +58,9 @@ export default function NuevaConsultaPage() {
   const [tratamiento, setTratamiento] = useState('');
   const [notas, setNotas] = useState('');
   const [proximaCita, setProximaCita] = useState('');
-  const [proximaCitaHora, setProximaCitaHora] = useState('09:00');
+  const [tipoSeguimiento, setTipoSeguimiento] = useState<TipoSeguimiento>('control');
   const [detalles, setDetalles] = useState<DetalleConsulta[]>([]);
-  
+  const [isSaving, setIsSaving] = useState(false);
   const [showProductDialog, setShowProductDialog] = useState(false);
 
   useEffect(() => {
@@ -117,8 +118,10 @@ export default function NuevaConsultaPage() {
   const total = calcularTotal(detalles);
 
   const handleSubmit = async () => {
+    if (isSaving) return;
     if (!selectedMascota || !motivo || !diagnostico) return;
 
+    setIsSaving(true);
     try {
       await crearConsulta({
         mascotaId: selectedMascota.id,
@@ -128,12 +131,13 @@ export default function NuevaConsultaPage() {
         tratamiento,
         notas,
         proximaCita: proximaCita || undefined,
-        proximaCitaHora: proximaCita ? proximaCitaHora : undefined,
+        tipoSeguimiento: proximaCita ? tipoSeguimiento : undefined,
         detalles,
         total,
       });
       navigate('/recepcion');
     } catch (err) {
+      setIsSaving(false);
       toast.error(err instanceof Error ? err.message : 'No se pudo guardar la consulta');
     }
   };
@@ -169,7 +173,7 @@ export default function NuevaConsultaPage() {
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg">{selectedMascota.nombre}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {selectedMascota.raza} • {selectedMascota.especie} • {selectedMascota.peso}kg
+                      {selectedMascota.raza} • {selectedMascota.especie}{selectedMascota.peso ? ` • ${selectedMascota.peso} lb` : ''}
                     </p>
                     <div className="flex items-center gap-2 mt-1 text-sm">
                       <User className="w-4 h-4 text-muted-foreground" />
@@ -259,11 +263,11 @@ export default function NuevaConsultaPage() {
                 <div className="flex flex-col">
                   <Label className="min-h-5 flex items-center gap-2 text-brand-primary">
                     <Calendar className="w-4 h-4 shrink-0 text-brand-primary" />
-                    Próximo control
+                    Próximo seguimiento
                     <span className="text-xs font-normal text-muted-foreground">(opcional)</span>
                   </Label>
                   <div className="mt-1 flex min-h-[120px] flex-1 flex-col rounded-xl border border-brand-primary/10 bg-brand-primary/5 p-4 md:min-h-0">
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-3">
                       <div>
                         <Label htmlFor="proximaCita" className="text-[11px] text-muted-foreground">
                           Fecha
@@ -278,20 +282,26 @@ export default function NuevaConsultaPage() {
                         />
                       </div>
                       <div>
-                        <Label
-                          htmlFor="proximaCitaHora"
-                          className="text-[11px] text-muted-foreground flex items-center gap-1"
-                        >
-                          <Clock className="w-3 h-3" /> Hora
+                        <Label htmlFor="tipoSeguimiento" className="text-[11px] text-muted-foreground">
+                          Tipo de seguimiento
                         </Label>
-                        <TimeClockPicker
-                          id="proximaCitaHora"
-                          value={proximaCitaHora}
-                          onChange={setProximaCitaHora}
+                        <select
+                          id="tipoSeguimiento"
+                          className="mt-0.5 flex h-10 w-full rounded-md border border-input bg-white px-3 text-sm disabled:opacity-50"
+                          value={tipoSeguimiento}
+                          onChange={(e) => setTipoSeguimiento(e.target.value as TipoSeguimiento)}
                           disabled={!proximaCita}
-                          className="mt-0.5"
-                        />
+                        >
+                          {TIPOS_SEGUIMIENTO.map(({ value, label }) => (
+                            <option key={value} value={value}>{label}</option>
+                          ))}
+                        </select>
                       </div>
+                      {proximaCita && (
+                        <p className="text-[11px] text-muted-foreground">
+                          El paciente puede acudir en cualquier horario del día.
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -373,13 +383,22 @@ export default function NuevaConsultaPage() {
                 <span className="font-medium">Total:</span>
                 <span className="font-bold text-2xl text-brand-primary">${total.toFixed(2)}</span>
               </div>
-              <Button 
+              <Button
                 onClick={handleSubmit}
-                disabled={!isValid}
+                disabled={!isValid || isSaving}
                 className="w-full h-12 bg-gradient-to-r from-brand-primary to-brand-primary hover:from-brand-primary hover:to-brand-primary text-white font-semibold"
               >
-                <Save className="w-5 h-5 mr-2" />
-                Guardar Consulta
+                {isSaving ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-5 h-5 mr-2" />
+                    Guardar Consulta
+                  </>
+                )}
               </Button>
             </CardFooter>
           </Card>

@@ -38,7 +38,6 @@ export function useAgenda(mesReferencia: Date) {
     titulo: string
     tipo: TipoEvento
     fecha: string
-    hora: string
     notas?: string
   }) => {
     const nuevo = await agendaCtrl.crearManual(data)

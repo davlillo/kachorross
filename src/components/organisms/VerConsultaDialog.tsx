@@ -10,6 +10,8 @@ import {
 } from 'lucide-react'
 import type { Consulta } from '@/types'
 import { getCategoriaConfig } from '@/lib/catalogo-categorias'
+import { labelTipoSeguimiento } from '@/lib/tipoSeguimiento'
+import { getCategoriaConfig, getCategoriaLabel } from '@/lib/catalogo-categorias'
 import { generarPdfTratamiento } from '@/lib/pdfTratamiento'
 import { useAuth } from '@/context/AuthContext'
 import { DetalleProductoCell } from '@/components/molecules/DetalleProductoCell'
@@ -182,12 +184,15 @@ export function VerConsultaDialog({ open, onOpenChange, consulta }: VerConsultaD
               <div className="flex items-start gap-2 p-3 rounded-xl bg-indigo-50 border border-indigo-200">
                 <CalendarDays className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-xs font-semibold text-indigo-700">Próximo control</p>
+                  <p className="text-xs font-semibold text-indigo-700">Próximo seguimiento</p>
                   <p className="text-sm text-indigo-900 mt-1">
+                    {labelTipoSeguimiento(consulta.tipoSeguimiento)} —{' '}
                     {new Date(consulta.proximaCita).toLocaleDateString('es-ES', {
                       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
                     })}
-                    {consulta.proximaCitaHora && ` a las ${consulta.proximaCitaHora}`}
+                  </p>
+                  <p className="text-xs text-indigo-700/80 mt-1">
+                    El paciente puede acudir en cualquier horario del día.
                   </p>
                 </div>
               </div>

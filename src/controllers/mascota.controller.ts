@@ -14,6 +14,7 @@ import type {
 } from '@/types'
 import { AuthController } from './auth.controller'
 import { normalizeCategoria } from '@/lib/catalogo-categorias'
+import { escapeILike } from '@/lib/sanitize'
 import { todayLocal } from '@/lib/utils'
 
 let instance: MascotaController | null = null
@@ -40,7 +41,7 @@ export class MascotaController {
       nombre: row.nombre,
       especie: row.especie as Mascota['especie'],
       raza: row.raza,
-      fechaNacimiento: row.fecha_nacimiento,
+      fechaNacimiento: row.fecha_nacimiento ?? null,
       sexo: row.sexo as Mascota['sexo'],
       color: row.color ?? '',
       peso: Number(row.peso ?? 0),
@@ -91,6 +92,7 @@ export class MascotaController {
       total: Number(row.total ?? 0),
       detalles,
       proximaCita: row.proxima_cita ?? undefined,
+      tipoSeguimiento: (row.tipo_seguimiento as Consulta['tipoSeguimiento']) ?? undefined,
     }
   }
 
@@ -170,7 +172,7 @@ export class MascotaController {
 
     // Query A: buscar por nombre o raza de la mascota
     const { data: petData } = await base()
-      .or(`nombre.ilike.%${q}%,raza.ilike.%${q}%`)
+      .or(`nombre.ilike.%${escapeILike(q)}%,raza.ilike.%${escapeILike(q)}%`)
 
     const map = new Map<string, any>()
     for (const row of petData ?? []) map.set(row.id, row)
@@ -180,7 +182,7 @@ export class MascotaController {
       .from('propietarios')
       .select('id')
       .eq('veterinaria_id', veterinariaId)
-      .or(`nombre.ilike.%${q}%,telefono.ilike.%${q}%`)
+      .or(`nombre.ilike.%${escapeILike(q)}%,telefono.ilike.%${escapeILike(q)}%`)
 
     if (ownerData && ownerData.length > 0) {
       const ownerIds = ownerData.map(o => o.id)
@@ -245,13 +247,13 @@ export class MascotaController {
       await Promise.all([
         supabase
           .from('consultas')
-          .select('id,mascota_id,fecha,motivo,sintomas,diagnostico,tratamiento,notas,estado,total,proxima_cita,veterinaria_id,doctora:perfiles(nombre)')
+          .select('id,mascota_id,fecha,motivo,sintomas,diagnostico,tratamiento,notas,estado,total,proxima_cita,tipo_seguimiento,veterinaria_id,doctora:perfiles(nombre)')
           .eq('mascota_id', mascota.id)
           .eq('veterinaria_id', veterinariaId)
           .order('fecha', { ascending: false }),
         supabase
           .from('vacunas')
-          .select('id,mascota_id,nombre,fecha_aplicacion,dosis,lote,fecha_proxima_dosis,veterinaria_id')
+          .select('id,mascota_id,nombre,fecha_aplicacion,dosis,lote,fecha_proxima_dosis,aplicada_por,veterinaria_id')
           .eq('mascota_id', mascota.id)
           .eq('veterinaria_id', veterinariaId)
           .order('fecha_aplicacion', { ascending: false }),
@@ -305,6 +307,7 @@ export class MascotaController {
       dosis: row.dosis ?? undefined,
       proximaDosis: row.fecha_proxima_dosis ?? undefined,
       lote: row.lote ?? undefined,
+      aplicadaPor: row.aplicada_por ?? undefined,
     }))
 
     const fotosEvolucion: FotoEvolucion[] = (fotosData ?? []).map(row => ({
@@ -367,7 +370,7 @@ export class MascotaController {
           nombre: data.mascota.nombre,
           especie: data.mascota.especie,
           raza: data.mascota.raza,
-          fecha_nacimiento: data.mascota.fechaNacimiento,
+          fecha_nacimiento: data.mascota.fechaNacimiento || null,
           sexo: data.mascota.sexo,
           color: data.mascota.color,
           peso: data.mascota.peso,
@@ -512,7 +515,7 @@ export class MascotaController {
         nombre: data.mascota.nombre,
         especie: data.mascota.especie,
         raza: data.mascota.raza,
-        fecha_nacimiento: data.mascota.fechaNacimiento,
+        fecha_nacimiento: data.mascota.fechaNacimiento || null,
         sexo: data.mascota.sexo,
         color: data.mascota.color,
         peso: data.mascota.peso,

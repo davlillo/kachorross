@@ -13,6 +13,7 @@ type VacunaRow = {
   dosis: string | null
   lote: string | null
   fecha_proxima_dosis: string | null
+  aplicada_por: string | null
   consulta_id: string | null
   created_at: string | null
 }
@@ -51,6 +52,7 @@ export class VacunaController {
       dosis: row.dosis ?? undefined,
       proximaDosis: row.fecha_proxima_dosis ?? undefined,
       lote: row.lote ?? undefined,
+      aplicadaPor: row.aplicada_por ?? undefined,
     }
   }
 
@@ -73,6 +75,7 @@ export class VacunaController {
     dosis?: string
     proximaDosis?: string
     lote?: string
+    aplicadaPor?: string
   }): Promise<void> {
     const veterinariaId = await this.getVeterinariaId()
     if (!veterinariaId) throw new Error('No se encontró veterinaria')
@@ -87,6 +90,7 @@ export class VacunaController {
         dosis: data.dosis ?? null,
         lote: data.lote ?? null,
         fecha_proxima_dosis: data.proximaDosis ?? null,
+        aplicada_por: data.aplicadaPor?.trim() || null,
       })
 
     if (error) throw new Error(`No se pudo crear vacuna: ${error.message}`)
@@ -116,13 +120,26 @@ export class VacunaController {
     if (error) throw new Error(`No se pudo crear desparasitación: ${error.message}`)
   }
 
+  async quitarProximaDosis(vacunaId: string): Promise<void> {
+    const veterinariaId = await this.getVeterinariaId()
+    if (!veterinariaId) throw new Error('No se encontró veterinaria')
+
+    const { error } = await supabase
+      .from('vacunas')
+      .update({ fecha_proxima_dosis: null })
+      .eq('id', vacunaId)
+      .eq('veterinaria_id', veterinariaId)
+
+    if (error) throw new Error(`No se pudo actualizar la vacuna: ${error.message}`)
+  }
+
   async getVacunasByMascota(mascotaId: string): Promise<Vacuna[]> {
     const veterinariaId = await this.getVeterinariaId()
     if (!veterinariaId) return []
 
     const { data, error } = await supabase
       .from('vacunas')
-      .select('id,mascota_id,veterinaria_id,nombre,fecha_aplicacion,dosis,lote,fecha_proxima_dosis,consulta_id,created_at')
+      .select('id,mascota_id,veterinaria_id,nombre,fecha_aplicacion,dosis,lote,fecha_proxima_dosis,aplicada_por,consulta_id,created_at')
       .eq('mascota_id', mascotaId)
       .eq('veterinaria_id', veterinariaId)
       .order('fecha_aplicacion', { ascending: false })

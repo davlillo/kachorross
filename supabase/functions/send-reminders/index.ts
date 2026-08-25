@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { buildRecordatorioEmail } from '../_shared/emailRecordatorio.ts'
 
 const TZ = 'America/El_Salvador'
 const corsHeaders = {
@@ -63,10 +64,26 @@ function labelTipo(tipo: string): string {
   const map: Record<string, string> = {
     control: 'Control',
     vacuna: 'Vacuna',
+    desparasitacion: 'Desparasitación',
     desparasitante: 'Desparasitación',
+    revision_general: 'Revisión general',
     urgencia: 'Urgencia',
   }
   return map[tipo] ?? tipo
+}
+
+function tituloSeguimiento(tipo: string | null | undefined, motivo?: string | null): string {
+  const label = labelTipo(tipo ?? 'control')
+  if (tipo === 'control' && motivo) return `${label}: ${motivo}`
+  return label
+}
+
+function lineaRecordatorio(it: ItemRecordatorio): string {
+  const label = labelTipo(it.tipo)
+  if (it.titulo === label || it.titulo.startsWith(`${label}:`)) {
+    return it.titulo
+  }
+  return `${label}: ${it.titulo}`
 }
 
 async function enviarSMTP(params: {
@@ -79,6 +96,7 @@ async function enviarSMTP(params: {
   to: string
   subject: string
   text: string
+  html: string
 }) {
   const { createTransport } = await import('npm:nodemailer@6.9.16')
   const transporter = createTransport({
@@ -92,6 +110,10 @@ async function enviarSMTP(params: {
     to: params.to,
     subject: params.subject,
     text: params.text,
+    html: params.html,
+    headers: {
+      'Content-Language': 'es',
+    },
   })
 }
 
@@ -159,7 +181,7 @@ Deno.serve(async (req) => {
     // Controles (proxima_cita) — filtro por fecha local SV
     const { data: controlesRaw, error: controlesError } = await admin
       .from('consultas')
-      .select('id, mascota_id, veterinaria_id, motivo, proxima_cita, mascotas(id, nombre, propietarios(nombre, email))')
+      .select('id, mascota_id, veterinaria_id, motivo, proxima_cita, tipo_seguimiento, mascotas(id, nombre, propietarios(nombre, email))')
       .not('proxima_cita', 'is', null)
       .gte('proxima_cita', desde)
       .lte('proxima_cita', hasta)
@@ -189,9 +211,8 @@ Deno.serve(async (req) => {
         {
           mascotaId: row.mascota_id,
           mascotaNombre: mascota?.nombre ?? 'su mascota',
-          titulo: row.motivo ? `Control: ${row.motivo}` : 'Control de seguimiento',
-          hora: formatHora(row.proxima_cita),
-          tipo: 'control',
+          titulo: tituloSeguimiento(row.tipo_seguimiento, row.motivo),
+          tipo: row.tipo_seguimiento ?? 'control',
         },
       )
     }
@@ -279,7 +300,6 @@ Deno.serve(async (req) => {
           mascotaId: row.mascota_id,
           mascotaNombre: mascota?.nombre ?? 'su mascota',
           titulo: row.titulo,
-          hora: formatHora(row.fecha_hora),
           tipo: row.tipo,
         },
       )
@@ -321,26 +341,18 @@ Deno.serve(async (req) => {
         porMascota.set(item.mascotaNombre, list)
       }
 
-      const lineas: string[] = []
-      for (const [nombreMascota, items] of porMascota) {
-        lineas.push(`\n🐾 ${nombreMascota}:`)
-        for (const it of items) {
-          const cuando = it.hora ? ` (${it.hora})` : ''
-          lineas.push(`  • ${labelTipo(it.tipo)}: ${it.titulo}${cuando}`)
-        }
-      }
+      const itemsEmail = [...porMascota.entries()].map(([mascotaNombre, items]) => ({
+        mascotaNombre,
+        lineas: items.map(it => lineaRecordatorio(it)),
+      }))
 
-      const text = `Estimado/a ${grupo.propietarioNombre},
-
-Le recordamos que mañana ${fechaLegible} tiene programado en ${grupo.veterinariaNombre}:${lineas.join('\n')}
-
-Si necesita reprogramar o tiene alguna consulta, no dude en contactarnos.
-
-Atentamente,
-${grupo.veterinariaNombre}
-
----
-© ${new Date().getFullYear()} ${grupo.veterinariaNombre} | Gracias por confiar en nosotros 🐾`
+      const { subject, text, html } = buildRecordatorioEmail({
+        propietarioNombre: grupo.propietarioNombre,
+        veterinariaNombre: grupo.veterinariaNombre,
+        fechaLegible,
+        fechaClave: fechaManana,
+        items: itemsEmail,
+      })
 
       try {
         await enviarSMTP({
@@ -351,8 +363,9 @@ ${grupo.veterinariaNombre}
           fromName: emailConfig.from_name ?? grupo.veterinariaNombre,
           fromEmail: emailConfig.from_email ?? emailConfig.smtp_user,
           to: grupo.email,
-          subject: `${grupo.veterinariaNombre} — Recordatorio para mañana`,
+          subject,
           text,
+          html,
         })
 
         await admin.from('notificaciones').insert({

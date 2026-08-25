@@ -3,6 +3,41 @@ import { supabase } from '@/supabase/client'
 
 let instance: AuthController | null = null
 
+type LoginAttempt = {
+  count: number
+  lastAttempt: number
+}
+
+const MAX_LOGIN_ATTEMPTS = 5
+const LOGIN_WINDOW_MS = 5 * 60 * 1000
+const loginAttempts = new Map<string, LoginAttempt>()
+
+function isRateLimited(email: string): boolean {
+  const now = Date.now()
+  const record = loginAttempts.get(email)
+  if (!record) return false
+  if (now - record.lastAttempt >= LOGIN_WINDOW_MS) {
+    loginAttempts.delete(email)
+    return false
+  }
+  return record.count >= MAX_LOGIN_ATTEMPTS
+}
+
+function recordFailedLogin(email: string): void {
+  const now = Date.now()
+  const record = loginAttempts.get(email)
+  if (record && now - record.lastAttempt < LOGIN_WINDOW_MS) {
+    record.count += 1
+    record.lastAttempt = now
+  } else {
+    loginAttempts.set(email, { count: 1, lastAttempt: now })
+  }
+}
+
+function clearLoginAttempts(email: string): void {
+  loginAttempts.delete(email)
+}
+
 export class AuthController {
   private currentUser: Perfil | null = null
 
@@ -81,20 +116,27 @@ export class AuthController {
   }
 
   async login(email: string, password: string): Promise<{ user: Perfil | null; error: string | null }> {
+    if (isRateLimited(email)) {
+      return { user: null, error: 'Demasiados intentos. Intenta de nuevo en 5 minutos.' }
+    }
+
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
     if (authError || !authData.user) {
+      recordFailedLogin(email)
       return { user: null, error: 'Credenciales incorrectas.' }
     }
 
     const user = await this.getCurrentUser(true)
     if (!user) {
-      return { user: null, error: 'Tu usuario no tiene perfil configurado o la cuenta está suspendida.' }
+      recordFailedLogin(email)
+      return { user: null, error: 'Credenciales incorrectas.' }
     }
 
+    clearLoginAttempts(email)
     return { user, error: null }
   }
 
@@ -113,7 +155,7 @@ export class AuthController {
     })
 
     if (authError || !authData.user) {
-      return { ok: false, error: authError?.message ?? 'No se pudo registrar usuario.' }
+      return { ok: false, error: 'No se pudo registrar el usuario.' }
     }
 
     const { error: perfilError } = await supabase.from('perfiles').upsert(
@@ -128,7 +170,7 @@ export class AuthController {
     )
 
     if (perfilError) {
-      return { ok: false, error: `Registro creado, pero faltó perfil: ${perfilError.message}` }
+      return { ok: false, error: 'Error al completar el registro.' }
     }
 
     await supabase.auth.signOut()

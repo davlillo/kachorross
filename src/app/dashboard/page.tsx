@@ -2,20 +2,22 @@ import { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { MascotaController } from '@/controllers/mascota.controller';
 import { ConsultaController } from '@/controllers/consulta.controller';
-import { compararEventosAgenda } from '@/controllers/agenda.controller';
+import { VacunaController } from '@/controllers/vacuna.controller';
+import { AgendaController, compararEventosAgenda, type EventoAgenda, type VacunaProxima } from '@/controllers/agenda.controller';
 import { useAgenda } from '@/hooks/useAgenda';
+import { AgendaDiaPanel } from '@/components/molecules';
 import {
   colorEvento,
   type TipoEvento
 } from '@/data/eventosData';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/atoms/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/atoms/ui/alert';
 import { Badge } from '@/components/atoms/ui/badge';
 import { Button } from '@/components/atoms/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/atoms/ui/dialog';
 import { Input } from '@/components/atoms/ui/input';
 import { Label } from '@/components/atoms/ui/label';
-import { TimeClockPicker } from '@/components/molecules/TimeClockPicker';
 import { Textarea } from '@/components/atoms/ui/textarea';
 import {
   BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -24,38 +26,39 @@ import {
 import {
   Users, Calendar, Stethoscope, PawPrint,
   ArrowRight, Activity, ChevronLeft, ChevronRight,
-  Plus, X, Syringe, Bug, AlertTriangle, DollarSign, FileText,
-  TrendingUp, Banknote, HeartPulse, Clock
+  Plus, Syringe, Bug, DollarSign, FileText,
+  TrendingUp, Banknote, HeartPulse, ClipboardList
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
   format, startOfMonth, endOfMonth, eachDayOfInterval,
-  isSameDay, addMonths, subMonths, getDay, subDays, isWithinInterval
+  isSameDay, addMonths, subMonths, addDays, getDay, subDays, isWithinInterval
 } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { Consulta } from '@/types';
-import { fechaLocalClave, hoyLocalClave } from '@/lib/utils';
+import { fechaLocalClave, formatDateLocal, parseDateLocal, todayLocal } from '@/lib/utils';
 
 // ── Leyenda colores calendario ────────────────────────────────────────────────
 const tiposEvento: { tipo: TipoEvento; icon: React.ElementType }[] = [
-  { tipo: 'control',        icon: Activity },
-  { tipo: 'vacuna',         icon: Syringe },
-  { tipo: 'desparasitante', icon: Bug },
-  { tipo: 'urgencia',       icon: AlertTriangle },
+  { tipo: 'control',          icon: Activity },
+  { tipo: 'vacuna',           icon: Syringe },
+  { tipo: 'desparasitante',   icon: Bug },
+  { tipo: 'revision_general', icon: ClipboardList },
 ];
 
 // ── Formulario nuevo evento ────────────────────────────────────────────────────
 interface FormEvento {
   titulo: string;
-  hora: string;
   mascotaId: string;
   tipo: TipoEvento;
   notas: string;
 }
 
 const formVacio: FormEvento = {
-  titulo: '', hora: '09:00', mascotaId: '', tipo: 'control', notas: ''
+  titulo: '', mascotaId: '', tipo: 'control', notas: ''
 };
+
+const ALERTA_VACUNAS_VISIBLES = 3;
 
 // ── Componente principal ───────────────────────────────────────────────────────
 export default function DashboardPage() {
@@ -77,7 +80,7 @@ export default function DashboardPage() {
         mascotaCtrl.getAll(),
         consultaCtrl.getAll(),
       ]);
-      const hoy = hoyLocalClave();
+      const hoy = todayLocal();
       const consultasHoy = consultasData.filter(c => c.fecha && fechaLocalClave(c.fecha) === hoy);
       const pendientes = consultasData.filter(c => c.estado === 'pendiente');
 
@@ -97,9 +100,37 @@ export default function DashboardPage() {
   const [mesActual, setMesActual] = useState(new Date());
   const [diaSeleccionado, setDiaSeleccionado] = useState<Date | null>(new Date());
   const [mostrarForm, setMostrarForm] = useState(false);
+  const [mostrarAgendaDia, setMostrarAgendaDia] = useState(false);
   const [formEvento, setFormEvento] = useState<FormEvento>(formVacio);
   const [guardandoEvento, setGuardandoEvento] = useState(false);
-  const { eventos, isLoading: agendaLoading, crearEvento, eliminarEvento } = useAgenda(mesActual);
+  const { eventos, isLoading: agendaLoading, crearEvento, eliminarEvento, refresh: refrescarAgenda } = useAgenda(mesActual);
+
+  const agendaCtrl = AgendaController.getInstance();
+  const vacunaCtrl = VacunaController.getInstance();
+  const [vacunasProximas, setVacunasProximas] = useState<VacunaProxima[]>([]);
+  const [vacunasKey, setVacunasKey] = useState(0);
+  const [marcandoVacunaId, setMarcandoVacunaId] = useState<string | null>(null);
+  const [alertaExpandida, setAlertaExpandida] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const hoy = todayLocal();
+        const hasta = format(addDays(parseDateLocal(hoy), 2), 'yyyy-MM-dd');
+        setVacunasProximas(await agendaCtrl.getVacunasProximas(hoy, hasta));
+      } catch {
+        setVacunasProximas([]);
+      }
+    };
+    void load();
+    // Se reintenta al terminar cada carga de la agenda: garantiza que la alerta
+    // aparezca aunque la sesión aún no estuviera resuelta en el primer intento.
+  }, [agendaCtrl, vacunasKey, agendaLoading]);
+
+  const hoyClave = todayLocal();
+  const mananaClave = format(addDays(parseDateLocal(hoyClave), 1), 'yyyy-MM-dd');
+  const etiquetaFechaVacuna = (fecha: string) =>
+    fecha === hoyClave ? 'hoy' : fecha === mananaClave ? 'mañana' : formatDateLocal(fecha);
 
   // ── Gráficas ────────────────────────────────────────────────────────────────
   const [periodoGrafica, setPeriodoGrafica] = useState<'semana' | 'mes'>('semana');
@@ -238,7 +269,6 @@ export default function DashboardPage() {
         titulo: formEvento.titulo.trim(),
         tipo: formEvento.tipo,
         fecha: format(diaSeleccionado, 'yyyy-MM-dd'),
-        hora: formEvento.hora,
         notas: formEvento.notas || undefined,
       });
       setFormEvento(formVacio);
@@ -251,6 +281,11 @@ export default function DashboardPage() {
     }
   };
 
+  const handleSeleccionarDia = (dia: Date) => {
+    setDiaSeleccionado(dia);
+    setMostrarAgendaDia(true);
+  };
+
   const handleEliminarEvento = async (id: string, origen: string) => {
     if (origen !== 'evento') {
       toast.info('Este evento proviene de una consulta, vacuna o desparasitación y no se puede eliminar aquí');
@@ -261,6 +296,20 @@ export default function DashboardPage() {
       toast.success('Evento eliminado');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'No se pudo eliminar');
+    }
+  };
+
+  const handleMarcarVacuna = async (ev: EventoAgenda) => {
+    setMarcandoVacunaId(ev.id);
+    try {
+      await vacunaCtrl.quitarProximaDosis(ev.origenId);
+      toast.success(`"${ev.titulo.replace(/^Vacuna:\s*/, '')}" marcada como aplicada`);
+      await refrescarAgenda();
+      setVacunasKey(k => k + 1);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'No se pudo marcar la vacuna');
+    } finally {
+      setMarcandoVacunaId(null);
     }
   };
 
@@ -303,22 +352,20 @@ export default function DashboardPage() {
           {user?.rol === 'recepcion' && (
             <Link to="/recepcion">
               <Button className="bg-gradient-to-r from-brand-secondary to-brand-primary">
-                <Clock className="w-4 h-4 mr-2" />Ver Monitor
+                Ver Monitor
               </Button>
             </Link>
           )}
         </div>
       </div>
 
-      {/* ── Bloque principal: Stats + Carrusel animales | Calendario ── */}
+      {/* ── Bloque principal: Stats + Carrusel | Calendario ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:items-stretch">
 
-        {/* ── Columna izquierda (2/3): stats + carrusel ── */}
+        {/* Columna izquierda (2/3) */}
         <div className="lg:col-span-2 flex flex-col gap-4">
 
-          {/* 2 stat cards grandes */}
           <div className="grid grid-cols-2 gap-4">
-
             {/* Pacientes Hoy */}
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-primary via-brand-primary to-brand-primary p-6 shadow-lg text-white min-h-[140px]">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.15),transparent_60%)]" />
@@ -417,9 +464,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* ── Columna derecha (1/3): Calendario TALL ── */}
-        <Card className="border-0 shadow-soft flex flex-col lg:row-span-1">
-          {/* Header calendario */}
+        {/* Calendario (1/3) — altura alineada con columna izquierda */}
+        <Card className="border-0 shadow-soft flex flex-col relative overflow-hidden">
           <CardHeader className="pb-2 pt-4 px-4 shrink-0">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
@@ -435,7 +481,6 @@ export default function DashboardPage() {
                 <Plus className="w-3 h-3 mr-1" /> Nuevo
               </Button>
             </div>
-            {/* Nav mes */}
             <div className="flex items-center justify-between mt-2">
               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setMesActual(m => subMonths(m, 1))}>
                 <ChevronLeft className="w-4 h-4" />
@@ -449,107 +494,91 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
 
-          <CardContent className="flex-1 flex flex-col gap-3 px-3 pb-4 overflow-hidden">
-            {/* Grid días */}
-            <div className="shrink-0">
-              <div className="grid grid-cols-7">
-                {['L','M','X','J','V','S','D'].map(d => (
-                  <div key={d} className="text-center text-[10px] font-bold text-muted-foreground py-1">{d}</div>
+          <CardContent className="relative flex flex-col flex-1 gap-3 px-3 pb-4 pt-0">
+            <div className="flex-1 flex flex-col justify-between min-h-0">
+              <div>
+                <div className="grid grid-cols-7">
+                  {['L','M','X','J','V','S','D'].map(d => (
+                    <div key={d} className="text-center text-[10px] font-bold text-muted-foreground py-1">{d}</div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-7 gap-1">
+                  {Array.from({ length: primerDiaSemana }).map((_, i) => <div key={`ep-${i}`} />)}
+                  {diasDelMes.map(dia => {
+                    const key = format(dia, 'yyyy-MM-dd');
+                    const evsDia = eventosPorFecha[key] ?? [];
+                    const esHoy = isSameDay(dia, new Date());
+                    const esSel = diaSeleccionado ? isSameDay(dia, diaSeleccionado) : false;
+                    return (
+                      <button key={key} onClick={() => handleSeleccionarDia(dia)}
+                        className={`flex flex-col items-center justify-center rounded-lg py-1 min-h-[40px] transition-all
+                          ${esSel ? 'bg-brand-primary text-white shadow-md scale-105' : esHoy ? 'bg-brand-primary/10 text-brand-primary font-bold' : 'hover:bg-muted'}`}
+                      >
+                        <span className="text-xs leading-tight">{format(dia, 'd')}</span>
+                        {evsDia.length > 0 && (
+                          <div className="flex gap-0.5 flex-wrap justify-center mt-0.5 max-w-[28px]">
+                            {evsDia.slice(0, 4).map(ev => (
+                              <span
+                                key={ev.id}
+                                className={`w-1.5 h-1.5 rounded-full shrink-0 ${colorEvento[ev.tipo].dot} ${esSel ? 'ring-1 ring-white/90' : ''}`}
+                                title={colorEvento[ev.tipo].label}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap justify-center items-center gap-x-3 gap-y-1.5 px-1 pt-2 border-t border-border/50 shrink-0">
+                {tiposEvento.map(({ tipo }) => (
+                  <span key={tipo} className="flex items-center gap-1 text-[10px] text-muted-foreground whitespace-nowrap">
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${colorEvento[tipo].dot}`} />
+                    {colorEvento[tipo].label}
+                  </span>
                 ))}
               </div>
-              <div className="grid grid-cols-7 gap-0.5">
-                {Array.from({ length: primerDiaSemana }).map((_, i) => <div key={`ep-${i}`} />)}
-                {diasDelMes.map(dia => {
-                  const key = format(dia, 'yyyy-MM-dd');
-                  const evsDia = eventosPorFecha[key] ?? [];
-                  const esHoy = isSameDay(dia, new Date());
-                  const esSel = diaSeleccionado ? isSameDay(dia, diaSeleccionado) : false;
-                  const tiposSet = Array.from(new Set(evsDia.map(e => e.tipo))).slice(0, 3);
-                  return (
-                    <button key={key} onClick={() => setDiaSeleccionado(dia)}
-                      className={`flex flex-col items-center rounded-lg py-1 min-h-[36px] transition-all
-                        ${esSel ? 'bg-brand-primary text-white shadow-md scale-105' : esHoy ? 'bg-brand-primary/10 text-brand-primary font-bold' : 'hover:bg-muted'}`}
+            </div>
+
+            {vacunasProximas.length > 0 && (
+              <Alert className="shrink-0 border-amber-500/50 bg-amber-50 text-amber-900 py-2.5 dark:border-amber-500/40 dark:bg-amber-950 dark:text-amber-100">
+                <Syringe className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <AlertTitle className="text-[11px] font-bold uppercase tracking-wide text-amber-800 dark:text-amber-200">
+                  Vacunas por aplicar ({vacunasProximas.length})
+                </AlertTitle>
+                <AlertDescription className="text-xs text-amber-800 dark:text-amber-200">
+                  {(alertaExpandida ? vacunasProximas : vacunasProximas.slice(0, ALERTA_VACUNAS_VISIBLES)).map(v => (
+                    <p key={v.id}>
+                      <span className="font-semibold">{v.mascota}</span> · {v.vacuna} — {etiquetaFechaVacuna(v.fecha)}
+                    </p>
+                  ))}
+                  {vacunasProximas.length > ALERTA_VACUNAS_VISIBLES && (
+                    <button
+                      type="button"
+                      onClick={() => setAlertaExpandida(e => !e)}
+                      className="mt-0.5 text-[11px] font-semibold underline underline-offset-2 hover:opacity-80"
                     >
-                      <span className="text-xs leading-tight">{format(dia, 'd')}</span>
-                      <div className="flex gap-0.5 flex-wrap justify-center mt-0.5">
-                        {tiposSet.map(tipo => (
-                          <span key={tipo} className={`w-1.5 h-1.5 rounded-full ${esSel ? 'bg-white/70' : colorEvento[tipo].dot}`} />
-                        ))}
-                      </div>
+                      {alertaExpandida
+                        ? 'Ver menos'
+                        : `+${vacunasProximas.length - ALERTA_VACUNAS_VISIBLES} más`}
                     </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Leyenda */}
-            <div className="shrink-0 flex flex-wrap gap-x-2 gap-y-1 px-1">
-              {tiposEvento.map(({ tipo }) => (
-                <span key={tipo} className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                  <span className={`w-2 h-2 rounded-full ${colorEvento[tipo].dot}`} />
-                  {colorEvento[tipo].label}
-                </span>
-              ))}
-            </div>
-
-            {/* Separador + eventos del día */}
-            <div className="flex-1 overflow-y-auto min-h-0">
-              {diaSeleccionado && (
-                <>
-                  <p className="text-xs font-bold text-muted-foreground mb-2 capitalize sticky top-0 bg-background pt-0.5">
-                    {format(diaSeleccionado, "EEEE d 'de' MMM", { locale: es })}
-                  </p>
-                  {eventosDiaSeleccionado.length === 0 ? (
-                    <div className="flex flex-col items-center gap-1.5 py-4 text-muted-foreground/40">
-                      <Calendar className="w-7 h-7" />
-                      <p className="text-xs">{agendaLoading ? 'Cargando...' : 'Sin eventos programados'}</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {eventosDiaSeleccionado.map(ev => {
-                        const col = colorEvento[ev.tipo];
-                        const prefijo = `${col.label}: `;
-                        const nota = ev.titulo.startsWith(prefijo)
-                          ? ev.titulo.slice(prefijo.length)
-                          : ev.titulo;
-                        const mostrarNota = nota && nota !== 'Control de seguimiento';
-                        return (
-                          <div
-                            key={ev.id}
-                            className={`flex items-center gap-3 rounded-lg border border-border/70 bg-card shadow-sm border-l-[3px] ${col.border} px-3 py-2 group`}
-                          >
-                            <div className="shrink-0 min-w-[3.25rem] text-center flex flex-col justify-center">
-                              {ev.hora && (
-                                <p className="text-sm font-bold tabular-nums text-foreground leading-none">{ev.hora}</p>
-                              )}
-                              <p className={`text-[9px] font-semibold ${ev.hora ? 'mt-0.5' : ''} ${col.text}`}>{col.label}</p>
-                            </div>
-
-                            <div className="flex-1 min-w-0 border-l border-border/50 pl-3">
-                              <p className="text-sm font-semibold text-foreground truncate">{ev.mascota}</p>
-                              <p className="text-xs text-muted-foreground truncate">{ev.propietario}</p>
-                              {mostrarNota && (
-                                <p className="text-[11px] text-muted-foreground/80 truncate mt-0.5">{nota}</p>
-                              )}
-                            </div>
-
-                            {ev.origen === 'evento' && (
-                              <button
-                                onClick={() => void handleEliminarEvento(ev.id, ev.origen)}
-                                className="shrink-0 self-center opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-red-500 p-1"
-                              >
-                                <X className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
                   )}
-                </>
-              )}
+                </AlertDescription>
+              </Alert>
+            )}
 
-            </div>
+            <AgendaDiaPanel
+              open={mostrarAgendaDia}
+              onClose={() => setMostrarAgendaDia(false)}
+              fecha={diaSeleccionado}
+              eventos={eventosDiaSeleccionado}
+              isLoading={agendaLoading}
+              onEliminar={(id, origen) => void handleEliminarEvento(id, origen)}
+              onMarcarVacuna={ev => void handleMarcarVacuna(ev)}
+              idEnProceso={marcandoVacunaId}
+            />
           </CardContent>
         </Card>
       </div>
@@ -568,29 +597,19 @@ export default function DashboardPage() {
                 onChange={(e) => setFormEvento(f => ({ ...f, titulo: e.target.value }))}
               />
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label>Hora</Label>
-                <TimeClockPicker
-                  value={formEvento.hora}
-                  onChange={hora => setFormEvento(f => ({ ...f, hora }))}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label>Tipo</Label>
-                <select
-                  className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
-                  value={formEvento.tipo}
-                  onChange={(e) => setFormEvento(f => ({ ...f, tipo: e.target.value as TipoEvento }))}
-                >
-                  {tiposEvento.map(({ tipo }) => (
-                    <option key={tipo} value={tipo}>
-                      {colorEvento[tipo].label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <div>
+              <Label>Tipo</Label>
+              <select
+                className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                value={formEvento.tipo}
+                onChange={(e) => setFormEvento(f => ({ ...f, tipo: e.target.value as TipoEvento }))}
+              >
+                {tiposEvento.map(({ tipo }) => (
+                  <option key={tipo} value={tipo}>
+                    {colorEvento[tipo].label}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <Label>Mascota</Label>
@@ -621,7 +640,7 @@ export default function DashboardPage() {
               />
             </div>
             <p className="text-xs text-muted-foreground">
-              No se puede agendar otra cita el mismo día a la misma hora.
+              La cita queda programada para el día seleccionado; el paciente puede acudir en cualquier horario.
             </p>
           </div>
           <DialogFooter className="gap-2">

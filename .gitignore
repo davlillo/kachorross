@@ -6,6 +6,8 @@ yarn.lock
 # Environment variables
 .env
 .env.local
+.env.*
+!.env.example
 
 
 # IDE
@@ -41,3 +43,7 @@ env/
 # Temp files
 *.tmp
 .cache/
+
+# Supabase CLI local state (not committed)
+supabase/.branches/
+supabase/.temp/

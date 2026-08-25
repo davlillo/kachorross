@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/atoms/ui/alert';
 import { AuthBackground } from '@/components/molecules/AuthBackground';
 import { BrandPanel } from '@/components/molecules/BrandPanel';
 import { CheckCircle2, XCircle, Loader2, KeyRound, Eye, EyeOff } from 'lucide-react';
+import { validatePassword } from '@/lib/sanitize';
 
 export default function EstablecerContrasenaPage() {
   const navigate = useNavigate();
@@ -74,8 +75,9 @@ export default function EstablecerContrasenaPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!contrasena || contrasena.length < 6) {
-      setMensaje('La contraseña debe tener al menos 6 caracteres.');
+    const passwordCheck = validatePassword(contrasena);
+    if (!passwordCheck.ok) {
+      setMensaje(passwordCheck.reason ?? 'La contraseña no cumple con la política de seguridad.');
       setIsError(true);
       return;
     }
@@ -157,11 +159,11 @@ export default function EstablecerContrasenaPage() {
                       id="contrasena"
                       type={showPassword ? 'text' : 'password'}
                       className="pl-9 pr-10 h-11"
-                      placeholder="Mínimo 6 caracteres"
+                      placeholder="Mínimo 8 caracteres con mayúscula, minúscula, número y especial"
                       value={contrasena}
                       onChange={e => setContrasena(e.target.value)}
                       required
-                      minLength={6}
+                      minLength={8}
                     />
                     <button
                       type="button"
