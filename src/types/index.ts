@@ -206,6 +206,8 @@ export interface RegistroEnvio {
   fechaEnvio: string;
   estado: 'enviado' | 'entregado' | 'fallido' | 'pendiente';
   codigoError?: string;
+  consultaId?: string;
+  mascotaId?: string;
 }
 
 
