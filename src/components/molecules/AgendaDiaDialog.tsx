@@ -6,6 +6,7 @@ import { Button } from '@/components/atoms/ui/button'
 import { colorEvento, type TipoEvento } from '@/data/eventosData'
 import type { EventoAgenda } from '@/controllers/agenda.controller'
 import {
+  Bug,
   Calendar,
   Check,
   ChevronLeft,
@@ -33,6 +34,8 @@ interface AgendaDiaPanelProps {
   onEliminar?: (id: string, origen: string) => void
   onMarcarVacuna?: (evento: EventoAgenda) => void
   idEnProceso?: string | null
+  onMarcarDesparasitacion?: (evento: EventoAgenda) => void
+  idDespEnProceso?: string | null
 }
 
 function claveMascota(ev: EventoAgenda): string {
@@ -81,6 +84,8 @@ export function AgendaDiaPanel({
   onEliminar,
   onMarcarVacuna,
   idEnProceso,
+  onMarcarDesparasitacion,
+  idDespEnProceso,
 }: AgendaDiaPanelProps) {
   const [indice, setIndice] = useState(0)
 
@@ -103,7 +108,9 @@ export function AgendaDiaPanel({
 
   const eventosManuales = grupo?.eventos.filter(ev => ev.origen === 'evento') ?? []
   const vacunasGrupo = grupo?.eventos.filter(ev => ev.origen === 'vacuna') ?? []
+  const despsGrupo = grupo?.eventos.filter(ev => ev.origen === 'desparasitante') ?? []
   const hayTodos = Boolean(onMarcarVacuna && vacunasGrupo.length > 0)
+  const hayDesp = Boolean(onMarcarDesparasitacion && despsGrupo.length > 0)
 
   return (
     <div
@@ -111,7 +118,7 @@ export function AgendaDiaPanel({
       onClick={onClose}
     >
       <div
-        className={`relative w-[min(88%,230px)] ${hayTodos ? 'max-h-[96%]' : 'aspect-square'} rounded-2xl border border-border/80 bg-card shadow-xl animate-in fade-in zoom-in-95 duration-200 flex flex-col overflow-hidden`}
+        className={`relative w-[min(88%,230px)] ${(hayTodos || hayDesp) ? 'max-h-[96%]' : 'aspect-square'} rounded-2xl border border-border/80 bg-card shadow-xl animate-in fade-in zoom-in-95 duration-200 flex flex-col overflow-hidden`}
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-3 py-2 border-b border-border/60 shrink-0">
@@ -134,130 +141,165 @@ export function AgendaDiaPanel({
           </button>
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-center px-3 min-h-0 relative overflow-y-auto">
+        <div className="flex-1 min-h-0 overflow-y-auto [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar]:hidden flex flex-col">
           {isLoading ? (
-            <div className="flex flex-col items-center gap-2 text-muted-foreground">
+            <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground py-6">
               <Calendar className="w-6 h-6 animate-pulse" />
               <p className="text-xs">Cargando...</p>
             </div>
           ) : !grupo ? (
-            <div className="flex flex-col items-center gap-2 text-muted-foreground/60">
+            <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground/60 py-6">
               <Calendar className="w-8 h-8" />
               <p className="text-xs font-medium">Sin eventos</p>
             </div>
           ) : (
             <>
-              {totalGrupos > 1 && (
-                <button
-                  type="button"
-                  onClick={irAnterior}
-                  className="absolute left-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border bg-background/90 shadow-sm flex items-center justify-center hover:bg-muted z-10"
-                  aria-label="Mascota anterior"
-                >
-                  <ChevronLeft className="w-3 h-3" />
-                </button>
-              )}
+              <div className="relative">
+                {totalGrupos > 1 && (
+                  <button
+                    type="button"
+                    onClick={irAnterior}
+                    className="absolute left-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border bg-background/90 shadow-sm flex items-center justify-center hover:bg-muted z-10"
+                    aria-label="Mascota anterior"
+                  >
+                    <ChevronLeft className="w-3 h-3" />
+                  </button>
+                )}
 
-              <div className="flex flex-col items-center text-center px-5 w-full">
-                <div className={`relative ${hayTodos ? 'mb-1.5' : 'mb-2.5'}`}>
-                  {grupo.mascotaFoto ? (
-                    <img
-                      src={grupo.mascotaFoto}
-                      alt={grupo.mascota}
-                      className={`${hayTodos ? 'w-12 h-12' : 'w-[72px] h-[72px]'} rounded-full object-cover ring-2 ring-white shadow-md`}
-                    />
-                  ) : (
-                    <div className={`${hayTodos ? 'w-12 h-12' : 'w-[72px] h-[72px]'} rounded-full bg-brand-primary/10 ring-2 ring-white shadow-md flex items-center justify-center`}>
-                      <PawPrint className={hayTodos ? 'w-6 h-6 text-brand-primary/60' : 'w-8 h-8 text-brand-primary/60'} />
-                    </div>
-                  )}
+                <div className="flex flex-col items-center text-center px-5 py-4 w-full">
+                  <div className="mb-2">
+                    {grupo.mascotaFoto ? (
+                      <img
+                        src={grupo.mascotaFoto}
+                        alt={grupo.mascota}
+                        className="w-12 h-12 rounded-full object-cover ring-2 ring-white shadow-md"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-brand-primary/10 ring-2 ring-white shadow-md flex items-center justify-center">
+                        <PawPrint className="w-6 h-6 text-brand-primary/60" />
+                      </div>
+                    )}
+                  </div>
+
+                  <p className="text-sm font-bold truncate max-w-[160px]">{grupo.mascota}</p>
+
+                  <div className="flex flex-wrap justify-center gap-1 mt-2 max-w-[170px]">
+                    {tiposGrupo.map(tipo => {
+                      const col = colorEvento[tipo]
+                      return (
+                        <span
+                          key={tipo}
+                          className={`px-2 py-0.5 rounded-full text-[8px] font-bold text-white whitespace-nowrap ${col.dot}`}
+                        >
+                          {col.label}
+                        </span>
+                      )
+                    })}
+                  </div>
                 </div>
 
-                <p className="text-sm font-bold truncate max-w-[160px]">{grupo.mascota}</p>
-
-                <div className="flex flex-wrap justify-center gap-1 mt-2 max-w-[170px]">
-                  {tiposGrupo.map(tipo => {
-                    const col = colorEvento[tipo]
-                    return (
-                      <span
-                        key={tipo}
-                        className={`px-2 py-0.5 rounded-full text-[8px] font-bold text-white whitespace-nowrap ${col.dot}`}
-                      >
-                        {col.label}
-                      </span>
-                    )
-                  })}
-                </div>
+                {totalGrupos > 1 && (
+                  <button
+                    type="button"
+                    onClick={irSiguiente}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border bg-background/90 shadow-sm flex items-center justify-center hover:bg-muted z-10"
+                    aria-label="Siguiente mascota"
+                  >
+                    <ChevronRight className="w-3 h-3" />
+                  </button>
+                )}
               </div>
 
-              {totalGrupos > 1 && (
-                <button
-                  type="button"
-                  onClick={irSiguiente}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border bg-background/90 shadow-sm flex items-center justify-center hover:bg-muted z-10"
-                  aria-label="Siguiente mascota"
-                >
-                  <ChevronRight className="w-3 h-3" />
-                </button>
+              {hayTodos && (
+                <div className="border-t border-border/40 px-3 py-2">
+                  <p className="text-[8px] font-bold uppercase tracking-wide text-muted-foreground text-center mb-1">
+                    Vacunas por aplicar · toca ✓
+                  </p>
+                  <div className="space-y-1">
+                    {vacunasGrupo.map(ev => {
+                      const enProceso = idEnProceso === ev.id
+                      return (
+                        <button
+                          key={ev.id}
+                          type="button"
+                          disabled={enProceso || idEnProceso != null}
+                          onClick={() => onMarcarVacuna!(ev)}
+                          title="Marcar como aplicada"
+                          className="group w-full flex items-center gap-1.5 rounded-md border border-border/60 bg-muted/40 px-1.5 py-1 text-left hover:bg-muted transition-colors disabled:opacity-60"
+                        >
+                          <span className="w-3 h-3 rounded-[4px] border border-muted-foreground/50 bg-background shrink-0 flex items-center justify-center">
+                            {enProceso ? (
+                              <Loader2 className="w-2.5 h-2.5 animate-spin text-brand-primary" />
+                            ) : (
+                              <Check className="w-2.5 h-2.5 text-muted-foreground/40 group-hover:text-brand-primary transition-colors" />
+                            )}
+                          </span>
+                          <Syringe className="w-2.5 h-2.5 shrink-0 text-emerald-500" />
+                          <span className="truncate text-[9px] font-medium">
+                            {ev.titulo.replace(/^Vacuna:\s*/, '')}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
               )}
+
+              {hayDesp && (
+                <div className="border-t border-border/40 px-3 py-2">
+                  <p className="text-[8px] font-bold uppercase tracking-wide text-muted-foreground text-center mb-1">
+                    Desparasitaciones por aplicar · toca ✓
+                  </p>
+                  <div className="space-y-1">
+                    {despsGrupo.map(ev => {
+                      const enProceso = idDespEnProceso === ev.id
+                      return (
+                        <button
+                          key={ev.id}
+                          type="button"
+                          disabled={enProceso || idDespEnProceso != null}
+                          onClick={() => onMarcarDesparasitacion!(ev)}
+                          title="Marcar como aplicada"
+                          className="group w-full flex items-center gap-1.5 rounded-md border border-border/60 bg-muted/40 px-1.5 py-1 text-left hover:bg-muted transition-colors disabled:opacity-60"
+                        >
+                          <span className="w-3 h-3 rounded-[4px] border border-muted-foreground/50 bg-background shrink-0 flex items-center justify-center">
+                            {enProceso ? (
+                              <Loader2 className="w-2.5 h-2.5 animate-spin text-brand-primary" />
+                            ) : (
+                              <Check className="w-2.5 h-2.5 text-muted-foreground/40 group-hover:text-brand-primary transition-colors" />
+                            )}
+                          </span>
+                          <Bug className="w-2.5 h-2.5 shrink-0 text-amber-500" />
+                          <span className="truncate text-[9px] font-medium">
+                            {ev.titulo.replace(/^Desparasitación:\s*/, '')}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <div className="px-3 pb-3 pt-2 flex items-center justify-center gap-2 border-t border-border/40">
+                <Button asChild variant="outline" size="sm" className="h-7 text-[10px] px-3 flex-1 max-w-[160px]">
+                  <Link to={`/expedientes/${grupo.mascotaId}`} onClick={onClose}>
+                    Ver expediente
+                  </Link>
+                </Button>
+                {onEliminar && eventosManuales.length === 1 && (
+                  <button
+                    type="button"
+                    onClick={() => onEliminar(eventosManuales[0].id, eventosManuales[0].origen)}
+                    className="text-muted-foreground hover:text-destructive p-1"
+                    aria-label="Eliminar evento"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
             </>
           )}
         </div>
-
-        {grupo && hayTodos && (
-          <div className="shrink-0 border-t border-border/40 px-3 py-2">
-            <p className="text-[8px] font-bold uppercase tracking-wide text-muted-foreground text-center mb-1">
-              Vacunas por aplicar · toca ✓
-            </p>
-            <div className="space-y-1 max-h-[76px] overflow-y-auto">
-              {vacunasGrupo.map(ev => {
-                const enProceso = idEnProceso === ev.id
-                return (
-                  <button
-                    key={ev.id}
-                    type="button"
-                    disabled={enProceso || idEnProceso != null}
-                    onClick={() => onMarcarVacuna!(ev)}
-                    title="Marcar como aplicada"
-                    className="group w-full flex items-center gap-1.5 rounded-md border border-border/60 bg-muted/40 px-1.5 py-1 text-left hover:bg-muted transition-colors disabled:opacity-60"
-                  >
-                    <span className="w-3 h-3 rounded-[4px] border border-muted-foreground/50 bg-background shrink-0 flex items-center justify-center">
-                      {enProceso ? (
-                        <Loader2 className="w-2.5 h-2.5 animate-spin text-brand-primary" />
-                      ) : (
-                        <Check className="w-2.5 h-2.5 text-muted-foreground/40 group-hover:text-brand-primary transition-colors" />
-                      )}
-                    </span>
-                    <Syringe className="w-2.5 h-2.5 shrink-0 text-emerald-500" />
-                    <span className="truncate text-[9px] font-medium">
-                      {ev.titulo.replace(/^Vacuna:\s*/, '')}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        {grupo && (
-          <div className="shrink-0 px-3 pb-3 pt-2 flex items-center justify-center gap-2 border-t border-border/40">
-            <Button asChild variant="outline" size="sm" className="h-7 text-[10px] px-3 flex-1 max-w-[160px]">
-              <Link to={`/expedientes/${grupo.mascotaId}`} onClick={onClose}>
-                Ver expediente
-              </Link>
-            </Button>
-            {onEliminar && eventosManuales.length === 1 && (
-              <button
-                type="button"
-                onClick={() => onEliminar(eventosManuales[0].id, eventosManuales[0].origen)}
-                className="text-muted-foreground hover:text-destructive p-1"
-                aria-label="Eliminar evento"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-        )}
       </div>
     </div>
   )

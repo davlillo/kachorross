@@ -133,6 +133,19 @@ export class VacunaController {
     if (error) throw new Error(`No se pudo actualizar la vacuna: ${error.message}`)
   }
 
+  async quitarProximoTratamiento(desparasitacionId: string): Promise<void> {
+    const veterinariaId = await this.getVeterinariaId()
+    if (!veterinariaId) throw new Error('No se encontró veterinaria')
+
+    const { error } = await supabase
+      .from('desparasitaciones')
+      .update({ fecha_proximo_tratamiento: null })
+      .eq('id', desparasitacionId)
+      .eq('veterinaria_id', veterinariaId)
+
+    if (error) throw new Error(`No se pudo actualizar la desparasitación: ${error.message}`)
+  }
+
   async getVacunasByMascota(mascotaId: string): Promise<Vacuna[]> {
     const veterinariaId = await this.getVeterinariaId()
     if (!veterinariaId) return []
