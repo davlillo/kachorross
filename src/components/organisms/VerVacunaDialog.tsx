@@ -3,7 +3,7 @@ import {
   Dialog, DialogPortal, DialogOverlay, DialogTitle,
 } from '@/components/atoms/ui/dialog'
 import { cn, parseDateLocal } from '@/lib/utils'
-import { X, Syringe, CalendarDays, Pill, FileText } from 'lucide-react'
+import { X, Syringe, CalendarDays, Pill, FileText, Stethoscope } from 'lucide-react'
 import type { Vacuna } from '@/types'
 
 interface VerVacunaDialogProps {
@@ -79,6 +79,7 @@ export function VerVacunaDialog({ open, onOpenChange, vacuna }: VerVacunaDialogP
             {vacuna.aplicadaPor && (
               <div className="flex items-start gap-2 p-3 rounded-xl bg-muted/50 border border-border">
                 <Syringe className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <Stethoscope className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                 <div className="min-w-0">
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Médico encargado</p>
                   <p className="text-sm mt-1">{vacuna.aplicadaPor}</p>
