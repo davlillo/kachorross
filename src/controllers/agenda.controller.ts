@@ -36,6 +36,14 @@ export interface VacunaProxima {
   fecha: string
 }
 
+export interface AlertaProxima {
+  id: string
+  tipo: 'vacuna' | 'desparasitacion'
+  titulo: string
+  mascota: string
+  fecha: string
+}
+
 type PropietarioRow = { nombre?: string; email?: string | null }
 type MascotaRow = { id: string; nombre: string; foto?: string | null; propietarios?: PropietarioRow | PropietarioRow[] | null }
 
@@ -134,6 +142,34 @@ export class AgendaController {
         vacuna: row.nombre,
         mascota: mascota?.nombre ?? 'Mascota',
         fecha: row.fecha_proxima_dosis,
+      }]
+    })
+  }
+
+  async getDesparasitacionesProximas(desdeKey: string, hastaKey: string): Promise<AlertaProxima[]> {
+    const veterinariaId = await this.getVeterinariaId()
+    if (!veterinariaId) return []
+
+    const { data, error } = await supabase
+      .from('desparasitaciones')
+      .select('id, tipo, fecha_proximo_tratamiento, mascotas(id, nombre)')
+      .eq('veterinaria_id', veterinariaId)
+      .not('fecha_proximo_tratamiento', 'is', null)
+      .gte('fecha_proximo_tratamiento', desdeKey)
+      .lte('fecha_proximo_tratamiento', hastaKey)
+      .order('fecha_proximo_tratamiento')
+
+    if (error) throw new Error(`No se pudieron cargar desparasitaciones próximas: ${error.message}`)
+
+    return (data ?? []).flatMap(row => {
+      if (!row.fecha_proximo_tratamiento) return []
+      const mascota = row.mascotas as unknown as MascotaRow | null
+      return [{
+        id: `desp-${row.id}`,
+        tipo: 'desparasitacion' as const,
+        titulo: `Desparasitación: ${row.tipo}`,
+        mascota: mascota?.nombre ?? 'Mascota',
+        fecha: row.fecha_proximo_tratamiento,
       }]
     })
   }
