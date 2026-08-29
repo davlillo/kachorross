@@ -82,6 +82,8 @@ export interface Consulta {
   tratamiento: string;
   notas: string;
   doctora: string;
+  /** Médico responsable registrado como texto libre */
+  medicoResponsable?: string;
   estado: 'pendiente' | 'finalizado';
   total: number;
   detalles: DetalleConsulta[];
@@ -140,6 +142,8 @@ export interface Desparasitacion {
   viaAdministracion: string;
   fechaAplicacion: string;
   fechaProximoTratamiento?: string;
+  /** Médico responsable registrado como texto libre */
+  medicoResponsable?: string;
 }
 
 export interface MonitorSalida {

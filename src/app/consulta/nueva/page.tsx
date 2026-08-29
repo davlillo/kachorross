@@ -55,6 +55,7 @@ export default function NuevaConsultaPage() {
   const [motivo, setMotivo] = useState('');
   const [sintomas, setSintomas] = useState('');
   const [diagnostico, setDiagnostico] = useState('');
+  const [medicoResponsable, setMedicoResponsable] = useState('');
   const [tratamiento, setTratamiento] = useState('');
   const [notas, setNotas] = useState('');
   const [proximaCita, setProximaCita] = useState('');
@@ -128,6 +129,7 @@ export default function NuevaConsultaPage() {
         motivo,
         sintomas,
         diagnostico,
+        medicoResponsable: medicoResponsable || undefined,
         tratamiento,
         notas,
         proximaCita: proximaCita || undefined,
@@ -241,6 +243,17 @@ export default function NuevaConsultaPage() {
                   value={diagnostico}
                   onChange={(e) => setDiagnostico(e.target.value)}
                   className="mt-1 min-h-[80px]"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="medicoResponsable">Médico Responsable</Label>
+                <Input
+                  id="medicoResponsable"
+                  placeholder="Nombre del médico responsable"
+                  value={medicoResponsable}
+                  onChange={(e) => setMedicoResponsable(e.target.value)}
+                  className="mt-1"
                 />
               </div>
 

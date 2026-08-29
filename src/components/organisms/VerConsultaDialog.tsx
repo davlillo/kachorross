@@ -139,6 +139,17 @@ export function VerConsultaDialog({ open, onOpenChange, consulta }: VerConsultaD
               </div>
             </div>
 
+            {/* Médico responsable */}
+            {consulta.medicoResponsable && (
+              <div className="flex items-start gap-2 p-3 rounded-xl bg-muted/50 border border-border">
+                <Stethoscope className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Médico responsable</p>
+                  <p className="text-sm mt-1">{consulta.medicoResponsable}</p>
+                </div>
+              </div>
+            )}
+
             {/* Tratamiento */}
             <div className="p-3 rounded-xl bg-blue-50 border border-blue-100 space-y-3">
               <div className="flex items-center gap-2">
