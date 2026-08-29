@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import {
   Dialog, DialogPortal, DialogOverlay, DialogTitle,
@@ -7,25 +7,42 @@ import { Button } from '@/components/atoms/ui/button'
 import { cn } from '@/lib/utils'
 import {
   X, ArrowLeft, Stethoscope, CalendarDays, FileText, AlertCircle, Eye,
+  ImageIcon, Plus, Upload,
 } from 'lucide-react'
-import type { Consulta } from '@/types'
-import { getCategoriaConfig } from '@/lib/catalogo-categorias'
+import type { Consulta, FotoEvolucion } from '@/types'
 import { labelTipoSeguimiento } from '@/lib/tipoSeguimiento'
-import { getCategoriaConfig, getCategoriaLabel } from '@/lib/catalogo-categorias'
+import { getCategoriaConfig } from '@/lib/catalogo-categorias'
 import { generarPdfTratamiento } from '@/lib/pdfTratamiento'
 import { useAuth } from '@/context/AuthContext'
 import { DetalleProductoCell } from '@/components/molecules/DetalleProductoCell'
+import { ACCEPT_ARCHIVO_EVOLUCION, esPdf, validarArchivoEvolucion } from '@/lib/archivoEvolucion'
 
 interface VerConsultaDialogProps {
   open: boolean
   onOpenChange: (v: boolean) => void
   consulta: Consulta | null
+  /** Fotos y documentos adjuntos a esta consulta. */
+  fotos?: FotoEvolucion[]
+  /** Si se pasa, se habilita adjuntar desde la galeria. */
+  onSubirFoto?: (file: File, descripcion: string) => Promise<void>
 }
 
-export function VerConsultaDialog({ open, onOpenChange, consulta }: VerConsultaDialogProps) {
+export function VerConsultaDialog({
+  open,
+  onOpenChange,
+  consulta,
+  fotos = [],
+  onSubirFoto,
+}: VerConsultaDialogProps) {
   const { veterinaria } = useAuth()
   const [cargandoPDF, setCargandoPDF] = useState<boolean>(false)
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null)
+  const [verGaleria, setVerGaleria] = useState<boolean>(false)
+  const [archivoPendiente, setArchivoPendiente] = useState<File | null>(null)
+  const [descripcionArchivo, setDescripcionArchivo] = useState<string>('')
+  const [subiendo, setSubiendo] = useState<boolean>(false)
+  const [errorArchivo, setErrorArchivo] = useState<string | null>(null)
+  const archivoInputRef = useRef<HTMLInputElement>(null)
 
   if (!consulta) return null
 
@@ -54,6 +71,43 @@ export function VerConsultaDialog({ open, onOpenChange, consulta }: VerConsultaD
     }
   }
 
+  const handleElegirArchivo = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    try {
+      validarArchivoEvolucion(file)
+      setErrorArchivo(null)
+      setArchivoPendiente(file)
+      setDescripcionArchivo('')
+    } catch (err) {
+      setArchivoPendiente(null)
+      setErrorArchivo(err instanceof Error ? err.message : 'Archivo no valido')
+    }
+  }
+
+  const handleSubirArchivo = async () => {
+    if (!archivoPendiente || !onSubirFoto) return
+    try {
+      setSubiendo(true)
+      setErrorArchivo(null)
+      await onSubirFoto(archivoPendiente, descripcionArchivo.trim())
+      setArchivoPendiente(null)
+      setDescripcionArchivo('')
+    } catch (err) {
+      setErrorArchivo(err instanceof Error ? err.message : 'No se pudo subir el archivo')
+    } finally {
+      setSubiendo(false)
+    }
+  }
+
+  const handleCerrarGaleria = () => {
+    setVerGaleria(false)
+    setArchivoPendiente(null)
+    setDescripcionArchivo('')
+    setErrorArchivo(null)
+  }
+
   const handleCerrarPDF = () => {
     if (pdfPreviewUrl) URL.revokeObjectURL(pdfPreviewUrl)
     setPdfPreviewUrl(null)
@@ -78,9 +132,9 @@ export function VerConsultaDialog({ open, onOpenChange, consulta }: VerConsultaD
           {/* ── Header degradado ── */}
           <div className="relative bg-gradient-to-r from-brand-primary to-brand-primary px-6 py-4 text-white">
             <div className="flex items-center justify-between">
-              {pdfPreviewUrl ? (
+              {pdfPreviewUrl || verGaleria ? (
                 <button
-                  onClick={handleCerrarPDF}
+                  onClick={pdfPreviewUrl ? handleCerrarPDF : handleCerrarGaleria}
                   className="flex items-center gap-1.5 text-sm font-semibold text-white/90 hover:text-white transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4" />
@@ -102,6 +156,7 @@ export function VerConsultaDialog({ open, onOpenChange, consulta }: VerConsultaD
               <button
                 onClick={() => {
                   if (pdfPreviewUrl) handleCerrarPDF()
+                  if (verGaleria) handleCerrarGaleria()
                   onOpenChange(false)
                 }}
                 className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors shrink-0"
@@ -119,6 +174,115 @@ export function VerConsultaDialog({ open, onOpenChange, consulta }: VerConsultaD
                 type="application/pdf"
                 className="w-full flex-1"
               />
+            </div>
+          ) : verGaleria ? (
+            <div className="p-5 space-y-4 max-h-[65vh] overflow-y-auto">
+              {fotos.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 text-center">
+                  <ImageIcon className="w-10 h-10 text-muted-foreground mb-3" />
+                  <p className="text-sm text-muted-foreground">
+                    Esta consulta no tiene fotos adjuntas.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {fotos.map(foto => (
+                    <a
+                      key={foto.id}
+                      href={foto.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group relative block rounded-xl overflow-hidden border border-border"
+                    >
+                      {esPdf(foto.tipoArchivo) ? (
+                        <div className="w-full aspect-square bg-muted flex flex-col items-center justify-center gap-2">
+                          <FileText className="w-8 h-8 text-muted-foreground" />
+                          <span className="text-[10px] text-muted-foreground font-medium">PDF</span>
+                        </div>
+                      ) : (
+                        <img
+                          src={foto.url}
+                          alt={foto.descripcion}
+                          className="w-full aspect-square object-cover"
+                        />
+                      )}
+                      <div className="absolute inset-0 bg-black/55 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                        <div className="text-white min-w-0">
+                          <p className="text-xs font-medium line-clamp-2">{foto.descripcion}</p>
+                          <p className="text-[10px] opacity-75">
+                            {new Date(foto.fecha).toLocaleDateString('es-ES')}
+                          </p>
+                        </div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              )}
+
+              {onSubirFoto && (
+                <div className="pt-3 border-t border-border space-y-3">
+                  <input
+                    ref={archivoInputRef}
+                    type="file"
+                    accept={ACCEPT_ARCHIVO_EVOLUCION}
+                    className="hidden"
+                    onChange={handleElegirArchivo}
+                  />
+
+                  {archivoPendiente ? (
+                    <div className="space-y-2">
+                      <p className="text-xs text-muted-foreground truncate">
+                        {archivoPendiente.name}
+                      </p>
+                      <input
+                        type="text"
+                        value={descripcionArchivo}
+                        onChange={e => setDescripcionArchivo(e.target.value)}
+                        placeholder="Pie de foto o descripcion breve"
+                        className="w-full h-9 px-3 rounded-lg border border-border bg-background text-sm"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          className="flex-1 h-9 text-xs"
+                          onClick={handleSubirArchivo}
+                          disabled={subiendo}
+                        >
+                          <Upload className="w-3.5 h-3.5 mr-1.5" />
+                          {subiendo ? 'Subiendo...' : 'Adjuntar a esta consulta'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-9 text-xs"
+                          onClick={() => { setArchivoPendiente(null); setDescripcionArchivo('') }}
+                          disabled={subiendo}
+                        >
+                          Cancelar
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full h-9 text-xs"
+                      onClick={() => archivoInputRef.current?.click()}
+                    >
+                      <Plus className="w-3.5 h-3.5 mr-1.5" />
+                      Agregar foto o documento
+                    </Button>
+                  )}
+
+                  {errorArchivo && (
+                    <p className="text-xs text-destructive">{errorArchivo}</p>
+                  )}
+
+                  <p className="text-[10px] text-muted-foreground">
+                    JPG, PNG o PDF. Maximo 5 MB por archivo.
+                  </p>
+                </div>
+              )}
             </div>
           ) : (
           <div className="p-5 space-y-4 max-h-[65vh] overflow-y-auto">
@@ -178,6 +342,29 @@ export function VerConsultaDialog({ open, onOpenChange, consulta }: VerConsultaD
                 <p className="text-sm text-muted-foreground">Sin tratamiento registrado.</p>
               )}
             </div>
+
+            {/* Fotos de la consulta — no se muestran inline, se abren en galeria */}
+            {(fotos.length > 0 || onSubirFoto) && (
+              <div className="p-3 rounded-xl bg-violet-50 border border-violet-100 space-y-3">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="w-4 h-4 text-violet-600 shrink-0" />
+                  <p className="text-xs text-muted-foreground font-medium">
+                    Fotos y documentos
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full h-9 text-xs border-violet-200 text-violet-700 hover:bg-violet-100"
+                  onClick={() => setVerGaleria(true)}
+                >
+                  <Eye className="w-3.5 h-3.5 mr-1.5" />
+                  {fotos.length > 0
+                    ? `Ver fotos (${fotos.length})`
+                    : 'Agregar fotos'}
+                </Button>
+              </div>
+            )}
 
             {/* Notas */}
             {consulta.notas && (

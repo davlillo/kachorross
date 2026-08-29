@@ -120,6 +120,10 @@ export interface FotoEvolucion {
   url: string;
   fecha: string;
   descripcion: string;
+  /** Consulta a la que pertenece. Las fotos previas a la HU no tienen. */
+  consultaId?: string;
+  /** MIME real del archivo; los PDF no se pueden renderizar con <img>. */
+  tipoArchivo?: string;
 }
 
 export interface Vacuna {
