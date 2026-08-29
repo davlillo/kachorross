@@ -4,20 +4,20 @@ import {
   Dialog, DialogPortal, DialogOverlay, DialogTitle,
 } from '@/components/atoms/ui/dialog'
 import { Button } from '@/components/atoms/ui/button'
-import { Badge } from '@/components/atoms/ui/badge'
 import { cn } from '@/lib/utils'
 import {
   CheckCircle, X, PawPrint, User, Phone, Clock, FileText,
   Stethoscope, Printer,
 } from 'lucide-react'
 import type { Consulta, Mascota } from '@/types'
-import { getCategoriaConfig, getCategoriaLabel } from '@/lib/catalogo-categorias'
+import { getCategoriaConfig } from '@/lib/catalogo-categorias'
 import { useAuth } from '@/context/AuthContext'
 import { imprimirTratamiento } from '@/lib/printTratamiento'
 import { generarPdfTratamiento } from '@/lib/pdfTratamiento'
 import { EmailController } from '@/controllers/email.controller'
 import { proximaCitaEsManana } from '@/lib/fechaAgenda'
 import { toast } from 'sonner'
+import { DetalleProductoCell } from '@/components/molecules/DetalleProductoCell'
 
 const emailCtrl = EmailController.getInstance()
 
@@ -229,6 +229,8 @@ export function DetailRecepcionDialog({
                   <div className="rounded-xl overflow-hidden border border-border">
                     {/* Cabecera */}
                     <div className="grid grid-cols-12 bg-muted px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      <div className="col-span-3">Código</div>
+                      <div className="col-span-4">Descripción</div>
                       <div className="col-span-2">Código</div>
                       <div className="col-span-2">Nombre</div>
                       <div className="col-span-3">Descripción</div>
@@ -244,7 +246,7 @@ export function DetailRecepcionDialog({
                       return (
                         <div
                           key={detalle.id}
-                          className={`grid grid-cols-12 items-center px-3 py-2.5 border-t border-border transition-colors
+                          className={`grid grid-cols-12 items-start px-3 py-2.5 border-t border-border transition-colors
                             ${idx % 2 === 0 ? 'bg-white' : 'bg-muted/20'} hover:bg-muted/40`}
                         >
                           {/* CÓDIGO — elemento más prominente */}
@@ -255,6 +257,8 @@ export function DetailRecepcionDialog({
                             </span>
                           </div>
 
+                          <div className="col-span-4">
+                            <DetalleProductoCell producto={detalle.producto} />
                           {/* Nombre */}
                           <div className="col-span-2 min-w-0 pr-1">
                             <p className="text-xs font-semibold truncate leading-tight">{detalle.producto.nombre}</p>
@@ -269,16 +273,18 @@ export function DetailRecepcionDialog({
                           </div>
 
                           {/* Cantidad */}
+                          <div className="col-span-1 text-center pt-0.5">
                           <div className="col-span-1 text-center">
                             <span className="text-sm font-bold">{detalle.cantidad}</span>
                           </div>
 
                           {/* Precio unitario */}
-                          <div className="col-span-2 text-right">
+                          <div className="col-span-2 text-right pt-0.5">
                             <span className="text-xs text-muted-foreground">${detalle.precioAplicado.toFixed(2)}</span>
                           </div>
 
                           {/* Subtotal */}
+                          <div className="col-span-2 text-right pt-0.5">
                           <div className="col-span-2 text-right">
                             <span className="text-xs font-bold">${detalle.subtotal.toFixed(2)}</span>
                           </div>
