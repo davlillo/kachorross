@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/atoms/ui/
 import { Badge } from '@/components/atoms/ui/badge';
 import { Input } from '@/components/atoms/ui/input';
 import { PageHeader } from '@/components/molecules/PageHeader';
+import { DetalleProductoCell } from '@/components/molecules/DetalleProductoCell';
 import { ConsultaController } from '@/controllers/consulta.controller';
 import { MascotaController } from '@/controllers/mascota.controller';
 import type { Consulta, Mascota } from '@/types';
@@ -181,16 +182,18 @@ export default function HistorialVentasPage() {
                             return (
                               <div
                                 key={d.id}
-                                className={`grid grid-cols-12 items-center px-3 py-2 border-t border-border text-sm ${i % 2 === 0 ? 'bg-white' : 'bg-muted/10'}`}
+                                className={`grid grid-cols-12 items-start px-3 py-2 border-t border-border text-sm ${i % 2 === 0 ? 'bg-white' : 'bg-muted/10'}`}
                               >
                                 <div className="col-span-3">
                                   <span className={`inline-flex items-center gap-1 text-xs font-black font-mono px-2 py-0.5 rounded-md ${colorClass}`}>
                                     <CatIcon className="w-3 h-3" />{d.producto.codigo}
                                   </span>
                                 </div>
-                                <div className="col-span-5 text-xs font-medium truncate pr-2">{d.producto.nombre}</div>
-                                <div className="col-span-2 text-center text-xs font-bold">{d.cantidad}</div>
-                                <div className="col-span-2 text-right text-xs font-bold">${d.subtotal.toFixed(2)}</div>
+                                <div className="col-span-5">
+                                  <DetalleProductoCell producto={d.producto} />
+                                </div>
+                                <div className="col-span-2 text-center text-xs font-bold pt-0.5">{d.cantidad}</div>
+                                <div className="col-span-2 text-right text-xs font-bold pt-0.5">${d.subtotal.toFixed(2)}</div>
                               </div>
                             );
                           })}
