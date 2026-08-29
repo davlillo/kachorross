@@ -171,6 +171,7 @@ CREATE TABLE IF NOT EXISTS consultas (
     notas TEXT,
     observaciones_factura TEXT,
     doctora_id UUID REFERENCES perfiles(id),
+    medico_responsable VARCHAR(150),
     estado VARCHAR(20) DEFAULT 'pendiente' CHECK (estado IN ('pendiente', 'en_recepcion', 'pagada', 'finalizado')),
     total DECIMAL(10,2) DEFAULT 0,
     proxima_cita TIMESTAMP WITH TIME ZONE,
@@ -229,6 +230,7 @@ CREATE TABLE IF NOT EXISTS desparasitaciones (
     via_administracion VARCHAR(50) NOT NULL,
     fecha_aplicacion DATE NOT NULL,
     fecha_proximo_tratamiento DATE,
+    medico_responsable VARCHAR(150),
     consulta_id UUID REFERENCES consultas(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

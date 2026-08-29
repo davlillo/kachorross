@@ -88,6 +88,7 @@ export class MascotaController {
       tratamiento: row.tratamiento ?? '',
       notas: row.notas ?? '',
       doctora: row.doctora?.nombre ?? 'Doctora',
+      medicoResponsable: row.medico_responsable ?? undefined,
       estado: row.estado === 'finalizado' ? 'finalizado' : 'pendiente',
       total: Number(row.total ?? 0),
       detalles,
@@ -247,7 +248,7 @@ export class MascotaController {
       await Promise.all([
         supabase
           .from('consultas')
-          .select('id,mascota_id,fecha,motivo,sintomas,diagnostico,tratamiento,notas,estado,total,proxima_cita,tipo_seguimiento,veterinaria_id,doctora:perfiles(nombre)')
+          .select('id,mascota_id,fecha,motivo,sintomas,diagnostico,tratamiento,notas,estado,total,proxima_cita,tipo_seguimiento,veterinaria_id,medico_responsable,doctora:perfiles(nombre)')
           .eq('mascota_id', mascota.id)
           .eq('veterinaria_id', veterinariaId)
           .order('fecha', { ascending: false }),
@@ -265,7 +266,7 @@ export class MascotaController {
           .order('fecha', { ascending: false }),
         supabase
           .from('desparasitaciones')
-          .select('id,mascota_id,tipo,via_administracion,fecha_aplicacion,fecha_proximo_tratamiento,veterinaria_id')
+          .select('id,mascota_id,tipo,via_administracion,fecha_aplicacion,fecha_proximo_tratamiento,medico_responsable,veterinaria_id')
           .eq('mascota_id', mascota.id)
           .eq('veterinaria_id', veterinariaId)
           .order('fecha_aplicacion', { ascending: false }),
@@ -326,6 +327,7 @@ export class MascotaController {
       viaAdministracion: row.via_administracion,
       fechaAplicacion: row.fecha_aplicacion,
       fechaProximoTratamiento: row.fecha_proximo_tratamiento ?? undefined,
+      medicoResponsable: row.medico_responsable ?? undefined,
     }))
 
     return {

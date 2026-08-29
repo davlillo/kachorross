@@ -28,6 +28,8 @@ import ConfiguracionPage from '@/app/configuracion/page';
 
 import SeguridadUsuariosPage from '@/app/admin/seguridad/usuarios/page';
 
+import HistorialNotificacionesPage from '@/app/admin/notificaciones/page';
+
 import EstablecerContrasenaPage from '@/app/establecer-contrasena/page';
 
 import SuperAdminPage from '@/app/super-admin/page';
@@ -226,9 +228,21 @@ function AppRoutes() {
 
       <Route path="/historial-ventas" element={
 
-        <ProtectedRoute allowedRoles={['recepcion', 'admin', 'doctora']}>
+        <ProtectedRoute allowedRoles={['recepcion', 'doctora']}>
 
           <Layout><HistorialVentasPage /></Layout>
+
+        </ProtectedRoute>
+
+      } />
+
+
+
+      <Route path="/admin/notificaciones" element={
+
+        <ProtectedRoute allowedRoles={['admin']}>
+
+          <Layout><HistorialNotificacionesPage /></Layout>
 
         </ProtectedRoute>
 
