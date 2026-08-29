@@ -26,6 +26,7 @@ type DesparasitacionRow = {
   via_administracion: string
   fecha_aplicacion: string
   fecha_proximo_tratamiento: string | null
+  medico_responsable: string | null
   consulta_id: string | null
   created_at: string | null
 }
@@ -65,6 +66,7 @@ export class VacunaController {
       viaAdministracion: row.via_administracion,
       fechaAplicacion: row.fecha_aplicacion,
       fechaProximoTratamiento: row.fecha_proximo_tratamiento ?? undefined,
+      medicoResponsable: row.medico_responsable ?? undefined,
     }
   }
 
@@ -102,6 +104,7 @@ export class VacunaController {
     viaAdministracion: string
     fechaAplicacion: string
     fechaProximoTratamiento?: string
+    medicoResponsable?: string
   }): Promise<void> {
     const veterinariaId = await this.getVeterinariaId()
     if (!veterinariaId) throw new Error('No se encontró veterinaria')
@@ -115,6 +118,7 @@ export class VacunaController {
         via_administracion: data.viaAdministracion,
         fecha_aplicacion: data.fechaAplicacion,
         fecha_proximo_tratamiento: data.fechaProximoTratamiento ?? null,
+        medico_responsable: data.medicoResponsable?.trim() || null,
       })
 
     if (error) throw new Error(`No se pudo crear desparasitación: ${error.message}`)
@@ -154,7 +158,7 @@ export class VacunaController {
 
     const { data, error } = await supabase
       .from('desparasitaciones')
-      .select('id,mascota_id,veterinaria_id,tipo,via_administracion,fecha_aplicacion,fecha_proximo_tratamiento,consulta_id,created_at')
+      .select('id,mascota_id,veterinaria_id,tipo,via_administracion,fecha_aplicacion,fecha_proximo_tratamiento,medico_responsable,consulta_id,created_at')
       .eq('mascota_id', mascotaId)
       .eq('veterinaria_id', veterinariaId)
       .order('fecha_aplicacion', { ascending: false })

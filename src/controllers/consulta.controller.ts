@@ -17,6 +17,7 @@ type ConsultaRow = {
   tratamiento: string | null
   notas: string | null
   doctora_id: string | null
+  medico_responsable: string | null
   estado: string | null
   total: number | string | null
   proxima_cita: string | null
@@ -106,6 +107,7 @@ export class ConsultaController {
       tratamiento: row.tratamiento ?? '',
       notas: row.notas ?? '',
       doctora: 'Doctora',
+      medicoResponsable: row.medico_responsable ?? undefined,
       estado: row.estado === 'finalizado' ? 'finalizado' : 'pendiente',
       total: Number(row.total ?? 0),
       detalles,
@@ -128,7 +130,7 @@ export class ConsultaController {
 
     let query = supabase
       .from('consultas')
-      .select('id,mascota_id,fecha,motivo,sintomas,diagnostico,tratamiento,notas,doctora_id,estado,total,proxima_cita,tipo_seguimiento,veterinaria_id')
+      .select('id,mascota_id,fecha,motivo,sintomas,diagnostico,tratamiento,notas,doctora_id,medico_responsable,estado,total,proxima_cita,tipo_seguimiento,veterinaria_id')
       .eq('veterinaria_id', veterinariaId)
       .order('fecha', { ascending: false })
 
@@ -180,6 +182,7 @@ export class ConsultaController {
       diagnostico: data.diagnostico || '',
       tratamiento: data.tratamiento || null,
       notas: data.notas || null,
+      medico_responsable: data.medicoResponsable?.trim() || null,
       estado: 'pendiente',
       total: data.total || 0,
       proxima_cita,
@@ -189,7 +192,7 @@ export class ConsultaController {
     const { data: inserted, error } = await supabase
       .from('consultas')
       .insert(payload)
-      .select('id,mascota_id,fecha,motivo,sintomas,diagnostico,tratamiento,notas,doctora_id,estado,total,proxima_cita,tipo_seguimiento,veterinaria_id')
+      .select('id,mascota_id,fecha,motivo,sintomas,diagnostico,tratamiento,notas,doctora_id,medico_responsable,estado,total,proxima_cita,tipo_seguimiento,veterinaria_id')
       .single()
 
     if (error) throw new Error(`No se pudo crear consulta: ${error.message}`)

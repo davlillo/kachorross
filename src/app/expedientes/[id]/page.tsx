@@ -146,6 +146,15 @@ function DesparasitacionSlot({ desparasitacion }: { desparasitacion: Desparasita
           <span>{formatDateShort(desparasitacion.fechaAplicacion)}</span>
           {desparasitacion.fechaProximoTratamiento && <span className="text-amber-600">→ {formatDateShort(desparasitacion.fechaProximoTratamiento)}</span>}
         </div>
+        {desparasitacion.medicoResponsable && (
+          <div
+            className="mt-0.5 flex min-w-0 items-center gap-1 text-[11px] text-emerald-700/80"
+            title={`Médico responsable: ${desparasitacion.medicoResponsable}`}
+          >
+            <Stethoscope className="w-3 h-3 shrink-0" />
+            <span className="truncate">Médico: {desparasitacion.medicoResponsable}</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -156,6 +165,12 @@ function HistorialEntry({ entrada, onOpen }: { entrada: EntradaHistorial; onOpen
   const estilo = colorEvento[meta.evento];
   const Icon = entrada.tipo === 'consulta' ? Stethoscope : entrada.tipo === 'vacuna' ? Syringe : Pill;
   const esConsulta = entrada.tipo === 'consulta';
+  const medico =
+    entrada.tipo === 'vacuna'
+      ? entrada.vacuna?.aplicadaPor
+      : entrada.tipo === 'desparasitacion'
+        ? entrada.desparasitacion?.medicoResponsable
+        : entrada.consulta?.medicoResponsable;
 
   return (
     <div
@@ -184,6 +199,12 @@ function HistorialEntry({ entrada, onOpen }: { entrada: EntradaHistorial; onOpen
                     {entrada.consulta.estado === 'finalizado' ? 'Finalizado' : 'Pendiente'}
                   </span>
                 )}
+              </p>
+            )}
+            {medico && (
+              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                <Stethoscope className="w-3 h-3 shrink-0" />
+                {entrada.tipo === 'vacuna' ? 'Médico encargado' : 'Médico responsable'}: {medico}
               </p>
             )}
           </div>
@@ -324,7 +345,7 @@ export default function ExpedienteDetailPage() {
   const [agregarTipo, setAgregarTipo] = useState<'vacuna' | 'desparasitacion'>('vacuna');
   const [agregarForm, setAgregarForm] = useState({
     nombre: '', fechaAplicacion: '', dosis: '', proximaDosis: '', lote: '', aplicadaPor: '',
-    tipo: '', viaAdministracion: '', fechaProximoTratamiento: '',
+    tipo: '', viaAdministracion: '', fechaProximoTratamiento: '', medicoResponsable: '',
   });
 
   // ── Diálogos ─────────────────────────────────────────────────────────────────
@@ -515,9 +536,10 @@ export default function ExpedienteDetailPage() {
           viaAdministracion: agregarForm.viaAdministracion,
           fechaAplicacion: agregarForm.fechaAplicacion,
           fechaProximoTratamiento: agregarForm.fechaProximoTratamiento || undefined,
+          medicoResponsable: agregarForm.medicoResponsable || undefined,
         });
       }
-      setAgregarForm({ nombre: '', fechaAplicacion: '', dosis: '', proximaDosis: '', lote: '', aplicadaPor: '', tipo: '', viaAdministracion: '', fechaProximoTratamiento: '' });
+      setAgregarForm({ nombre: '', fechaAplicacion: '', dosis: '', proximaDosis: '', lote: '', aplicadaPor: '', tipo: '', viaAdministracion: '', fechaProximoTratamiento: '', medicoResponsable: '' });
       setAgregarOpen(false);
       setRefresh(r => r + 1);
       toast.success(`Se agregó ${agregarTipo === 'vacuna' ? 'vacuna' : 'desparasitación'} correctamente`);
@@ -1258,6 +1280,10 @@ export default function ExpedienteDetailPage() {
                         {VIAS_ADMINISTRACION.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
                       </SelectContent>
                     </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Médico Responsable</Label>
+                    <Input placeholder="Nombre del médico responsable" value={agregarForm.medicoResponsable} onChange={e => setAgregarForm(prev => ({ ...prev, medicoResponsable: e.target.value }))} />
                   </div>
                   <div className="space-y-1.5">
                     <Label>Fecha de Aplicación *</Label>

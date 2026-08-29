@@ -76,6 +76,16 @@ export function VerVacunaDialog({ open, onOpenChange, vacuna }: VerVacunaDialogP
               </div>
             </div>
 
+            {vacuna.aplicadaPor && (
+              <div className="flex items-start gap-2 p-3 rounded-xl bg-muted/50 border border-border">
+                <Syringe className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Médico encargado</p>
+                  <p className="text-sm mt-1">{vacuna.aplicadaPor}</p>
+                </div>
+              </div>
+            )}
+
             {vacuna.proximaDosis && (
               <div className="flex items-start gap-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200">
                 <CalendarDays className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
