@@ -1,6 +1,8 @@
 export interface ItemRecordatorioEmail {
   mascotaNombre: string
   lineas: string[]
+  /** true si alguna linea de esta mascota lleva hora concreta. */
+  conHora?: boolean
 }
 
 export interface RecordatorioEmailParams {
@@ -11,6 +13,10 @@ export interface RecordatorioEmailParams {
   /** Ej: "2026-08-22" — usado en asunto para no agrupar hilos en Gmail */
   fechaClave: string
   items: ItemRecordatorioEmail[]
+  /** Datos de contacto de la clinica, para que el dueño pueda reprogramar. */
+  veterinariaTelefono?: string | null
+  veterinariaDireccion?: string | null
+  veterinariaEmail?: string | null
 }
 
 function escapeHtml(value: string): string {
@@ -45,6 +51,37 @@ function bloquesMascotasTexto(items: ItemRecordatorioEmail[]): string {
   }).join('')
 }
 
+interface ContactoClinica {
+  telefono?: string | null
+  direccion?: string | null
+  email?: string | null
+}
+
+function lineasContacto(c: ContactoClinica): string[] {
+  const lineas: string[] = []
+  if (c.telefono?.trim()) lineas.push(`Tel: ${c.telefono.trim()}`)
+  if (c.email?.trim()) lineas.push(`Correo: ${c.email.trim()}`)
+  if (c.direccion?.trim()) lineas.push(`Dirección: ${c.direccion.trim()}`)
+  return lineas
+}
+
+function contactoTexto(c: ContactoClinica): string {
+  const lineas = lineasContacto(c)
+  if (lineas.length === 0) return ''
+  const cuerpo = lineas.map(l => '  ' + l).join('\n')
+  return '\n\nPuede contactarnos en:\n' + cuerpo
+}
+
+function contactoHtml(c: ContactoClinica): string {
+  const lineas = lineasContacto(c)
+  if (lineas.length === 0) return ''
+  const items = lineas.map(l => `<p style="margin:2px 0;">${escapeHtml(l)}</p>`).join('')
+  return `<div style="margin-top:14px;padding-top:12px;border-top:1px solid #f4f4f5;color:#52525b;font-size:13px;">
+                <p style="margin:0 0 6px;font-weight:600;color:#3f3f46;">Contacto</p>
+                ${items}
+              </div>`
+}
+
 /** Plantilla unificada para recordatorios (evita el "..." de Gmail por contenido repetido en hilos) */
 export function buildRecordatorioEmail(params: RecordatorioEmailParams): {
   subject: string
@@ -57,8 +94,20 @@ export function buildRecordatorioEmail(params: RecordatorioEmailParams): {
     fechaLegible,
     fechaClave,
     items,
+    veterinariaTelefono,
+    veterinariaDireccion,
+    veterinariaEmail,
   } = params
 
+  const hayHora = items.some(item => item.conHora === true)
+  const notaHorario = hayHora
+    ? 'Le esperamos a la hora indicada.'
+    : 'Puede acudir en cualquier horario del día.'
+  const contacto: ContactoClinica = {
+    telefono: veterinariaTelefono,
+    direccion: veterinariaDireccion,
+    email: veterinariaEmail,
+  }
   const fechaCorta = formatFechaCorta(fechaClave)
   const subject = `${veterinariaNombre} — Cita ${fechaCorta}`
   const mascotasTexto = bloquesMascotasTexto(items)
@@ -66,9 +115,9 @@ export function buildRecordatorioEmail(params: RecordatorioEmailParams): {
 
   const text = `Estimado/a ${propietarioNombre},
 
-Le recordamos que mañana ${fechaLegible} tiene programado en ${veterinariaNombre}. Puede acudir en cualquier horario del día.${mascotasTexto}
+Le recordamos que mañana ${fechaLegible} tiene programado en ${veterinariaNombre}. ${notaHorario}${mascotasTexto}
 
-Si necesita reprogramar o tiene alguna consulta, no dude en contactarnos.
+Si necesita reprogramar o tiene alguna consulta, no dude en contactarnos.${contactoTexto(contacto)}
 
 Atentamente,
 ${veterinariaNombre}`
@@ -95,9 +144,10 @@ ${veterinariaNombre}`
             <td style="padding:24px;color:#27272a;font-size:15px;line-height:1.65;">
               <p style="margin:0 0 12px;">Estimado/a <strong>${escapeHtml(propietarioNombre)}</strong>,</p>
               <p style="margin:0 0 8px;">Le recordamos que <strong>mañana ${escapeHtml(fechaLegible)}</strong> tiene programado en <strong>${escapeHtml(veterinariaNombre)}</strong>.</p>
-              <p style="margin:0 0 4px;color:#52525b;font-size:14px;">Puede acudir en cualquier horario del día.</p>
+              <p style="margin:0 0 4px;color:#52525b;font-size:14px;">${escapeHtml(notaHorario)}</p>
               ${mascotasHtml}
               <p style="margin:20px 0 0;color:#71717a;font-size:14px;">Si necesita reprogramar o tiene alguna consulta, no dude en contactarnos.</p>
+              ${contactoHtml(contacto)}
             </td>
           </tr>
           <tr>

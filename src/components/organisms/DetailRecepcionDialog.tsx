@@ -106,6 +106,9 @@ export function DetailRecepcionDialog({
             proximaCitaIso: proximaCita,
             tipoSeguimiento: consulta.tipoSeguimiento,
             motivo: consulta.motivo,
+            veterinariaTelefono: vet.telefono,
+            veterinariaDireccion: vet.direccion,
+            veterinariaEmail: vet.email,
           })
           if (!rec.ok) {
             return { recordatorioFallo: rec.error ?? 'No se pudo enviar el recordatorio' }
@@ -231,9 +234,6 @@ export function DetailRecepcionDialog({
                     <div className="grid grid-cols-12 bg-muted px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                       <div className="col-span-3">Código</div>
                       <div className="col-span-4">Descripción</div>
-                      <div className="col-span-2">Código</div>
-                      <div className="col-span-2">Nombre</div>
-                      <div className="col-span-3">Descripción</div>
                       <div className="col-span-1 text-center">Cant.</div>
                       <div className="col-span-2 text-right">P.Unit.</div>
                       <div className="col-span-2 text-right">Sub.</div>
@@ -250,31 +250,20 @@ export function DetailRecepcionDialog({
                             ${idx % 2 === 0 ? 'bg-white' : 'bg-muted/20'} hover:bg-muted/40`}
                         >
                           {/* CÓDIGO — elemento más prominente */}
-                          <div className="col-span-2">
+                          <div className="col-span-3">
                             <span className={`inline-flex items-center gap-1 text-xs font-black font-mono px-2 py-1 rounded-lg ${cat.bg} ${cat.color} ${cat.border} border`}>
                               <CatIcon className="w-3 h-3" />
                               {detalle.producto.codigo}
                             </span>
                           </div>
 
+                          {/* Nombre + descripción + categoría */}
                           <div className="col-span-4">
                             <DetalleProductoCell producto={detalle.producto} />
-                          {/* Nombre */}
-                          <div className="col-span-2 min-w-0 pr-1">
-                            <p className="text-xs font-semibold truncate leading-tight">{detalle.producto.nombre}</p>
-                            <Badge className={`text-[9px] px-1 py-0 ${cat.bg} ${cat.color} border-0 mt-0.5`}>
-                              {getCategoriaLabel(detalle.producto.categoria, detalle.producto.codigo)}
-                            </Badge>
-                          </div>
-
-                          {/* Descripción */}
-                          <div className="col-span-3 min-w-0 pr-1">
-                            <p className="text-xs text-muted-foreground truncate">{detalle.producto.descripcion || '—'}</p>
                           </div>
 
                           {/* Cantidad */}
                           <div className="col-span-1 text-center pt-0.5">
-                          <div className="col-span-1 text-center">
                             <span className="text-sm font-bold">{detalle.cantidad}</span>
                           </div>
 
@@ -285,7 +274,6 @@ export function DetailRecepcionDialog({
 
                           {/* Subtotal */}
                           <div className="col-span-2 text-right pt-0.5">
-                          <div className="col-span-2 text-right">
                             <span className="text-xs font-bold">${detalle.subtotal.toFixed(2)}</span>
                           </div>
                         </div>

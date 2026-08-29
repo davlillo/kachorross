@@ -1,4 +1,5 @@
 import { supabase } from '@/supabase/client'
+import { validarArchivoEvolucion } from '@/lib/archivoEvolucion'
 import type {
   Consulta,
   Desparasitacion,
@@ -260,7 +261,7 @@ export class MascotaController {
           .order('fecha_aplicacion', { ascending: false }),
         supabase
           .from('fotos_evolucion')
-          .select('id,mascota_id,url,fecha,descripcion,veterinaria_id')
+          .select('id,mascota_id,url,fecha,descripcion,veterinaria_id,consulta_id,tipo_archivo')
           .eq('mascota_id', mascota.id)
           .eq('veterinaria_id', veterinariaId)
           .order('fecha', { ascending: false }),
@@ -317,6 +318,8 @@ export class MascotaController {
       url: row.url,
       fecha: row.fecha,
       descripcion: row.descripcion ?? 'Sin descripción',
+      consultaId: row.consulta_id ?? undefined,
+      tipoArchivo: row.tipo_archivo ?? undefined,
     }))
 
     const desparasitaciones: Desparasitacion[] = (desparasitacionesData ?? []).map(row => ({
@@ -429,6 +432,8 @@ export class MascotaController {
     const veterinariaId = await this.getVeterinariaId()
     if (!veterinariaId) throw new Error('No hay veterinaria activa')
 
+    validarArchivoEvolucion(file)
+
     const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
     const filePath = `${veterinariaId}/${mascotaId}/${crypto.randomUUID()}.${ext}`
     const contentType = file.type || `image/${ext}`
@@ -453,8 +458,9 @@ export class MascotaController {
         consulta_id: consultaId ?? null,
         url: urlData.publicUrl,
         descripcion: descripcion?.trim() || null,
+        tipo_archivo: file.type || null,
       })
-      .select('id,mascota_id,url,fecha,descripcion,veterinaria_id')
+      .select('id,mascota_id,url,fecha,descripcion,veterinaria_id,consulta_id,tipo_archivo')
       .single()
 
     if (insertError) throw new Error(`No se pudo registrar la foto de evolución: ${insertError.message}`)
@@ -465,6 +471,8 @@ export class MascotaController {
       url: row.url,
       fecha: row.fecha,
       descripcion: row.descripcion ?? 'Sin descripción',
+      consultaId: row.consulta_id ?? undefined,
+      tipoArchivo: row.tipo_archivo ?? undefined,
     }
   }
 

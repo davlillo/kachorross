@@ -1,7 +1,8 @@
 import { supabase } from '@/supabase/client'
 import {
+  fechaEnElSalvador,
   formatoFechaLegibleClave,
-  mananaEnElSalvador,
+  horaDesdeIsoEnElSalvador,
 } from '@/lib/fechaAgenda'
 import { buildRecordatorioEmail } from '@/lib/emailRecordatorio'
 import { textoRecordatorioSeguimiento } from '@/lib/tipoSeguimiento'
@@ -197,6 +198,9 @@ ${params.veterinariaNombre}
     proximaCitaIso: string
     tipoSeguimiento?: string
     motivo?: string
+    veterinariaTelefono?: string | null
+    veterinariaDireccion?: string | null
+    veterinariaEmail?: string | null
   }): Promise<{ ok: boolean; error?: string }> {
     try {
       const config = await this.getConfig(params.veterinariaId)
@@ -204,15 +208,23 @@ ${params.veterinariaNombre}
         return { ok: false, error: 'No hay configuración SMTP en Configuración.' }
       }
 
-      const fechaManana = mananaEnElSalvador()
-      const fechaLegible = formatoFechaLegibleClave(fechaManana)
-      const lineaCita = textoRecordatorioSeguimiento(params.tipoSeguimiento, params.motivo)
+      // La fecha sale de la cita real, no de "mañana": este metodo tambien se
+      // usa para recordar citas que no son necesariamente del dia siguiente.
+      const fechaClave = fechaEnElSalvador(params.proximaCitaIso)
+      const fechaLegible = formatoFechaLegibleClave(fechaClave)
+      const hora = horaDesdeIsoEnElSalvador(params.proximaCitaIso)
+      const conHora = hora !== '00:00'
+      const lineaBase = textoRecordatorioSeguimiento(params.tipoSeguimiento, params.motivo)
+      const lineaCita = conHora ? `${lineaBase} — ${hora} h` : lineaBase
       const { subject, text, html } = buildRecordatorioEmail({
         propietarioNombre: params.propietarioNombre,
         veterinariaNombre: params.veterinariaNombre,
         fechaLegible,
-        fechaClave: fechaManana,
-        items: [{ mascotaNombre: params.mascotaNombre, lineas: [lineaCita] }],
+        fechaClave,
+        items: [{ mascotaNombre: params.mascotaNombre, lineas: [lineaCita], conHora }],
+        veterinariaTelefono: params.veterinariaTelefono,
+        veterinariaDireccion: params.veterinariaDireccion,
+        veterinariaEmail: params.veterinariaEmail,
       })
 
       const { error: fnError } = await supabase.functions.invoke('send-email', {

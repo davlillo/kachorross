@@ -16,9 +16,18 @@ interface ItemRecordatorio {
   tipo: string
 }
 
+interface VeterinariaInfo {
+  nombre: string
+  telefono: string | null
+  direccion: string | null
+  email: string | null
+}
+
 interface GrupoPropietario {
   veterinariaId: string
   veterinariaNombre: string
+  /** Datos de contacto de la clinica que van en el pie del correo. */
+  veterinaria: VeterinariaInfo
   email: string
   propietarioNombre: string
   items: ItemRecordatorio[]
@@ -54,6 +63,16 @@ function formatHora(iso: string): string {
   }).format(new Date(iso))
 }
 
+/**
+ * Devuelve la hora solo si es significativa. La agenda normaliza las citas sin
+ * hora a inicio del dia, asi que 00:00 local se trata como "sin hora concreta".
+ */
+function horaSiAplica(iso: string | null | undefined): string | undefined {
+  if (!iso) return undefined
+  const hora = formatHora(iso)
+  return hora === '00:00' ? undefined : hora
+}
+
 function formatFechaLegible(fecha: string): string {
   const [y, m, d] = fecha.split('-').map(Number)
   const dt = new Date(y, m - 1, d)
@@ -80,10 +99,10 @@ function tituloSeguimiento(tipo: string | null | undefined, motivo?: string | nu
 
 function lineaRecordatorio(it: ItemRecordatorio): string {
   const label = labelTipo(it.tipo)
-  if (it.titulo === label || it.titulo.startsWith(`${label}:`)) {
-    return it.titulo
-  }
-  return `${label}: ${it.titulo}`
+  const base = (it.titulo === label || it.titulo.startsWith(`${label}:`))
+    ? it.titulo
+    : `${label}: ${it.titulo}`
+  return it.hora ? `${base} — ${it.hora} h` : base
 }
 
 async function enviarSMTP(params: {
@@ -128,8 +147,20 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const admin = createClient(supabaseUrl, serviceRoleKey)
 
-    const authHeader = req.headers.get('Authorization') ?? ''
-    if (authHeader) {
+    // Dos formas validas de invocar:
+    //  1. Un usuario logueado desde la app (JWT propio).
+    //  2. El cron, con el secreto compartido en x-cron-secret.
+    //
+    // El gateway de Supabase ya exige un Authorization valido antes de llegar
+    // aca, pero ese header lleva el anon key —  que es publico, va en el bundle
+    // del frontend—  asi que por si solo no prueba nada. De ahi el secreto
+    // aparte para el cron.
+    const cronSecret = Deno.env.get('CRON_SECRET') ?? ''
+    const cronHeader = req.headers.get('x-cron-secret') ?? ''
+    const esCron = Boolean(cronSecret) && cronHeader === cronSecret
+
+    if (!esCron) {
+      const authHeader = req.headers.get('Authorization') ?? ''
       const client = createClient(supabaseUrl, supabaseAnonKey, {
         global: { headers: { Authorization: authHeader } },
       })
@@ -162,14 +193,24 @@ Deno.serve(async (req) => {
       }
     }
 
-    const vetNames = new Map<string, string>()
+    const vetInfos = new Map<string, VeterinariaInfo>()
 
-    async function getVetName(vetId: string): Promise<string> {
-      if (vetNames.has(vetId)) return vetNames.get(vetId)!
-      const { data } = await admin.from('veterinarias').select('nombre').eq('id', vetId).maybeSingle()
-      const nombre = data?.nombre ?? 'Veterinaria'
-      vetNames.set(vetId, nombre)
-      return nombre
+    async function getVetInfo(vetId: string): Promise<VeterinariaInfo> {
+      const cached = vetInfos.get(vetId)
+      if (cached) return cached
+      const { data } = await admin
+        .from('veterinarias')
+        .select('nombre, telefono, direccion, email')
+        .eq('id', vetId)
+        .maybeSingle()
+      const info: VeterinariaInfo = {
+        nombre: data?.nombre ?? 'Veterinaria',
+        telefono: data?.telefono ?? null,
+        direccion: data?.direccion ?? null,
+        email: data?.email ?? null,
+      }
+      vetInfos.set(vetId, info)
+      return info
     }
 
     let enviados = 0
@@ -204,14 +245,15 @@ Deno.serve(async (req) => {
         detalle.push(`Sin email: ${mascota?.nombre ?? row.mascota_id}`)
         continue
       }
-      const vetNombre = await getVetName(row.veterinaria_id)
+      const vet = await getVetInfo(row.veterinaria_id)
       addItem(
         `${row.veterinaria_id}:${email.toLowerCase()}`,
-        { veterinariaId: row.veterinaria_id, veterinariaNombre: vetNombre, email, propietarioNombre: prop?.nombre ?? 'Estimado/a cliente' },
+        { veterinariaId: row.veterinaria_id, veterinariaNombre: vet.nombre, veterinaria: vet, email, propietarioNombre: prop?.nombre ?? 'Estimado/a cliente' },
         {
           mascotaId: row.mascota_id,
           mascotaNombre: mascota?.nombre ?? 'su mascota',
           titulo: tituloSeguimiento(row.tipo_seguimiento, row.motivo),
+          hora: horaSiAplica(row.proxima_cita),
           tipo: row.tipo_seguimiento ?? 'control',
         },
       )
@@ -233,10 +275,10 @@ Deno.serve(async (req) => {
         detalle.push(`Sin email: ${mascota?.nombre ?? row.mascota_id}`)
         continue
       }
-      const vetNombre = await getVetName(row.veterinaria_id)
+      const vet = await getVetInfo(row.veterinaria_id)
       addItem(
         `${row.veterinaria_id}:${email.toLowerCase()}`,
-        { veterinariaId: row.veterinaria_id, veterinariaNombre: vetNombre, email, propietarioNombre: prop?.nombre ?? 'Estimado/a cliente' },
+        { veterinariaId: row.veterinaria_id, veterinariaNombre: vet.nombre, veterinaria: vet, email, propietarioNombre: prop?.nombre ?? 'Estimado/a cliente' },
         {
           mascotaId: row.mascota_id,
           mascotaNombre: mascota?.nombre ?? 'su mascota',
@@ -262,10 +304,10 @@ Deno.serve(async (req) => {
         detalle.push(`Sin email: ${mascota?.nombre ?? row.mascota_id}`)
         continue
       }
-      const vetNombre = await getVetName(row.veterinaria_id)
+      const vet = await getVetInfo(row.veterinaria_id)
       addItem(
         `${row.veterinaria_id}:${email.toLowerCase()}`,
-        { veterinariaId: row.veterinaria_id, veterinariaNombre: vetNombre, email, propietarioNombre: prop?.nombre ?? 'Estimado/a cliente' },
+        { veterinariaId: row.veterinaria_id, veterinariaNombre: vet.nombre, veterinaria: vet, email, propietarioNombre: prop?.nombre ?? 'Estimado/a cliente' },
         {
           mascotaId: row.mascota_id,
           mascotaNombre: mascota?.nombre ?? 'su mascota',
@@ -292,14 +334,15 @@ Deno.serve(async (req) => {
         detalle.push(`Sin email: ${mascota?.nombre ?? row.mascota_id}`)
         continue
       }
-      const vetNombre = await getVetName(row.veterinaria_id)
+      const vet = await getVetInfo(row.veterinaria_id)
       addItem(
         `${row.veterinaria_id}:${email.toLowerCase()}`,
-        { veterinariaId: row.veterinaria_id, veterinariaNombre: vetNombre, email, propietarioNombre: prop?.nombre ?? 'Estimado/a cliente' },
+        { veterinariaId: row.veterinaria_id, veterinariaNombre: vet.nombre, veterinaria: vet, email, propietarioNombre: prop?.nombre ?? 'Estimado/a cliente' },
         {
           mascotaId: row.mascota_id,
           mascotaNombre: mascota?.nombre ?? 'su mascota',
           titulo: row.titulo,
+          hora: horaSiAplica(row.fecha_hora),
           tipo: row.tipo,
         },
       )
@@ -344,6 +387,7 @@ Deno.serve(async (req) => {
       const itemsEmail = [...porMascota.entries()].map(([mascotaNombre, items]) => ({
         mascotaNombre,
         lineas: items.map(it => lineaRecordatorio(it)),
+        conHora: items.some(it => Boolean(it.hora)),
       }))
 
       const { subject, text, html } = buildRecordatorioEmail({
@@ -352,6 +396,9 @@ Deno.serve(async (req) => {
         fechaLegible,
         fechaClave: fechaManana,
         items: itemsEmail,
+        veterinariaTelefono: grupo.veterinaria.telefono,
+        veterinariaDireccion: grupo.veterinaria.direccion,
+        veterinariaEmail: grupo.veterinaria.email,
       })
 
       try {

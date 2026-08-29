@@ -21,6 +21,7 @@ import { PatientInfoCard } from '@/components/organisms/PatientInfoCard';
 import { ProximasCitasCard } from '@/components/molecules';
 import { EmptyState } from '@/components/molecules/EmptyState';
 import { VerConsultaDialog } from '@/components/organisms/VerConsultaDialog';
+import { ACCEPT_ARCHIVO_EVOLUCION, esPdf, validarArchivoEvolucion } from '@/lib/archivoEvolucion';
 import { VerVacunaDialog } from '@/components/organisms/VerVacunaDialog';
 import { VerDesparasitacionDialog } from '@/components/organisms/VerDesparasitacionDialog';
 import {
@@ -28,7 +29,7 @@ import {
   Pencil, Trash2, AlertTriangle, Filter, CalendarDays,
   Pill, Stamp, ChevronDown,
 } from 'lucide-react';
-import type { Consulta, Expediente, Mascota, Vacuna, Desparasitacion } from '@/types';
+import type { Consulta, Expediente, FotoEvolucion, Mascota, Vacuna, Desparasitacion } from '@/types';
 import {
   formatTelefono,
   formatPeso,
@@ -160,7 +161,16 @@ function DesparasitacionSlot({ desparasitacion }: { desparasitacion: Desparasita
   );
 }
 
-function HistorialEntry({ entrada, onOpen }: { entrada: EntradaHistorial; onOpen?: () => void }) {
+function HistorialEntry({
+  entrada,
+  onOpen,
+  fotos = [],
+}: {
+  entrada: EntradaHistorial;
+  onOpen?: () => void;
+  /** Fotos adjuntas a esta consulta, para la tira de miniaturas. */
+  fotos?: FotoEvolucion[];
+}) {
   const meta = TIPO_HISTORIAL_META[entrada.tipo];
   const estilo = colorEvento[meta.evento];
   const Icon = entrada.tipo === 'consulta' ? Stethoscope : entrada.tipo === 'vacuna' ? Syringe : Pill;
@@ -211,6 +221,29 @@ function HistorialEntry({ entrada, onOpen }: { entrada: EntradaHistorial; onOpen
         </div>
         <p className="text-xs text-muted-foreground shrink-0 whitespace-nowrap">{entrada.fechaLabel}</p>
       </div>
+
+      {fotos.length > 0 && (
+        <div className="flex items-center gap-2 mt-3 pl-12">
+          {fotos.slice(0, 4).map(foto => (
+            <div
+              key={foto.id}
+              title={foto.descripcion}
+              className="w-10 h-10 rounded-lg overflow-hidden border border-border shrink-0"
+            >
+              {esPdf(foto.tipoArchivo) ? (
+                <div className="w-full h-full bg-muted flex items-center justify-center">
+                  <FileText className="w-4 h-4 text-muted-foreground" />
+                </div>
+              ) : (
+                <img src={foto.url} alt={foto.descripcion} className="w-full h-full object-cover" />
+              )}
+            </div>
+          ))}
+          {fotos.length > 4 && (
+            <span className="text-xs text-muted-foreground">+{fotos.length - 4}</span>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -605,6 +638,19 @@ export default function ExpedienteDetailPage() {
     navigate('/expedientes');
   };
 
+  // createObjectURL en el render fuga una URL por cada re-render; se ata al
+  // archivo y se revoca al cambiarlo o cerrar.
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!fotoPendiente || esPdf(fotoPendiente.type)) {
+      setPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(fotoPendiente);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [fotoPendiente]);
+
   const abrirDialogoFoto = (file: File, modo: 'perfil' | 'evolucion') => {
     setFotoModo(modo);
     setFotoPendiente(file);
@@ -615,6 +661,33 @@ export default function ExpedienteDetailPage() {
 
   const seleccionarFotoPerfil = (file: File) => abrirDialogoFoto(file, 'perfil');
   const seleccionarFotoEvolucion = (file: File) => abrirDialogoFoto(file, 'evolucion');
+
+  // Indice consultaId -> fotos, para no filtrar el array entero por cada fila
+  // del historial. Las fotos anteriores a la HU tienen consultaId undefined y
+  // quedan fuera del indice: siguen viviendo en el tab Evolucion.
+  const fotosPorConsulta = useMemo(() => {
+    const mapa = new Map<string, FotoEvolucion[]>();
+    for (const foto of expediente?.fotosEvolucion ?? []) {
+      if (!foto.consultaId) continue;
+      const lista = mapa.get(foto.consultaId);
+      if (lista) lista.push(foto);
+      else mapa.set(foto.consultaId, [foto]);
+    }
+    return mapa;
+  }, [expediente]);
+
+  // Las fotos del modal son solo las de esa consulta; las anteriores a la HU
+  // tienen consultaId undefined y siguen viviendo en el tab Evolucion.
+  const fotosDeConsultaDetalle = useMemo(
+    () => (consultaDetalle ? fotosPorConsulta.get(consultaDetalle.id) ?? [] : []),
+    [consultaDetalle, fotosPorConsulta],
+  );
+
+  const subirFotoDeConsulta = async (file: File, descripcion: string) => {
+    if (!mascota?.id || !consultaDetalle) return;
+    await ctrl.subirFotoEvolucion(mascota.id, file, descripcion || undefined, consultaDetalle.id);
+    setRefresh(r => r + 1);
+  };
 
   const confirmarSubirFoto = async () => {
     if (!mascota?.id || !fotoPendiente) return;
@@ -639,8 +712,15 @@ export default function ExpedienteDetailPage() {
 
   const handleEvolucionFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) seleccionarFotoEvolucion(file);
     e.target.value = '';
+    if (!file) return;
+    try {
+      validarArchivoEvolucion(file);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Archivo no valido');
+      return;
+    }
+    seleccionarFotoEvolucion(file);
   };
 
   // ── Not found ────────────────────────────────────────────────────────────────
@@ -783,6 +863,7 @@ export default function ExpedienteDetailPage() {
                         <HistorialEntry
                           key={entrada.key}
                           entrada={entrada}
+                          fotos={entrada.consulta ? fotosPorConsulta.get(entrada.consulta.id) : undefined}
                           onOpen={() => {
                             if (entrada.consulta) setConsultaDetalle(entrada.consulta);
                             else if (entrada.vacuna) setVacunaDetalle(entrada.vacuna);
@@ -800,6 +881,8 @@ export default function ExpedienteDetailPage() {
               open={!!consultaDetalle}
               onOpenChange={(v) => { if (!v) setConsultaDetalle(null) }}
               consulta={consultaDetalle}
+              fotos={fotosDeConsultaDetalle}
+              onSubirFoto={puedeSubirEvolucion ? subirFotoDeConsulta : undefined}
             />
 
             <VerVacunaDialog
@@ -909,7 +992,7 @@ export default function ExpedienteDetailPage() {
                         <input
                           ref={evolucionInputRef}
                           type="file"
-                          accept="image/*"
+                          accept={ACCEPT_ARCHIVO_EVOLUCION}
                           className="hidden"
                           onChange={handleEvolucionFileChange}
                         />
@@ -1112,15 +1195,22 @@ export default function ExpedienteDetailPage() {
             <DialogDescription>
               {fotoModo === 'perfil'
                 ? 'Esta foto se mostrará en la ficha del paciente y en los listados.'
-                : 'Registra el estado actual del paciente para el seguimiento clínico.'}
+                : 'Registra el estado actual del paciente para el seguimiento clínico. JPG, PNG o PDF, máximo 5 MB.'}
             </DialogDescription>
           </DialogHeader>
           {fotoPendiente && (
-            <img
-              src={URL.createObjectURL(fotoPendiente)}
-              alt="Vista previa"
-              className={`w-full max-h-48 object-cover rounded-xl ${fotoModo === 'perfil' ? 'aspect-square max-w-48 mx-auto' : ''}`}
-            />
+            esPdf(fotoPendiente.type) ? (
+              <div className="w-full h-32 rounded-xl bg-muted flex flex-col items-center justify-center gap-2">
+                <FileText className="w-8 h-8 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground truncate max-w-[80%]">{fotoPendiente.name}</p>
+              </div>
+            ) : previewUrl ? (
+              <img
+                src={previewUrl}
+                alt="Vista previa"
+                className={`w-full max-h-48 object-cover rounded-xl ${fotoModo === 'perfil' ? 'aspect-square max-w-48 mx-auto' : ''}`}
+              />
+            ) : null
           )}
           {fotoModo === 'evolucion' && (
             <div className="space-y-1">
