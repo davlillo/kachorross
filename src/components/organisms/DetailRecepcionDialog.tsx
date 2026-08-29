@@ -84,6 +84,8 @@ export function DetailRecepcionDialog({
           propietarioEmail: ownerEmail,
           propietarioNombre,
           mascotaNombre,
+          mascotaId: mascota?.id,
+          consultaId: consulta.id,
           fecha,
           pdfBase64,
         })

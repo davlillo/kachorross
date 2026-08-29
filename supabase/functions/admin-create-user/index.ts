@@ -204,6 +204,7 @@ Deno.serve(async (req) => {
               to: targetPerfil.email,
               subject: `Reenvío de invitación - ${vetNombre}`,
               html: invitationHtml,
+              tipoNotificacion: 'invitacion',
             }),
           })
         }
@@ -336,6 +337,7 @@ Deno.serve(async (req) => {
                 to: email,
                 subject: `Has sido invitado a ${vetNombre}`,
                 html: invitationHtml,
+                tipoNotificacion: 'invitacion',
               }),
             })
           } else {
@@ -380,6 +382,7 @@ Deno.serve(async (req) => {
                 subject: 'Has sido invitado al Sistema Veterinario',
                 html: invitationHtml,
                 useSystemConfig: true,
+                tipoNotificacion: 'invitacion',
               }),
             })
           }

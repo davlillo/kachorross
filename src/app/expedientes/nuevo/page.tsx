@@ -79,8 +79,7 @@ export default function NuevoExpedientePage() {
     emailOk &&
     pesoOk &&
     mascotaNombre.trim() &&
-    mascotaRaza.trim() &&
-    mascotaFechaNac.trim();
+    mascotaRaza.trim();
 
   const telefonoError = touched.telefono && !telefonoOk
     ? 'Ingrese 8 dígitos (ej: 7777-0000)'
@@ -140,7 +139,7 @@ export default function NuevoExpedientePage() {
           nombre: mascotaNombre.trim(),
           especie: mascotaEspecie,
           raza: mascotaRaza.trim(),
-          fechaNacimiento: mascotaFechaNac,
+          fechaNacimiento: mascotaFechaNac || undefined,
           sexo: mascotaSexo,
           color: mascotaColor.trim() || undefined,
           peso: mascotaPeso ? parseFloat(mascotaPeso) : undefined,
@@ -265,7 +264,7 @@ export default function NuevoExpedientePage() {
                 <div>
                   <Label htmlFor="mascotaEspecie">Especie *</Label>
                   <Select value={mascotaEspecie} onValueChange={(v) => setMascotaEspecie(v as Mascota['especie'])}>
-                    <SelectTrigger id="mascotaEspecie" className="mt-1">
+                    <SelectTrigger id="mascotaEspecie" className="mt-1 h-9 rounded-md px-3 bg-none shadow-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -289,7 +288,7 @@ export default function NuevoExpedientePage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="mascotaFechaNac">Fecha de Nacimiento *</Label>
+                  <Label htmlFor="mascotaFechaNac">Fecha de Nacimiento</Label>
                   <Input
                     id="mascotaFechaNac"
                     type="date"
@@ -298,7 +297,6 @@ export default function NuevoExpedientePage() {
                     className="mt-1"
                     min={hace30Anos}
                     max={hoy}
-                    required
                   />
                 </div>
               </div>
@@ -306,7 +304,7 @@ export default function NuevoExpedientePage() {
                 <div>
                   <Label htmlFor="mascotaSexo">Sexo *</Label>
                   <Select value={mascotaSexo} onValueChange={(v) => setMascotaSexo(v as Mascota['sexo'])}>
-                    <SelectTrigger id="mascotaSexo" className="mt-1">
+                    <SelectTrigger id="mascotaSexo" className="mt-1 h-9 rounded-md px-3 bg-none shadow-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -328,7 +326,7 @@ export default function NuevoExpedientePage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="mascotaPeso">Peso (kg)</Label>
+                  <Label htmlFor="mascotaPeso">Peso (libras)</Label>
                   <Input
                     id="mascotaPeso"
                     type="text"

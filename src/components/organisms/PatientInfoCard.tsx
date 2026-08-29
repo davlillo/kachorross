@@ -6,7 +6,8 @@ import { PawPrint, Camera, Weight, Calendar, Clock, User, Phone, MapPin, AlertCi
 import type { Mascota } from '@/types'
 import { parseDateLocal, formatDateLocal } from '@/lib/utils'
 
-function getAge(birthDate: string) {
+function getAge(birthDate: string | null | undefined) {
+  if (!birthDate) return '—'
   const birth = parseDateLocal(birthDate)
   const today = new Date()
   const years = today.getFullYear() - birth.getFullYear()
@@ -76,8 +77,8 @@ export function PatientInfoCard({ mascota, onSubirFotoPerfil, subiendoFotoPerfil
         </div>
 
         <div className="space-y-3">
-          <InfoRow icon={Weight} label="Peso" value={`${mascota.peso} kg`} />
-          <InfoRow icon={Calendar} label="Nacimiento" value={formatDateLocal(mascota.fechaNacimiento)} />
+          <InfoRow icon={Weight} label="Peso" value={mascota.peso ? `${mascota.peso} lb` : '—'} />
+          <InfoRow icon={Calendar} label="Nacimiento" value={mascota.fechaNacimiento ? formatDateLocal(mascota.fechaNacimiento) : '—'} />
           <InfoRow icon={Clock} label="Edad" value={getAge(mascota.fechaNacimiento)} />
           <InfoRow icon={Calendar} label="Registro" value={formatDateLocal(mascota.fechaRegistro)} />
           <InfoRow icon={User} label="Sexo" value={mascota.sexo === 'macho' ? 'Macho' : 'Hembra'} />

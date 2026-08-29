@@ -1,4 +1,4 @@
-import { createClient } from 'npm:@supabase/supabase-js@2'
+import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,6 +20,40 @@ interface SendEmailPayload {
   useSystemConfig?: boolean
   attachment?: Attachment
   tipoNotificacion?: 'recordatorio' | 'confirmacion' | 'personalizado' | 'receta' | 'invitacion'
+  consultaId?: string
+  mascotaId?: string
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+function isUuid(value?: string | null): value is string {
+  return !!value && UUID_RE.test(value)
+}
+
+async function registrarNotificacion(
+  admin: SupabaseClient,
+  params: {
+    veterinariaId?: string
+    to: string
+    tipo: SendEmailPayload['tipoNotificacion']
+    estado: 'enviado' | 'fallido'
+    codigoError?: string
+    consultaId?: string
+    mascotaId?: string
+  },
+) {
+  if (!isUuid(params.veterinariaId)) return
+
+  await admin.from('notificaciones').insert({
+    veterinaria_id: params.veterinariaId,
+    destinatario_email: params.to,
+    tipo_notificacion: params.tipo ?? 'personalizado',
+    estado: params.estado,
+    codigo_error: params.codigoError ?? null,
+    consulta_id: params.consultaId ?? null,
+    mascota_id: params.mascotaId ?? null,
+    fecha_envio: new Date().toISOString(),
+  })
 }
 
 Deno.serve(async (req) => {
@@ -27,17 +61,19 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+  const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  const admin = createClient(supabaseUrl, serviceRoleKey)
 
+  let payload: SendEmailPayload = { to: '', subject: '' }
+  let tipoLog: NonNullable<SendEmailPayload['tipoNotificacion']> = 'personalizado'
+
+  try {
     const authHeader = req.headers.get('Authorization') ?? ''
     const client = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
     })
-
-    const admin = createClient(supabaseUrl, serviceRoleKey)
 
     const { data: { user: caller }, error: callerError } = await client.auth.getUser()
     if (callerError || !caller) {
@@ -60,9 +96,20 @@ Deno.serve(async (req) => {
       })
     }
 
-    const { veterinariaId, to, subject, text, html, useSystemConfig, attachment, tipoNotificacion }: SendEmailPayload = await req.json()
-    const tipoLog = tipoNotificacion ?? 'personalizado'
+    payload = await req.json()
+    const { veterinariaId, to, subject, text, html, useSystemConfig, attachment, tipoNotificacion, consultaId, mascotaId } = payload
+    tipoLog = tipoNotificacion ?? 'personalizado'
+
     if (!to || !subject || (!text && !html)) {
+      await registrarNotificacion(admin, {
+        veterinariaId,
+        to: to || 'desconocido@local',
+        tipo: tipoLog,
+        estado: 'fallido',
+        codigoError: 'Payload incompleto',
+        consultaId,
+        mascotaId,
+      })
       return new Response(JSON.stringify({ error: 'Payload incompleto' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -75,7 +122,6 @@ Deno.serve(async (req) => {
     let smtpPass: string
     let fromName = 'Sistema'
     let fromEmail = ''
-    let logVetId = veterinariaId || 'system'
 
     if (useSystemConfig || !veterinariaId) {
       smtpUser = Deno.env.get('SYSTEM_SMTP_USER') || ''
@@ -84,6 +130,15 @@ Deno.serve(async (req) => {
       fromEmail = smtpUser
 
       if (!smtpUser || !smtpPass) {
+        await registrarNotificacion(admin, {
+          veterinariaId,
+          to,
+          tipo: tipoLog,
+          estado: 'fallido',
+          codigoError: 'SMTP del sistema no configurado',
+          consultaId,
+          mascotaId,
+        })
         return new Response(JSON.stringify({ error: 'SMTP del sistema no configurado. Agrega SYSTEM_SMTP_USER y SYSTEM_SMTP_PASS en Edge Functions secrets.' }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -97,6 +152,15 @@ Deno.serve(async (req) => {
         .maybeSingle()
 
       if (configError || !emailConfig || !emailConfig.activo) {
+        await registrarNotificacion(admin, {
+          veterinariaId,
+          to,
+          tipo: tipoLog,
+          estado: 'fallido',
+          codigoError: 'Configuración de correo no encontrada o inactiva',
+          consultaId,
+          mascotaId,
+        })
         return new Response(JSON.stringify({ error: 'Configuración de correo no encontrada o inactiva' }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -126,7 +190,7 @@ Deno.serve(async (req) => {
       auth: { user: smtpUser, pass: smtpPass },
     })
 
-    const mailOptions: any = {
+    const mailOptions: Record<string, unknown> = {
       from: `"${fromName}" <${fromEmail}>`,
       to,
       subject,
@@ -136,9 +200,7 @@ Deno.serve(async (req) => {
     if (html) mailOptions.html = html
 
     if (html) {
-      mailOptions.headers = {
-        'Content-Language': 'es',
-      }
+      mailOptions.headers = { 'Content-Language': 'es' }
     }
 
     if (attachment) {
@@ -152,12 +214,13 @@ Deno.serve(async (req) => {
 
     await transporter.sendMail(mailOptions)
 
-    await admin.from('notificaciones').insert({
-      veterinaria_id: logVetId,
-      destinatario_email: to,
-      tipo_notificacion: tipoLog,
+    await registrarNotificacion(admin, {
+      veterinariaId,
+      to,
+      tipo: tipoLog,
       estado: 'enviado',
-      fecha_envio: new Date().toISOString(),
+      consultaId,
+      mascotaId,
     })
 
     return new Response(JSON.stringify({ ok: true }), {
@@ -168,19 +231,17 @@ Deno.serve(async (req) => {
     const errorMessage = error instanceof Error ? error.message : 'Error inesperado'
 
     try {
-      const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-      const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-      const fallbackClient = createClient(supabaseUrl, serviceRoleKey)
-      await fallbackClient.from('notificaciones').insert({
-        veterinaria_id: 'system',
-        destinatario_email: 'unknown',
-        tipo_notificacion: 'personalizado',
+      await registrarNotificacion(admin, {
+        veterinariaId: payload.veterinariaId,
+        to: payload.to || 'desconocido@local',
+        tipo: tipoLog,
         estado: 'fallido',
-        codigo_error: errorMessage,
-        fecha_envio: new Date().toISOString(),
+        codigoError: errorMessage,
+        consultaId: payload.consultaId,
+        mascotaId: payload.mascotaId,
       })
     } catch {
-      // No podemos hacer nada si falla el log
+      // Si falla el log, igual devolvemos el error original
     }
 
     return new Response(JSON.stringify({ error: errorMessage }), {

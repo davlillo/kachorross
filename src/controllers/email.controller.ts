@@ -103,6 +103,8 @@ export class EmailController {
     propietarioEmail: string
     propietarioNombre: string
     mascotaNombre: string
+    mascotaId?: string
+    consultaId?: string
     fecha: string
     pdfBase64: string
   }): Promise<{ ok: boolean; error?: string }> {
@@ -140,6 +142,9 @@ ${params.veterinariaNombre}
           to: params.propietarioEmail,
           subject: `${params.veterinariaNombre} - Tratamiento para ${params.mascotaNombre}`,
           text,
+          tipoNotificacion: 'receta',
+          consultaId: params.consultaId,
+          mascotaId: params.mascotaId,
           attachment: {
             filename: `tratamiento_${params.mascotaNombre.replace(/\s+/g, '_')}.pdf`,
             content: params.pdfBase64,
@@ -168,6 +173,7 @@ ${params.veterinariaNombre}
         to: config.smtpUser,
         subject: 'Prueba de conexión SMTP',
         html: '<p>Si recibes este correo, la configuración SMTP funciona correctamente.</p>',
+        tipoNotificacion: 'personalizado',
       },
     })
 

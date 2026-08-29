@@ -7,9 +7,12 @@ import { colorEvento, type TipoEvento } from '@/data/eventosData'
 import type { EventoAgenda } from '@/controllers/agenda.controller'
 import {
   Calendar,
+  Check,
   ChevronLeft,
   ChevronRight,
+  Loader2,
   PawPrint,
+  Syringe,
   Trash2,
   X,
 } from 'lucide-react'
@@ -28,6 +31,8 @@ interface AgendaDiaPanelProps {
   eventos: EventoAgenda[]
   isLoading?: boolean
   onEliminar?: (id: string, origen: string) => void
+  onMarcarVacuna?: (evento: EventoAgenda) => void
+  idEnProceso?: string | null
 }
 
 function claveMascota(ev: EventoAgenda): string {
@@ -74,6 +79,8 @@ export function AgendaDiaPanel({
   eventos,
   isLoading,
   onEliminar,
+  onMarcarVacuna,
+  idEnProceso,
 }: AgendaDiaPanelProps) {
   const [indice, setIndice] = useState(0)
 
@@ -95,6 +102,8 @@ export function AgendaDiaPanel({
   const irSiguiente = () => setIndice(i => (i + 1) % totalGrupos)
 
   const eventosManuales = grupo?.eventos.filter(ev => ev.origen === 'evento') ?? []
+  const vacunasGrupo = grupo?.eventos.filter(ev => ev.origen === 'vacuna') ?? []
+  const hayTodos = Boolean(onMarcarVacuna && vacunasGrupo.length > 0)
 
   return (
     <div
@@ -102,7 +111,7 @@ export function AgendaDiaPanel({
       onClick={onClose}
     >
       <div
-        className="relative w-[min(88%,220px)] aspect-square rounded-2xl border border-border/80 bg-card shadow-xl animate-in fade-in zoom-in-95 duration-200 flex flex-col overflow-hidden"
+        className={`relative w-[min(88%,230px)] ${hayTodos ? 'max-h-[96%]' : 'aspect-square'} rounded-2xl border border-border/80 bg-card shadow-xl animate-in fade-in zoom-in-95 duration-200 flex flex-col overflow-hidden`}
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-3 py-2 border-b border-border/60 shrink-0">
@@ -125,7 +134,7 @@ export function AgendaDiaPanel({
           </button>
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-center px-3 min-h-0 relative">
+        <div className="flex-1 flex flex-col items-center justify-center px-3 min-h-0 relative overflow-y-auto">
           {isLoading ? (
             <div className="flex flex-col items-center gap-2 text-muted-foreground">
               <Calendar className="w-6 h-6 animate-pulse" />
@@ -150,16 +159,16 @@ export function AgendaDiaPanel({
               )}
 
               <div className="flex flex-col items-center text-center px-5 w-full">
-                <div className="relative mb-2.5">
+                <div className={`relative ${hayTodos ? 'mb-1.5' : 'mb-2.5'}`}>
                   {grupo.mascotaFoto ? (
                     <img
                       src={grupo.mascotaFoto}
                       alt={grupo.mascota}
-                      className="w-[72px] h-[72px] rounded-full object-cover ring-2 ring-white shadow-md"
+                      className={`${hayTodos ? 'w-12 h-12' : 'w-[72px] h-[72px]'} rounded-full object-cover ring-2 ring-white shadow-md`}
                     />
                   ) : (
-                    <div className="w-[72px] h-[72px] rounded-full bg-brand-primary/10 ring-2 ring-white shadow-md flex items-center justify-center">
-                      <PawPrint className="w-8 h-8 text-brand-primary/60" />
+                    <div className={`${hayTodos ? 'w-12 h-12' : 'w-[72px] h-[72px]'} rounded-full bg-brand-primary/10 ring-2 ring-white shadow-md flex items-center justify-center`}>
+                      <PawPrint className={hayTodos ? 'w-6 h-6 text-brand-primary/60' : 'w-8 h-8 text-brand-primary/60'} />
                     </div>
                   )}
                 </div>
@@ -194,6 +203,41 @@ export function AgendaDiaPanel({
             </>
           )}
         </div>
+
+        {grupo && hayTodos && (
+          <div className="shrink-0 border-t border-border/40 px-3 py-2">
+            <p className="text-[8px] font-bold uppercase tracking-wide text-muted-foreground text-center mb-1">
+              Vacunas por aplicar · toca ✓
+            </p>
+            <div className="space-y-1 max-h-[76px] overflow-y-auto">
+              {vacunasGrupo.map(ev => {
+                const enProceso = idEnProceso === ev.id
+                return (
+                  <button
+                    key={ev.id}
+                    type="button"
+                    disabled={enProceso || idEnProceso != null}
+                    onClick={() => onMarcarVacuna!(ev)}
+                    title="Marcar como aplicada"
+                    className="group w-full flex items-center gap-1.5 rounded-md border border-border/60 bg-muted/40 px-1.5 py-1 text-left hover:bg-muted transition-colors disabled:opacity-60"
+                  >
+                    <span className="w-3 h-3 rounded-[4px] border border-muted-foreground/50 bg-background shrink-0 flex items-center justify-center">
+                      {enProceso ? (
+                        <Loader2 className="w-2.5 h-2.5 animate-spin text-brand-primary" />
+                      ) : (
+                        <Check className="w-2.5 h-2.5 text-muted-foreground/40 group-hover:text-brand-primary transition-colors" />
+                      )}
+                    </span>
+                    <Syringe className="w-2.5 h-2.5 shrink-0 text-emerald-500" />
+                    <span className="truncate text-[9px] font-medium">
+                      {ev.titulo.replace(/^Vacuna:\s*/, '')}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {grupo && (
           <div className="shrink-0 px-3 pb-3 pt-2 flex items-center justify-center gap-2 border-t border-border/40">

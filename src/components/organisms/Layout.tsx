@@ -222,7 +222,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <User className="w-4 h-4 mr-2" />
                 Perfil
               </DropdownMenuItem>
-              {user.rol !== 'recepcion' && user.rol !== 'super_admin' && (
+              {user.rol === 'doctora' && (
                 <DropdownMenuItem onClick={() => navigate('/historial-ventas')}>
                   <History className="w-4 h-4 mr-2" />
                   Historial de Ventas
@@ -230,6 +230,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               )}
               {user.rol === 'admin' && (
                 <>
+                  <DropdownMenuItem onClick={() => navigate('/admin/notificaciones')}>
+                    <Bell className="w-4 h-4 mr-2" />
+                    Historial de Notificaciones
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/admin/usuarios')}>
                     <Users className="w-4 h-4 mr-2" />
                     Gestión de Usuarios

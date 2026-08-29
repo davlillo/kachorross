@@ -21,6 +21,8 @@ import { PatientInfoCard } from '@/components/organisms/PatientInfoCard';
 import { ProximasCitasCard } from '@/components/molecules';
 import { EmptyState } from '@/components/molecules/EmptyState';
 import { VerConsultaDialog } from '@/components/organisms/VerConsultaDialog';
+import { VerVacunaDialog } from '@/components/organisms/VerVacunaDialog';
+import { VerDesparasitacionDialog } from '@/components/organisms/VerDesparasitacionDialog';
 import {
   Stethoscope, Syringe, Camera, FileText, Plus, ArrowLeft,
   Pencil, Trash2, AlertTriangle, Filter, CalendarDays,
@@ -37,6 +39,7 @@ import {
   TELEFONO_PLACEHOLDER,
 } from '@/lib/input-validators';
 import { cn, parseDateLocal, formatDateLocal, todayLocal } from '@/lib/utils';
+import { colorEvento } from '@/data/eventosData';
 
 const especies: { value: Mascota['especie']; label: string }[] = [
   { value: 'perro', label: 'Perro' },
@@ -62,6 +65,32 @@ interface CartillaPageData {
   desparasitaciones: Desparasitacion[];
 }
 
+type TipoHistorial = 'consulta' | 'vacuna' | 'desparasitacion';
+
+interface EntradaHistorial {
+  key: string;
+  tipo: TipoHistorial;
+  fecha: string;
+  fechaLabel: string;
+  resumen: string;
+  consulta?: Consulta;
+  vacuna?: Vacuna;
+  desparasitacion?: Desparasitacion;
+}
+
+const OPCIONES_FILTRO_TIPO: { value: 'todos' | TipoHistorial; label: string }[] = [
+  { value: 'todos', label: 'Todos' },
+  { value: 'consulta', label: 'Consultas' },
+  { value: 'vacuna', label: 'Vacunas' },
+  { value: 'desparasitacion', label: 'Desparasitaciones' },
+];
+
+const TIPO_HISTORIAL_META: Record<TipoHistorial, { label: string; evento: keyof typeof colorEvento }> = {
+  consulta: { label: 'Consulta general', evento: 'control' },
+  vacuna: { label: 'Vacuna', evento: 'vacuna' },
+  desparasitacion: { label: 'Desparasitación', evento: 'desparasitante' },
+};
+
 function EmptySlot() {
   return (
     <div className="border-b border-dashed border-gray-300 py-2.5 px-3 min-h-[56px] flex items-center">
@@ -72,22 +101,29 @@ function EmptySlot() {
 
 function VacunaSlot({ vacuna }: { vacuna: Vacuna }) {
   return (
-    <div className="border-b border-gray-200 py-2.5 px-3 flex items-center gap-3 hover:bg-brand-primary/5 transition-colors">
-      <div className="w-6 h-6 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0">
-        <Syringe className="w-3 h-3 text-brand-primary" />
-      </div>
+    <div className="border-b border-gray-200 py-2.5 px-3 hover:bg-brand-primary/5 transition-colors">
       <div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <Syringe className="w-3.5 h-3.5 text-brand-primary shrink-0" />
           <span className="font-semibold text-sm text-gray-800">{vacuna.nombre}</span>
         </div>
         <div className="mt-0.5 flex items-center gap-2 flex-wrap text-[9px] font-mono text-gray-500">
           <span className="bg-gray-100 px-1.5 py-0.5 rounded">Lote: {vacuna.lote ?? 'N/A'}</span>
           <span className="bg-gray-100 px-1.5 py-0.5 rounded">Dosis: {vacuna.dosis ?? 'N/A'}</span>
         </div>
-        <div className="flex items-center gap-3 text-[11px] text-gray-500">
+        <div className="mt-0.5 flex items-center gap-3 flex-wrap text-[11px] text-gray-500">
           <span>{formatDateShort(vacuna.fechaAplicacion)}</span>
           {vacuna.proximaDosis && <span className="text-amber-600">→ {formatDateShort(vacuna.proximaDosis)}</span>}
         </div>
+        {vacuna.aplicadaPor && (
+          <div
+            className="mt-0.5 flex min-w-0 items-center gap-1 text-[11px] text-brand-primary/80"
+            title={`Médico encargado: ${vacuna.aplicadaPor}`}
+          >
+            <Stethoscope className="w-3 h-3 shrink-0" />
+            <span className="truncate">Médico: {vacuna.aplicadaPor}</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -110,6 +146,49 @@ function DesparasitacionSlot({ desparasitacion }: { desparasitacion: Desparasita
           <span>{formatDateShort(desparasitacion.fechaAplicacion)}</span>
           {desparasitacion.fechaProximoTratamiento && <span className="text-amber-600">→ {formatDateShort(desparasitacion.fechaProximoTratamiento)}</span>}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function HistorialEntry({ entrada, onOpen }: { entrada: EntradaHistorial; onOpen?: () => void }) {
+  const meta = TIPO_HISTORIAL_META[entrada.tipo];
+  const estilo = colorEvento[meta.evento];
+  const Icon = entrada.tipo === 'consulta' ? Stethoscope : entrada.tipo === 'vacuna' ? Syringe : Pill;
+  const esConsulta = entrada.tipo === 'consulta';
+
+  return (
+    <div
+      onClick={onOpen}
+      className={cn(
+        'p-4 rounded-xl border border-border border-l-4 bg-card shadow-sm transition-colors',
+        estilo.border,
+        onOpen && 'cursor-pointer hover:bg-muted/40',
+      )}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3 min-w-0">
+          <div className={cn('w-9 h-9 rounded-full flex items-center justify-center shrink-0', estilo.bg)}>
+            <Icon className={cn('w-4 h-4', estilo.text)} />
+          </div>
+          <div className="min-w-0">
+            <span className={cn('inline-block text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full', estilo.bg, estilo.text)}>
+              {meta.label}
+            </span>
+            <p className="font-semibold text-sm mt-1.5 text-foreground break-words">{entrada.resumen}</p>
+            {esConsulta && entrada.consulta && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {entrada.consulta.motivo}
+                {entrada.consulta.estado && (
+                  <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-muted">
+                    {entrada.consulta.estado === 'finalizado' ? 'Finalizado' : 'Pendiente'}
+                  </span>
+                )}
+              </p>
+            )}
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground shrink-0 whitespace-nowrap">{entrada.fechaLabel}</p>
       </div>
     </div>
   );
@@ -237,13 +316,14 @@ export default function ExpedienteDetailPage() {
   // ── Filtros de fecha ─────────────────────────────────────────────────────────
   const [consultaDesde, setConsultaDesde] = useState('');
   const [consultaHasta, setConsultaHasta] = useState('');
+  const [filtroTipo, setFiltroTipo] = useState<'todos' | TipoHistorial>('todos');
 
   // ── Cartilla / Vacunas ────────────────────────────────────────────────────────
   const [activePage, setActivePage] = useState<number | null>(null);
   const [agregarOpen, setAgregarOpen] = useState(false);
   const [agregarTipo, setAgregarTipo] = useState<'vacuna' | 'desparasitacion'>('vacuna');
   const [agregarForm, setAgregarForm] = useState({
-    nombre: '', fechaAplicacion: '', dosis: '', proximaDosis: '', lote: '',
+    nombre: '', fechaAplicacion: '', dosis: '', proximaDosis: '', lote: '', aplicadaPor: '',
     tipo: '', viaAdministracion: '', fechaProximoTratamiento: '',
   });
 
@@ -253,6 +333,8 @@ export default function ExpedienteDetailPage() {
   const [fotoOpen, setFotoOpen] = useState(false);
   const [fotoModo, setFotoModo] = useState<'perfil' | 'evolucion'>('evolucion');
   const [consultaDetalle, setConsultaDetalle] = useState<Consulta | null>(null);
+  const [vacunaDetalle, setVacunaDetalle] = useState<Vacuna | null>(null);
+  const [desparasitacionDetalle, setDesparasitacionDetalle] = useState<Desparasitacion | null>(null);
 
   // ── Subida de fotos ────────────────────────────────────────────────────────────
   const [fotoPendiente, setFotoPendiente] = useState<File | null>(null);
@@ -312,7 +394,8 @@ export default function ExpedienteDetailPage() {
   const getEspecieIcon = (especie: string) =>
     ({ perro: '🐕', gato: '🐱', ave: '🦜', conejo: '🐰', otro: '🐾' }[especie] ?? '🐾');
 
-  const getAge = (birthDate: string) => {
+  const getAge = (birthDate: string | null | undefined) => {
+    if (!birthDate) return '—';
     const birth = parseDateLocal(birthDate);
     const today = new Date();
     const years = today.getFullYear() - birth.getFullYear();
@@ -321,18 +404,58 @@ export default function ExpedienteDetailPage() {
     return `${months} mes${months > 1 ? 'es' : ''}`;
   };
 
-  // ── Consultas filtradas ───────────────────────────────────────────────────────
-  const consultasFiltradas = useMemo(() => {
+  // ── Historial unificado (consultas + vacunas + desparasitaciones) ────────────
+  const historialFiltrado = useMemo<EntradaHistorial[]>(() => {
     if (!expediente) return [];
-    return expediente.consultas
-      .filter(c => {
-        const fecha = new Date(c.fecha);
+
+    const entradas: EntradaHistorial[] = [];
+
+    for (const c of expediente.consultas) {
+      entradas.push({
+        key: `c-${c.id}`,
+        tipo: 'consulta',
+        fecha: c.fecha,
+        fechaLabel: new Date(c.fecha).toLocaleDateString('es-ES', {
+          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+          hour: '2-digit', minute: '2-digit',
+        }),
+        resumen: c.diagnostico || c.motivo,
+        consulta: c,
+      });
+    }
+
+    for (const v of expediente.vacunas) {
+      entradas.push({
+        key: `v-${v.id}`,
+        tipo: 'vacuna',
+        fecha: v.fechaAplicacion,
+        fechaLabel: formatDateShort(v.fechaAplicacion),
+        resumen: v.nombre,
+        vacuna: v,
+      });
+    }
+
+    for (const d of expediente.desparasitaciones) {
+      entradas.push({
+        key: `d-${d.id}`,
+        tipo: 'desparasitacion',
+        fecha: d.fechaAplicacion,
+        fechaLabel: formatDateShort(d.fechaAplicacion),
+        resumen: `${d.tipo} · ${d.viaAdministracion}`,
+        desparasitacion: d,
+      });
+    }
+
+    return entradas
+      .filter(e => {
+        if (filtroTipo !== 'todos' && e.tipo !== filtroTipo) return false;
+        const fecha = new Date(e.fecha);
         if (consultaDesde && fecha < new Date(consultaDesde)) return false;
         if (consultaHasta && fecha > new Date(consultaHasta + 'T23:59:59')) return false;
         return true;
       })
       .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
-  }, [expediente, consultaDesde, consultaHasta, refresh]);
+  }, [expediente, filtroTipo, consultaDesde, consultaHasta]);
 
   // ── Cartilla paginación ──────────────────────────────────────────────────────
   const sortedCartillaVacunas = useMemo(
@@ -383,6 +506,7 @@ export default function ExpedienteDetailPage() {
           dosis: agregarForm.dosis || undefined,
           proximaDosis: agregarForm.proximaDosis || undefined,
           lote: agregarForm.lote || undefined,
+          aplicadaPor: agregarForm.aplicadaPor || undefined,
         });
       } else {
         await vacunaCtrl.crearDesparasitacion({
@@ -393,7 +517,7 @@ export default function ExpedienteDetailPage() {
           fechaProximoTratamiento: agregarForm.fechaProximoTratamiento || undefined,
         });
       }
-      setAgregarForm({ nombre: '', fechaAplicacion: '', dosis: '', proximaDosis: '', lote: '', tipo: '', viaAdministracion: '', fechaProximoTratamiento: '' });
+      setAgregarForm({ nombre: '', fechaAplicacion: '', dosis: '', proximaDosis: '', lote: '', aplicadaPor: '', tipo: '', viaAdministracion: '', fechaProximoTratamiento: '' });
       setAgregarOpen(false);
       setRefresh(r => r + 1);
       toast.success(`Se agregó ${agregarTipo === 'vacuna' ? 'vacuna' : 'desparasitación'} correctamente`);
@@ -409,7 +533,7 @@ export default function ExpedienteDetailPage() {
     setEditNombre(mascota.nombre);
     setEditEspecie(mascota.especie);
     setEditRaza(mascota.raza);
-    setEditFechaNac(mascota.fechaNacimiento);
+    setEditFechaNac(mascota.fechaNacimiento ?? '');
     setEditSexo(mascota.sexo);
     setEditColor(mascota.color ?? '');
     setEditPeso(mascota.peso ? String(mascota.peso) : '');
@@ -433,7 +557,7 @@ export default function ExpedienteDetailPage() {
         nombre: editNombre.trim(),
         especie: editEspecie,
         raza: editRaza.trim(),
-        fechaNacimiento: editFechaNac,
+        fechaNacimiento: editFechaNac || null,
         sexo: editSexo,
         color: editColor.trim(),
         peso: editPeso ? parseFloat(editPeso) : undefined,
@@ -535,7 +659,9 @@ export default function ExpedienteDetailPage() {
               {getEspecieIcon(mascota.especie)} {mascota.nombre}
             </h1>
             <p className="text-muted-foreground">
-              {mascota.raza} • {getAge(mascota.fechaNacimiento)} • {mascota.sexo === 'macho' ? 'Macho' : 'Hembra'}
+              {mascota.raza}
+              {mascota.fechaNacimiento && <> • {getAge(mascota.fechaNacimiento)}</>}
+              {' • '}{mascota.sexo === 'macho' ? 'Macho' : 'Hembra'}
             </p>
           </div>
         </div>
@@ -582,90 +708,65 @@ export default function ExpedienteDetailPage() {
             <TabsContent value="historial" className="mt-4">
               <Card className="border-0 shadow-soft">
                 <CardHeader className="pb-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="space-y-3">
                     <CardTitle className="text-lg">
-                      Consultas Realizadas
-                      <Badge variant="outline" className="ml-2 text-xs font-normal">{consultasFiltradas.length}</Badge>
+                      Historial Médico
+                      <Badge variant="outline" className="ml-2 text-xs font-normal">{historialFiltrado.length}</Badge>
                     </CardTitle>
-                    {/* Filtro fechas */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <CalendarDays className="w-4 h-4 text-muted-foreground shrink-0" />
-                      <Input type="date" value={consultaDesde} onChange={e => setConsultaDesde(e.target.value)}
-                        className="h-8 text-xs w-36" />
-                      <span className="text-xs text-muted-foreground">–</span>
-                      <Input type="date" value={consultaHasta} onChange={e => setConsultaHasta(e.target.value)}
-                        className="h-8 text-xs w-36" />
-                      {(consultaDesde || consultaHasta) && (
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground"
-                          onClick={() => { setConsultaDesde(''); setConsultaHasta(''); }}>
-                          <span aria-hidden="true" className="text-xs leading-none">×</span>
-                        </Button>
-                      )}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      {/* Filtro por tipo */}
+                      <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+                        {OPCIONES_FILTRO_TIPO.map(op => (
+                          <button
+                            key={op.value}
+                            type="button"
+                            onClick={() => setFiltroTipo(op.value)}
+                            className={cn(
+                              'px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap',
+                              filtroTipo === op.value
+                                ? 'bg-white text-foreground shadow-sm'
+                                : 'text-muted-foreground hover:text-foreground',
+                            )}
+                          >
+                            {op.label}
+                          </button>
+                        ))}
+                      </div>
+                      {/* Filtro fechas */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <CalendarDays className="w-4 h-4 text-muted-foreground shrink-0" />
+                        <Input type="date" value={consultaDesde} onChange={e => setConsultaDesde(e.target.value)}
+                          className="h-8 text-xs w-36" />
+                        <span className="text-xs text-muted-foreground">–</span>
+                        <Input type="date" value={consultaHasta} onChange={e => setConsultaHasta(e.target.value)}
+                          className="h-8 text-xs w-36" />
+                        {(consultaDesde || consultaHasta) && (
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground"
+                            onClick={() => { setConsultaDesde(''); setConsultaHasta(''); }}>
+                            <span aria-hidden="true" className="text-xs leading-none">×</span>
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  {consultasFiltradas.length === 0 ? (
-                    <EmptyState icon={consultaDesde || consultaHasta ? Filter : Stethoscope}
-                      message={consultaDesde || consultaHasta ? 'Sin consultas en ese rango de fechas' : 'No hay consultas registradas'} />
+                  {historialFiltrado.length === 0 ? (
+                    <EmptyState
+                      icon={consultaDesde || consultaHasta || filtroTipo !== 'todos' ? Filter : Stethoscope}
+                      message={consultaDesde || consultaHasta || filtroTipo !== 'todos' ? 'Sin resultados para los filtros seleccionados' : 'No hay registros en el historial'} />
                   ) : (
-                    <div className="space-y-4 max-h-[480px] overflow-y-auto pr-1">
-                      {consultasFiltradas.map(consulta => (
-                        <div
-                          key={consulta.id}
-                          className="p-4 rounded-xl bg-muted/50 hover:bg-muted cursor-pointer transition-colors"
-                          onClick={() => setConsultaDetalle(consulta)}
-                        >
-                          <div className="flex items-start justify-between mb-3">
-                            <div>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <h4 className="font-semibold">{consulta.motivo}</h4>
-                                <Badge
-                                  variant={consulta.estado === 'finalizado' ? 'default' : 'secondary'}
-                                  className={consulta.estado === 'finalizado' ? 'bg-brand-primary/50' : 'bg-amber-500 text-amber-900'}
-                                >
-                                  {consulta.estado === 'finalizado' ? 'Finalizado' : 'Pendiente'}
-                                </Badge>
-                              </div>
-                              <p className="text-sm text-muted-foreground">
-                                {new Date(consulta.fecha).toLocaleDateString('es-ES', {
-                                  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-                                  hour: '2-digit', minute: '2-digit'
-                                })}
-                              </p>
-                            </div>
-                            <div className="text-right shrink-0">
-                              <p className="font-bold text-lg">${consulta.total.toFixed(2)}</p>
-                              <p className="text-xs text-muted-foreground">{consulta.doctora}</p>
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                            <div>
-                              <p className="text-xs font-medium text-muted-foreground mb-1">Síntomas</p>
-                              <p className="text-sm">{consulta.sintomas}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs font-medium text-muted-foreground mb-1">Diagnóstico</p>
-                              <p className="text-sm">{consulta.diagnostico}</p>
-                            </div>
-                          </div>
-                          <div className="mt-3">
-                            <p className="text-xs font-medium text-muted-foreground mb-1">Tratamiento</p>
-                            <p className="text-sm">{consulta.tratamiento}</p>
-                          </div>
-                          {consulta.detalles.length > 0 && (
-                            <div className="mt-3 pt-3 border-t border-border">
-                              <p className="text-xs font-medium text-muted-foreground mb-2">Servicios/Productos</p>
-                              <div className="flex flex-wrap gap-2">
-                                {consulta.detalles.map(d => (
-                                  <Badge key={d.id} variant="outline" className="text-xs">
-                                    {d.producto.nombre} x{d.cantidad}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
+                    <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
+                      {historialFiltrado.map(entrada => (
+                        <HistorialEntry
+                          key={entrada.key}
+                          entrada={entrada}
+                          onOpen={() => {
+                            if (entrada.consulta) setConsultaDetalle(entrada.consulta);
+                            else if (entrada.vacuna) setVacunaDetalle(entrada.vacuna);
+                            else if (entrada.desparasitacion) setDesparasitacionDetalle(entrada.desparasitacion);
+                          }}
+                        />
                       ))}
                     </div>
                   )}
@@ -677,6 +778,18 @@ export default function ExpedienteDetailPage() {
               open={!!consultaDetalle}
               onOpenChange={(v) => { if (!v) setConsultaDetalle(null) }}
               consulta={consultaDetalle}
+            />
+
+            <VerVacunaDialog
+              open={!!vacunaDetalle}
+              onOpenChange={(v) => { if (!v) setVacunaDetalle(null) }}
+              vacuna={vacunaDetalle}
+            />
+
+            <VerDesparasitacionDialog
+              open={!!desparasitacionDetalle}
+              onOpenChange={(v) => { if (!v) setDesparasitacionDetalle(null) }}
+              desparasitacion={desparasitacionDetalle}
             />
 
             {/* ── Tab: Vacunas (Cartilla) ── */}
@@ -916,7 +1029,7 @@ export default function ExpedienteDetailPage() {
               <Input value={editColor} onChange={e => setEditColor(e.target.value)} />
             </div>
             <div className="space-y-1">
-              <Label>Peso (kg)</Label>
+              <Label>Peso (libras)</Label>
               <Input
                 type="text"
                 inputMode="decimal"
@@ -1108,6 +1221,10 @@ export default function ExpedienteDetailPage() {
                         ml
                       </span>
                     </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Médico Encargado</Label>
+                    <Input placeholder="Nombre del médico que aplicó" value={agregarForm.aplicadaPor} onChange={e => setAgregarForm(prev => ({ ...prev, aplicadaPor: e.target.value }))} />
                   </div>
                   <div className="space-y-1.5">
                     <Label>Fecha de Aplicación *</Label>

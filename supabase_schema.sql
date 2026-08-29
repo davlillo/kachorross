@@ -129,7 +129,7 @@ CREATE TABLE IF NOT EXISTS mascotas (
     nombre VARCHAR(50) NOT NULL,
     especie VARCHAR(20) NOT NULL CHECK (especie IN ('perro', 'gato', 'ave', 'conejo', 'otro')),
     raza VARCHAR(50) NOT NULL,
-    fecha_nacimiento DATE NOT NULL,
+    fecha_nacimiento DATE,
     sexo VARCHAR(10) NOT NULL CHECK (sexo IN ('macho', 'hembra')),
     color VARCHAR(50),
     peso DECIMAL(5,2),
@@ -216,6 +216,7 @@ CREATE TABLE IF NOT EXISTS vacunas (
     lote VARCHAR(50),
     fecha_proxima_dosis DATE,
     consulta_id UUID REFERENCES consultas(id) ON DELETE SET NULL,
+    aplicada_por VARCHAR(100),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
