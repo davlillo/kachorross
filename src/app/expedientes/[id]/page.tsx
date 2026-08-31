@@ -119,7 +119,7 @@ function VacunaSlot({ vacuna }: { vacuna: Vacuna }) {
         {vacuna.aplicadaPor && (
           <div
             className="mt-0.5 flex min-w-0 items-center gap-1 text-[11px] text-brand-primary/80"
-            title={`Médico encargado: ${vacuna.aplicadaPor}`}
+            title={`Médico responsable: ${vacuna.aplicadaPor}`}
           >
             <Stethoscope className="w-3 h-3 shrink-0" />
             <span className="truncate">Médico: {vacuna.aplicadaPor}</span>
@@ -214,7 +214,7 @@ function HistorialEntry({
             {medico && (
               <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                 <Stethoscope className="w-3 h-3 shrink-0" />
-                {entrada.tipo === 'vacuna' ? 'Médico encargado' : 'Médico responsable'}: {medico}
+                Médico responsable: {medico}
               </p>
             )}
           </div>
@@ -1335,7 +1335,7 @@ export default function ExpedienteDetailPage() {
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label>Médico Encargado</Label>
+                    <Label>Médico Responsable</Label>
                     <Input placeholder="Nombre del médico que aplicó" value={agregarForm.aplicadaPor} onChange={e => setAgregarForm(prev => ({ ...prev, aplicadaPor: e.target.value }))} />
                   </div>
                   <div className="space-y-1.5">

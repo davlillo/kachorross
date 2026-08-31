@@ -11,7 +11,7 @@ function etiquetaFecha(fecha: string): string {
   const manana = new Date(parseDateLocal(hoy))
   manana.setDate(manana.getDate() + 1)
   const mananaKey = manana.toISOString().slice(0, 10)
-  if (fecha === mananaKey) return 'manana'
+  if (fecha === mananaKey) return 'mañana'
   return formatDateLocal(fecha)
 }
 

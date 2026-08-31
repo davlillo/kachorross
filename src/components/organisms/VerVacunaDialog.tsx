@@ -81,7 +81,7 @@ export function VerVacunaDialog({ open, onOpenChange, vacuna }: VerVacunaDialogP
                 <Syringe className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                 <Stethoscope className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                 <div className="min-w-0">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Médico encargado</p>
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Médico responsable</p>
                   <p className="text-sm mt-1">{vacuna.aplicadaPor}</p>
                 </div>
               </div>
