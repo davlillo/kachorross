@@ -90,10 +90,7 @@ export function DetailRecepcionDialog({
           pdfBase64,
         })
         if (!r.ok) {
-          const msg = r.error?.includes('non-2xx')
-            ? 'La función de correo no está disponible. Despliega la Edge Function send-email en Supabase.'
-            : r.error ?? 'Puede configurar SMTP en Configuración.'
-          throw new Error(msg)
+          throw new Error(r.error ?? 'Puede configurar SMTP en Configuración.')
         }
 
         if (enviarRecordatorio && proximaCita) {

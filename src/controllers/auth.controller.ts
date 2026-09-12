@@ -1,5 +1,6 @@
 import type { Perfil } from '@/types'
 import { supabase } from '@/supabase/client'
+import { mensajeErrorEdgeFunction } from '@/lib/edgeFunctionError'
 
 let instance: AuthController | null = null
 
@@ -263,11 +264,7 @@ export class AuthController {
     })
 
     if (fnError) {
-      const msg = fnError.message?.toLowerCase() ?? ''
-      if (msg.includes('not found') || msg.includes('404')) {
-        throw new Error('La función admin-create-user no está desplegada en Supabase.')
-      }
-      throw new Error(fnError.message || 'No se pudo crear usuario desde función admin.')
+      throw new Error(await mensajeErrorEdgeFunction(fnError, 'No se pudo crear usuario desde función admin.'))
     }
 
     if (!fnData || typeof fnData !== 'object' || !('perfil' in fnData)) {
@@ -299,11 +296,7 @@ export class AuthController {
     })
 
     if (fnError) {
-      const msg = fnError.message?.toLowerCase() ?? ''
-      if (msg.includes('not found') || msg.includes('404')) {
-        throw new Error('La función admin-create-user no está desplegada en Supabase.')
-      }
-      throw new Error(fnError.message || 'No se pudo actualizar usuario.')
+      throw new Error(await mensajeErrorEdgeFunction(fnError, 'No se pudo actualizar usuario.'))
     }
 
     if (!fnData || typeof fnData !== 'object' || !('perfil' in fnData)) {
@@ -326,11 +319,7 @@ export class AuthController {
     })
 
     if (fnError) {
-      const msg = fnError.message?.toLowerCase() ?? ''
-      if (msg.includes('not found') || msg.includes('404')) {
-        throw new Error('La función admin-create-user no está desplegada en Supabase.')
-      }
-      throw new Error(fnError.message || 'No se pudo eliminar usuario.')
+      throw new Error(await mensajeErrorEdgeFunction(fnError, 'No se pudo eliminar usuario.'))
     }
 
     if (currentUser?.id === id) this.clearCache()
@@ -349,11 +338,7 @@ export class AuthController {
     })
 
     if (fnError) {
-      const msg = fnError.message?.toLowerCase() ?? ''
-      if (msg.includes('not found') || msg.includes('404')) {
-        throw new Error('La función admin-create-user no está desplegada en Supabase.')
-      }
-      throw new Error(fnError.message || 'No se pudo reenviar la invitación.')
+      throw new Error(await mensajeErrorEdgeFunction(fnError, 'No se pudo reenviar la invitación.'))
     }
   }
 }

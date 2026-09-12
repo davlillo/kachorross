@@ -354,7 +354,13 @@ export default function ExpedienteDetailPage() {
     const load = async () => {
       if (!id) return;
       try {
-        setIsLoading(true);
+        // Solo mostramos el loader de pagina completa en la carga inicial.
+        // Un refresh (subir foto, editar, etc.) con expediente ya cargado no
+        // debe desmontar el arbol: si hay un Dialog abierto con estado propio
+        // (p. ej. la galeria de fotos de una consulta), perderlo cierra el
+        // modal solo y el usuario ve "se subio una sola foto" cuando en
+        // realidad cada subida funciono pero el modal se cerraba en el acto.
+        setIsLoading(prevLoading => (expediente ? prevLoading : true));
         setLoadError(null);
         const data = await ctrl.getExpedienteById(id);
         setExpediente(data);
@@ -365,6 +371,7 @@ export default function ExpedienteDetailPage() {
       }
     };
     void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, ctrl, refresh]);
 
   // ── Filtros de fecha ─────────────────────────────────────────────────────────
