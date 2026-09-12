@@ -6,6 +6,7 @@ import {
 } from '@/lib/fechaAgenda'
 import { buildRecordatorioEmail } from '@/lib/emailRecordatorio'
 import { textoRecordatorioSeguimiento } from '@/lib/tipoSeguimiento'
+import { mensajeErrorEdgeFunction } from '@/lib/edgeFunctionError'
 import type { EmailConfig } from '@/types'
 
 const GMAIL_HOST = 'smtp.gmail.com'
@@ -155,7 +156,7 @@ ${params.veterinariaNombre}
       })
 
       if (fnError) {
-        return { ok: false, error: fnError.message }
+        return { ok: false, error: await mensajeErrorEdgeFunction(fnError, 'No se pudo enviar el correo.') }
       }
 
       return { ok: true }
@@ -179,7 +180,7 @@ ${params.veterinariaNombre}
     })
 
     if (fnError) {
-      return { ok: false, error: fnError.message }
+      return { ok: false, error: await mensajeErrorEdgeFunction(fnError, 'Falló la prueba de conexión SMTP.') }
     }
 
     return { ok: true }
@@ -239,10 +240,7 @@ ${params.veterinariaNombre}
       })
 
       if (fnError) {
-        const msg = fnError.message?.includes('non-2xx')
-          ? 'No se pudo enviar el recordatorio. Verifica que send-email esté desplegada en Supabase.'
-          : fnError.message
-        return { ok: false, error: msg }
+        return { ok: false, error: await mensajeErrorEdgeFunction(fnError, 'No se pudo enviar el recordatorio.') }
       }
 
       return { ok: true }
@@ -270,10 +268,7 @@ ${params.veterinariaNombre}
       const { data, error } = await supabase.functions.invoke('send-reminders', { body: {} })
 
       if (error) {
-        const msg = error.message?.includes('Failed to send') || error.message?.includes('non-2xx')
-          ? 'La función send-reminders no está desplegada en Supabase. Crea/despliega la Edge Function o usa el recordatorio al terminar la consulta en recepción.'
-          : error.message
-        return { ok: false, error: msg }
+        return { ok: false, error: await mensajeErrorEdgeFunction(error, 'No se pudieron enviar los recordatorios.') }
       }
 
       const result = data as {
