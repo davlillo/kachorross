@@ -179,7 +179,7 @@ El sistema está diseñado para funcionar en:
 
 ## 📝 Licencia
 
-Este proyecto fue desarrollado para fines educativos en la materia de Diseño de Sistemas I de la Universidad Evangelica de El Salvador (UES).
+Este proyecto fue desarrollado para fines educativos en la materia de Diseño de Sistemas I de la Universidad de El Salvador (UES).
 
 ---
 
