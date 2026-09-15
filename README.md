@@ -77,9 +77,9 @@ El sistema incluye datos simulados para probar todas las funcionalidades (usuari
 
 | Rol | Email | Contraseña |
 |-----|-------|------------|
-| Doctora | doctora@kachorros.com | 123456 |
-| Recepción | recepcion@kachorros.com | 123456 |
-| Admin | admin@kachorros.com | 123456 |
+| Doctora | doctora@kachorros.com | admin1234* |
+| Recepción | recepcion@kachorros.com | admin1234* |
+| Admin | admin@kachorros.com | admin1234* |
 
 Con Supabase local (Docker), la migración inicial crea un administrador real para entrar a la app:
 
