@@ -230,18 +230,9 @@ export class MascotaController {
     const veterinariaId = await this.getVeterinariaId()
     if (!veterinariaId) return undefined
 
-    const mascota =
-      (await this.getById(id)) ??
-      (await (async () => {
-        const { data, error } = await supabase
-          .from('mascotas')
-          .select('id,nombre,especie,raza,fecha_nacimiento,sexo,color,peso,foto,alergias,notas_especiales,fecha_registro,veterinaria_id,propietarios(id,nombre,telefono,email,direccion,veterinaria_id)')
-          .eq('id', id.replace('exp-', ''))
-          .eq('veterinaria_id', veterinariaId)
-          .maybeSingle()
-        if (error) throw new Error(`No se pudo cargar expediente: ${error.message}`)
-        return data ? this.mapMascota(data) : undefined
-      })())
+    // Los enlaces pueden recibir el ID de mascota o el ID compuesto del expediente.
+    const mascotaId = id.startsWith('exp-') ? id.slice(4) : id
+    const mascota = await this.getById(mascotaId)
 
     if (!mascota) return undefined
 
