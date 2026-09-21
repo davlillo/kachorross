@@ -137,6 +137,8 @@ export default function NuevaConsultaPage() {
         detalles,
         total,
       });
+      setProximaCita('');
+      setTipoSeguimiento('control');
       navigate('/recepcion');
     } catch (err) {
       setIsSaving(false);
