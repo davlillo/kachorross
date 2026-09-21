@@ -43,9 +43,12 @@ const especieColors: Record<string, string> = {
 };
 
 const filtrosEspecie = [
-  { label: 'Todos', value: 'todos', activeClass: 'bg-brand-primary' },
-  { label: '🐕 Perros', value: 'perro', activeClass: 'bg-blue-500' },
-  { label: '🐱 Gatos', value: 'gato', activeClass: 'bg-pink-500' },
+  { label: 'Todas las especies', value: 'todos' },
+  { label: 'Perro', value: 'perro' },
+  { label: 'Gato', value: 'gato' },
+  { label: 'Ave', value: 'ave' },
+  { label: 'Conejo', value: 'conejo' },
+  { label: 'Otro', value: 'otro' },
 ];
 
 export default function ExpedientesPage() {
@@ -105,6 +108,7 @@ export default function ExpedientesPage() {
         filters={filtrosEspecie}
         currentFilter={filtroEspecie}
         onFilterChange={setFiltroEspecie}
+        filterVariant="select"
       />
 
       <Card className="border-0 shadow-soft overflow-hidden">

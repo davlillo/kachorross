@@ -4,7 +4,7 @@ import { sanitizeHTML } from '@/lib/sanitize'
 
 function buildHtml(tratamiento: string, logoUrl?: string): string {
   const logoHtml = logoUrl
-    ? `<img src="${logoUrl}" alt="Logo" class="logo-img" />`
+    ? `<img src="${logoUrl}" alt="Logo" crossorigin="anonymous" class="logo-img" />`
     : '';
 
   const hoy = new Date();
@@ -114,18 +114,48 @@ function base64FromArrayBuffer(buf: ArrayBuffer): string {
   return btoa(binary)
 }
 
+async function convertirImagenADataUrl(url: string): Promise<string> {
+  const response = await fetch(url, { mode: 'cors' })
+  if (!response.ok) throw new Error(`No se pudo cargar el logo (${response.status})`)
+
+  const blob = await response.blob()
+  return await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result))
+    reader.onerror = () => reject(reader.error ?? new Error('No se pudo leer el logo'))
+    reader.readAsDataURL(blob)
+  })
+}
+
 export async function generarPdfTratamiento(
   tratamiento: string,
   logoUrl?: string,
 ): Promise<string> {
+  let logoDataUrl: string | undefined
+  if (logoUrl) {
+    try {
+      logoDataUrl = await convertirImagenADataUrl(logoUrl)
+    } catch (error) {
+      console.warn('No se pudo preparar el logo para el PDF:', error)
+    }
+  }
+
   const container = document.createElement('div')
   container.style.cssText = 'position:fixed;top:0;left:0;width:800px;opacity:0;pointer-events:none;z-index:-1;'
-  container.innerHTML = buildHtml(tratamiento, logoUrl)
+  container.innerHTML = buildHtml(tratamiento, logoDataUrl)
   document.body.appendChild(container)
 
   try {
     const el = container.querySelector('.pdf-ka-container') as HTMLElement
     el.offsetHeight
+
+    const logo = container.querySelector('.logo-img') as HTMLImageElement | null
+    if (logo && !logo.complete) {
+      await new Promise<void>((resolve) => {
+        logo.addEventListener('load', () => resolve(), { once: true })
+        logo.addEventListener('error', () => resolve(), { once: true })
+      })
+    }
 
     const canvas = await html2canvas(el, {
       scale: 2,

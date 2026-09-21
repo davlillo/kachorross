@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@/components/atoms/ui/card'
 import { Input } from '@/components/atoms/ui/input'
 import { Button } from '@/components/atoms/ui/button'
-import { Search } from 'lucide-react'
+import { ChevronDown, Search } from 'lucide-react'
 
 interface FilterOption {
   label: string
@@ -17,9 +17,10 @@ interface SearchBarProps {
   filters?: FilterOption[]
   currentFilter?: string
   onFilterChange?: (v: string) => void
+  filterVariant?: 'buttons' | 'select'
 }
 
-export function SearchBar({ placeholder, value, onChange, filters, currentFilter, onFilterChange }: SearchBarProps) {
+export function SearchBar({ placeholder, value, onChange, filters, currentFilter, onFilterChange, filterVariant = 'buttons' }: SearchBarProps) {
   return (
     <Card className="border-0 shadow-soft">
       <CardContent className="p-4">
@@ -34,19 +35,33 @@ export function SearchBar({ placeholder, value, onChange, filters, currentFilter
             />
           </div>
           {filters && onFilterChange && (
-            <div className="flex gap-2 flex-wrap">
-              {filters.map((f) => (
-                <Button
-                  key={f.value}
-                  variant={currentFilter === f.value ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => onFilterChange(f.value)}
-                  className={currentFilter === f.value ? (f.activeClass || 'bg-brand-primary') : ''}
+            filterVariant === 'select' ? (
+              <div className="relative min-w-[180px]">
+                <select
+                  aria-label="Filtrar por especie"
+                  value={currentFilter}
+                  onChange={(e) => onFilterChange(e.target.value)}
+                  className="h-11 w-full appearance-none rounded-md border border-input bg-background px-3 pr-9 text-sm font-medium leading-none text-foreground outline-none transition-colors hover:bg-muted/40 focus:ring-2 focus:ring-ring"
                 >
-                  {f.label}
-                </Button>
-              ))}
-            </div>
+                  {filters.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              </div>
+            ) : (
+              <div className="flex gap-2 flex-wrap">
+                {filters.map((f) => (
+                  <Button
+                    key={f.value}
+                    variant={currentFilter === f.value ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => onFilterChange(f.value)}
+                    className={currentFilter === f.value ? (f.activeClass || 'bg-brand-primary') : ''}
+                  >
+                    {f.label}
+                  </Button>
+                ))}
+              </div>
+            )
           )}
         </div>
       </CardContent>
