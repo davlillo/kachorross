@@ -61,14 +61,14 @@ export function VerVacunaDialog({ open, onOpenChange, vacuna }: VerVacunaDialogP
           <div className="p-5 space-y-4 max-h-[65vh] overflow-y-auto">
             <div className="grid grid-cols-2 gap-3">
               <div className="flex items-start gap-2 p-3 rounded-xl bg-muted/50 border border-border">
-                <Pill className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <Pill className="w-4 h-4 text-emerald-600 dark:text-emerald-300 shrink-0 mt-0.5" />
                 <div className="min-w-0">
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Dosis</p>
                   <p className="text-sm mt-1">{vacuna.dosis ?? '—'}</p>
                 </div>
               </div>
               <div className="flex items-start gap-2 p-3 rounded-xl bg-muted/50 border border-border">
-                <FileText className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <FileText className="w-4 h-4 text-emerald-600 dark:text-emerald-300 shrink-0 mt-0.5" />
                 <div className="min-w-0">
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Lote</p>
                   <p className="text-sm mt-1">{vacuna.lote ?? '—'}</p>
@@ -78,8 +78,8 @@ export function VerVacunaDialog({ open, onOpenChange, vacuna }: VerVacunaDialogP
 
             {vacuna.aplicadaPor && (
               <div className="flex items-start gap-2 p-3 rounded-xl bg-muted/50 border border-border">
-                <Syringe className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <Stethoscope className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <Syringe className="w-4 h-4 text-emerald-600 dark:text-emerald-300 shrink-0 mt-0.5" />
+                <Stethoscope className="w-4 h-4 text-emerald-600 dark:text-emerald-300 shrink-0 mt-0.5" />
                 <div className="min-w-0">
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Médico encargado</p>
                   <p className="text-sm mt-1">{vacuna.aplicadaPor}</p>
@@ -88,11 +88,11 @@ export function VerVacunaDialog({ open, onOpenChange, vacuna }: VerVacunaDialogP
             )}
 
             {vacuna.proximaDosis && (
-              <div className="flex items-start gap-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200">
-                <CalendarDays className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-2 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
+                <CalendarDays className="w-4 h-4 text-emerald-600 dark:text-emerald-300 shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-xs font-semibold text-emerald-700">Próxima dosis</p>
-                  <p className="text-sm text-emerald-900 mt-1">{formatearFecha(vacuna.proximaDosis)}</p>
+                  <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">Próxima dosis</p>
+                  <p className="text-sm text-emerald-900 dark:text-emerald-100 mt-1">{formatearFecha(vacuna.proximaDosis)}</p>
                 </div>
               </div>
             )}

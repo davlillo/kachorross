@@ -467,6 +467,30 @@ export class MascotaController {
     }
   }
 
+  async actualizarFotoEvolucion(fotoId: string, descripcion: string): Promise<void> {
+    const { error } = await supabase
+      .from('fotos_evolucion')
+      .update({ descripcion: descripcion.trim() || null })
+      .eq('id', fotoId)
+
+    if (error) throw new Error(`No se pudo actualizar la foto de evolución: ${error.message}`)
+  }
+
+  async eliminarFotoEvolucion(fotoId: string, fotoUrl?: string): Promise<void> {
+    const { error } = await supabase
+      .from('fotos_evolucion')
+      .delete()
+      .eq('id', fotoId)
+
+    if (error) throw new Error(`No se pudo eliminar la foto de evolución: ${error.message}`)
+
+    const marker = '/storage/v1/object/public/fotos_evolucion/'
+    const filePath = fotoUrl?.split(marker)[1]
+    if (filePath) {
+      await supabase.storage.from('fotos_evolucion').remove([decodeURIComponent(filePath)])
+    }
+  }
+
   async eliminar(id: string): Promise<boolean> {
     const { error } = await supabase
       .from('mascotas')

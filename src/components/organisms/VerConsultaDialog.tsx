@@ -316,16 +316,16 @@ export function VerConsultaDialog({
             )}
 
             {/* Tratamiento */}
-            <div className="p-3 rounded-xl bg-blue-50 border border-blue-100 space-y-3">
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-blue-600 shrink-0" />
+             <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-800 space-y-3">
+               <div className="flex items-center gap-2">
+                 <FileText className="w-4 h-4 text-blue-600 dark:text-blue-300 shrink-0" />
                 <p className="text-xs text-muted-foreground font-medium">Tratamiento</p>
               </div>
               {consulta.tratamiento ? (
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full h-9 text-xs border-blue-200 text-blue-700 hover:bg-blue-100"
+                   className="w-full h-9 text-xs border-blue-200 text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:text-blue-200 dark:hover:bg-blue-900/60"
                   onClick={handleVisualizarPDF}
                   disabled={cargandoPDF}
                 >
@@ -345,9 +345,9 @@ export function VerConsultaDialog({
 
             {/* Fotos de la consulta — no se muestran inline, se abren en galeria */}
             {(fotos.length > 0 || onSubirFoto) && (
-              <div className="p-3 rounded-xl bg-violet-50 border border-violet-100 space-y-3">
-                <div className="flex items-center gap-2">
-                  <ImageIcon className="w-4 h-4 text-violet-600 shrink-0" />
+               <div className="p-3 rounded-xl bg-violet-50 dark:bg-violet-950/40 border border-violet-100 dark:border-violet-800 space-y-3">
+                 <div className="flex items-center gap-2">
+                   <ImageIcon className="w-4 h-4 text-violet-600 dark:text-violet-300 shrink-0" />
                   <p className="text-xs text-muted-foreground font-medium">
                     Fotos y documentos
                   </p>
@@ -355,7 +355,7 @@ export function VerConsultaDialog({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full h-9 text-xs border-violet-200 text-violet-700 hover:bg-violet-100"
+                   className="w-full h-9 text-xs border-violet-200 text-violet-700 hover:bg-violet-100 dark:border-violet-700 dark:text-violet-200 dark:hover:bg-violet-900/60"
                   onClick={() => setVerGaleria(true)}
                 >
                   <Eye className="w-3.5 h-3.5 mr-1.5" />
@@ -368,28 +368,28 @@ export function VerConsultaDialog({
 
             {/* Notas */}
             {consulta.notas && (
-              <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200">
-                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-xs font-semibold text-amber-700">Notas</p>
-                  <p className="text-sm text-amber-900 mt-1 whitespace-pre-wrap">{consulta.notas}</p>
+               <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800">
+                 <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-300 shrink-0 mt-0.5" />
+                 <div>
+                   <p className="text-xs font-semibold text-amber-700 dark:text-amber-300">Notas</p>
+                   <p className="text-sm text-amber-900 dark:text-amber-100 mt-1 whitespace-pre-wrap">{consulta.notas}</p>
                 </div>
               </div>
             )}
 
             {/* Próximo control */}
             {consulta.proximaCita && (
-              <div className="flex items-start gap-2 p-3 rounded-xl bg-indigo-50 border border-indigo-200">
-                <CalendarDays className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-xs font-semibold text-indigo-700">Próximo seguimiento</p>
-                  <p className="text-sm text-indigo-900 mt-1">
+               <div className="flex items-start gap-2 p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800">
+                 <CalendarDays className="w-4 h-4 text-indigo-600 dark:text-indigo-300 shrink-0 mt-0.5" />
+                 <div>
+                   <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-300">Próximo seguimiento</p>
+                   <p className="text-sm text-indigo-900 dark:text-indigo-100 mt-1">
                     {labelTipoSeguimiento(consulta.tipoSeguimiento)} —{' '}
                     {new Date(consulta.proximaCita).toLocaleDateString('es-ES', {
                       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
                     })}
                   </p>
-                  <p className="text-xs text-indigo-700/80 mt-1">
+                   <p className="text-xs text-indigo-700/80 dark:text-indigo-300/80 mt-1">
                     El paciente puede acudir en cualquier horario del día.
                   </p>
                 </div>
@@ -419,7 +419,7 @@ export function VerConsultaDialog({
                     return (
                       <div
                         key={detalle.id}
-                        className={`grid grid-cols-12 items-start px-3 py-2.5 border-t border-border transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-muted/20'} hover:bg-muted/40`}
+                         className={`grid grid-cols-12 items-start px-3 py-2.5 border-t border-border transition-colors ${idx % 2 === 0 ? 'bg-white dark:bg-card' : 'bg-muted/20'} hover:bg-muted/40`}
                       >
                         <div className="col-span-3">
                           <span className={`inline-flex items-center gap-1 text-xs font-black font-mono px-2 py-1 rounded-lg ${cat.bg} ${cat.color} ${cat.border} border`}>

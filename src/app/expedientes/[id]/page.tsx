@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { toast } from 'sonner';
 import { MascotaController } from '@/controllers/mascota.controller';
 import { VacunaController } from '@/controllers/vacuna.controller';
@@ -13,6 +14,7 @@ import { Textarea } from '@/components/atoms/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/atoms/ui/tabs';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
+  DialogPortal, DialogOverlay,
 } from '@/components/atoms/ui/dialog';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -27,7 +29,7 @@ import { VerDesparasitacionDialog } from '@/components/organisms/VerDesparasitac
 import {
   Stethoscope, Syringe, Camera, FileText, Plus, ArrowLeft,
   Pencil, Trash2, AlertTriangle, Filter, CalendarDays,
-  Pill, Stamp, ChevronDown,
+  Pill, Stamp, ChevronDown, Maximize2,
 } from 'lucide-react';
 import type { Consulta, Expediente, FotoEvolucion, Mascota, Vacuna, Desparasitacion } from '@/types';
 import {
@@ -94,31 +96,31 @@ const TIPO_HISTORIAL_META: Record<TipoHistorial, { label: string; evento: keyof 
 
 function EmptySlot() {
   return (
-    <div className="border-b border-dashed border-gray-300 py-2.5 px-3 min-h-[56px] flex items-center">
-      <span className="text-xs text-gray-300 italic">—— Disponible ——</span>
+    <div className="border-b border-dashed border-border py-2.5 px-3 min-h-[56px] flex items-center">
+      <span className="text-xs text-muted-foreground/60 italic">—— Disponible ——</span>
     </div>
   );
 }
 
 function VacunaSlot({ vacuna }: { vacuna: Vacuna }) {
   return (
-    <div className="border-b border-gray-200 py-2.5 px-3 hover:bg-brand-primary/5 transition-colors">
+    <div className="border-b border-border py-2.5 px-3 hover:bg-brand-primary/5 transition-colors">
       <div>
         <div className="flex items-center gap-1.5 flex-wrap">
           <Syringe className="w-3.5 h-3.5 text-brand-primary shrink-0" />
-          <span className="font-semibold text-sm text-gray-800">{vacuna.nombre}</span>
+          <span className="font-semibold text-sm text-foreground">{vacuna.nombre}</span>
         </div>
-        <div className="mt-0.5 flex items-center gap-2 flex-wrap text-[9px] font-mono text-gray-500">
-          <span className="bg-gray-100 px-1.5 py-0.5 rounded">Lote: {vacuna.lote ?? 'N/A'}</span>
-          <span className="bg-gray-100 px-1.5 py-0.5 rounded">Dosis: {vacuna.dosis ?? 'N/A'}</span>
+        <div className="mt-0.5 flex items-center gap-2 flex-wrap text-[9px] font-mono text-muted-foreground">
+          <span className="bg-muted px-1.5 py-0.5 rounded">Lote: {vacuna.lote ?? 'N/A'}</span>
+          <span className="bg-muted px-1.5 py-0.5 rounded">Dosis: {vacuna.dosis ?? 'N/A'}</span>
         </div>
-        <div className="mt-0.5 flex items-center gap-3 flex-wrap text-[11px] text-gray-500">
+        <div className="mt-0.5 flex items-center gap-3 flex-wrap text-[11px] text-muted-foreground">
           <span>{formatDateShort(vacuna.fechaAplicacion)}</span>
-          {vacuna.proximaDosis && <span className="text-amber-600">→ {formatDateShort(vacuna.proximaDosis)}</span>}
+          {vacuna.proximaDosis && <span className="text-amber-600 dark:text-amber-300">→ {formatDateShort(vacuna.proximaDosis)}</span>}
         </div>
         {vacuna.aplicadaPor && (
           <div
-            className="mt-0.5 flex min-w-0 items-center gap-1 text-[11px] text-brand-primary/80"
+            className="mt-0.5 flex min-w-0 items-center gap-1 text-[11px] text-brand-primary/80 dark:text-brand-primary"
             title={`Médico encargado: ${vacuna.aplicadaPor}`}
           >
             <Stethoscope className="w-3 h-3 shrink-0" />
@@ -132,24 +134,24 @@ function VacunaSlot({ vacuna }: { vacuna: Vacuna }) {
 
 function DesparasitacionSlot({ desparasitacion }: { desparasitacion: Desparasitacion }) {
   return (
-    <div className="border-b border-gray-200 py-2.5 px-3 flex items-center gap-3 hover:bg-emerald-50/40 transition-colors">
-      <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-        <Pill className="w-3 h-3 text-emerald-600" />
+    <div className="border-b border-border py-2.5 px-3 flex items-center gap-3 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/30 transition-colors">
+      <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-950/60 flex items-center justify-center shrink-0">
+        <Pill className="w-3 h-3 text-emerald-600 dark:text-emerald-300" />
       </div>
       <div>
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-sm text-gray-800">{desparasitacion.tipo}</span>
+          <span className="font-semibold text-sm text-foreground">{desparasitacion.tipo}</span>
           {desparasitacion.viaAdministracion && (
             <Badge variant="secondary" className="text-[9px] h-4 px-1.5">{desparasitacion.viaAdministracion}</Badge>
           )}
         </div>
-        <div className="flex items-center gap-3 text-[11px] text-gray-500">
+        <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
           <span>{formatDateShort(desparasitacion.fechaAplicacion)}</span>
-          {desparasitacion.fechaProximoTratamiento && <span className="text-amber-600">→ {formatDateShort(desparasitacion.fechaProximoTratamiento)}</span>}
+          {desparasitacion.fechaProximoTratamiento && <span className="text-amber-600 dark:text-amber-300">→ {formatDateShort(desparasitacion.fechaProximoTratamiento)}</span>}
         </div>
         {desparasitacion.medicoResponsable && (
           <div
-            className="mt-0.5 flex min-w-0 items-center gap-1 text-[11px] text-emerald-700/80"
+            className="mt-0.5 flex min-w-0 items-center gap-1 text-[11px] text-emerald-700/80 dark:text-emerald-300"
             title={`Médico responsable: ${desparasitacion.medicoResponsable}`}
           >
             <Stethoscope className="w-3 h-3 shrink-0" />
@@ -274,30 +276,30 @@ function CartillaPageView({
   });
 
   return (
-    <div className="bg-[#faf8f4] border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden w-full">
-      <div className="border-b-2 border-gray-200 bg-white px-5 py-2 flex items-center justify-between text-xs text-gray-500">
+    <div className="bg-card border-2 border-border rounded-xl shadow-lg overflow-hidden w-full">
+      <div className="border-b-2 border-border bg-card px-5 py-2 flex items-center justify-between text-xs text-muted-foreground">
         <div className="flex min-w-0 items-center gap-4">
-          <span className="font-semibold text-gray-700 truncate">Paciente: <span className="font-normal">{mascotaNombre}</span></span>
-          <span className="text-gray-300">|</span>
-          <span className="font-semibold text-gray-700">Especie: <span className="font-normal">{mascotaEspecie.charAt(0).toUpperCase() + mascotaEspecie.slice(1)}</span></span>
-          <span className="text-gray-300">|</span>
-          <span className="font-semibold text-gray-700">Raza: <span className="font-normal">{mascotaRaza}</span></span>
+          <span className="font-semibold text-foreground truncate">Paciente: <span className="font-normal">{mascotaNombre}</span></span>
+          <span className="text-muted-foreground/50">|</span>
+          <span className="font-semibold text-foreground">Especie: <span className="font-normal">{mascotaEspecie.charAt(0).toUpperCase() + mascotaEspecie.slice(1)}</span></span>
+          <span className="text-muted-foreground/50">|</span>
+          <span className="font-semibold text-foreground">Raza: <span className="font-normal">{mascotaRaza}</span></span>
         </div>
-        <div className="text-[10px] text-gray-400 font-mono shrink-0">Emisión: {now}</div>
+        <div className="text-[10px] text-muted-foreground font-mono shrink-0">Emisión: {now}</div>
       </div>
 
-      <div className="grid grid-cols-3 divide-x-2 divide-gray-200">
+      <div className="grid grid-cols-3 divide-x-2 divide-border">
         <div className="col-span-2 bg-brand-primary/10 px-4 py-2 border-b border-brand-primary/20 flex items-center justify-center gap-2">
           <div className="w-2 h-2 rounded-full bg-brand-primary" />
           <span className="font-bold text-sm uppercase tracking-wider text-brand-primary">Vacunas</span>
         </div>
-        <div className="bg-emerald-50 px-4 py-2 border-b border-emerald-200 flex items-center justify-start gap-2 pl-4">
-          <div className="w-2 h-2 rounded-full bg-emerald-600" />
-          <span className="font-bold text-sm uppercase tracking-wider text-emerald-800">Desparasitaciones</span>
+        <div className="bg-emerald-50 dark:bg-emerald-950/40 px-4 py-2 border-b border-emerald-200 dark:border-emerald-800 flex items-center justify-start gap-2 pl-4">
+          <div className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-300" />
+          <span className="font-bold text-sm uppercase tracking-wider text-emerald-800 dark:text-emerald-200">Desparasitaciones</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 divide-x-2 divide-gray-200">
+      <div className="grid grid-cols-3 divide-x-2 divide-border">
         <div>
           {colA.map((vacuna, i) =>
             vacuna ? (
@@ -327,7 +329,7 @@ function CartillaPageView({
         </div>
       </div>
 
-      <div className="border-t-2 border-gray-200 bg-white px-5 py-1.5 flex items-center justify-between text-[9px] text-gray-400">
+      <div className="border-t-2 border-border bg-card px-5 py-1.5 flex items-center justify-between text-[9px] text-muted-foreground">
         <span>Kachorros Veterinaria · Cartilla de Vacunación</span>
         <span>Página {pageIndex + 1}</span>
       </div>
@@ -393,6 +395,9 @@ export default function ExpedienteDetailPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [fotoOpen, setFotoOpen] = useState(false);
   const [fotoModo, setFotoModo] = useState<'perfil' | 'evolucion'>('evolucion');
+  const [fotoSeleccionada, setFotoSeleccionada] = useState<FotoEvolucion | null>(null);
+  const [fotoEditar, setFotoEditar] = useState<FotoEvolucion | null>(null);
+  const [fotoEliminar, setFotoEliminar] = useState<FotoEvolucion | null>(null);
   const [consultaDetalle, setConsultaDetalle] = useState<Consulta | null>(null);
   const [vacunaDetalle, setVacunaDetalle] = useState<Vacuna | null>(null);
   const [desparasitacionDetalle, setDesparasitacionDetalle] = useState<Desparasitacion | null>(null);
@@ -402,6 +407,8 @@ export default function ExpedienteDetailPage() {
   const [fotoDescripcion, setFotoDescripcion] = useState('');
   const [subiendoFoto, setSubiendoFoto] = useState(false);
   const [fotoError, setFotoError] = useState<string | null>(null);
+  const [fotoDescripcionEdicion, setFotoDescripcionEdicion] = useState('');
+  const [guardandoFoto, setGuardandoFoto] = useState(false);
 
   const puedeSubirEvolucion = user?.rol === 'doctora' || user?.rol === 'admin';
 
@@ -730,6 +737,42 @@ export default function ExpedienteDetailPage() {
     seleccionarFotoEvolucion(file);
   };
 
+  const abrirEdicionFoto = (foto: FotoEvolucion) => {
+    setFotoEditar(foto);
+    setFotoDescripcionEdicion(foto.descripcion === 'Sin descripción' ? '' : foto.descripcion);
+  };
+
+  const guardarEdicionFoto = async () => {
+    if (!fotoEditar) return;
+    try {
+      setGuardandoFoto(true);
+      await ctrl.actualizarFotoEvolucion(fotoEditar.id, fotoDescripcionEdicion);
+      setFotoEditar(null);
+      setRefresh(r => r + 1);
+      toast.success('Descripción actualizada');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'No se pudo actualizar la foto');
+    } finally {
+      setGuardandoFoto(false);
+    }
+  };
+
+  const confirmarEliminarFoto = async () => {
+    if (!fotoEliminar) return;
+    try {
+      setGuardandoFoto(true);
+      await ctrl.eliminarFotoEvolucion(fotoEliminar.id, fotoEliminar.url);
+      setFotoEliminar(null);
+      setFotoSeleccionada(null);
+      setRefresh(r => r + 1);
+      toast.success('Foto eliminada');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'No se pudo eliminar la foto');
+    } finally {
+      setGuardandoFoto(false);
+    }
+  };
+
   // ── Not found ────────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
@@ -833,8 +876,8 @@ export default function ExpedienteDetailPage() {
                             className={cn(
                               'px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap',
                               filtroTipo === op.value
-                                ? 'bg-white text-foreground shadow-sm'
-                                : 'text-muted-foreground hover:text-foreground',
+                                ? 'border border-border bg-background text-foreground shadow-sm'
+                                : 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
                             )}
                           >
                             {op.label}
@@ -908,11 +951,11 @@ export default function ExpedienteDetailPage() {
             <TabsContent value="vacunas" className="mt-4 space-y-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
-                    <Stamp className="w-5 h-5 text-amber-700" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-bold text-gray-800">Cartilla de Vacunación</h2>
+                    <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/60 flex items-center justify-center">
+                      <Stamp className="w-5 h-5 text-amber-700 dark:text-amber-300" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-foreground">Cartilla de Vacunación</h2>
                   </div>
                 </div>
                   <div className="flex items-center gap-2 flex-wrap justify-end">
@@ -927,10 +970,10 @@ export default function ExpedienteDetailPage() {
               </div>
 
               {cartillaPages.length === 0 ? (
-                <div className="bg-[#faf8f4] border-2 border-dashed border-gray-200 rounded-xl py-16 flex flex-col items-center gap-3">
-                  <Stamp className="w-10 h-10 text-gray-300" />
-                  <p className="text-sm text-gray-400">No hay registros todavía</p>
-                  <p className="text-xs text-gray-300">Agrega una vacuna o desparasitación para comenzar</p>
+                <div className="bg-card border-2 border-dashed border-border rounded-xl py-16 flex flex-col items-center gap-3">
+                  <Stamp className="w-10 h-10 text-muted-foreground/50" />
+                  <p className="text-sm text-muted-foreground">No hay registros todavía</p>
+                  <p className="text-xs text-muted-foreground/70">Agrega una vacuna o desparasitación para comenzar</p>
                 </div>
               ) : cartillaPages.length === 1 ? (
                 <div className="overflow-hidden">
@@ -956,18 +999,18 @@ export default function ExpedienteDetailPage() {
                           className={`flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all shrink-0 whitespace-nowrap ${
                             isActive
                               ? 'bg-brand-primary/10 text-brand-primary shadow-sm ring-1 ring-brand-primary/30'
-                              : 'bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                               : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
                           }`}
                         >
                           <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isActive ? '' : '-rotate-90'}`} />
                           <div className="flex flex-col items-start">
                             <span className="font-semibold">Cartilla {page.pageIndex + 1}</span>
-                            <span className="text-[9px] text-gray-400">
+                             <span className="text-[9px] text-muted-foreground">
                               {page.vacunas.length}/{SLOTS_POR_PAGINA} vac · {page.desparasitaciones.length}/{SLOTS_DESPARASITACION} des
                             </span>
                           </div>
                           {complete && (
-                            <span className="text-[9px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full ml-1">Completa</span>
+                             <span className="text-[9px] text-emerald-700 dark:text-emerald-200 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded-full ml-1">Completa</span>
                           )}
                         </button>
                       );
@@ -1022,18 +1065,38 @@ export default function ExpedienteDetailPage() {
                     <EmptyState icon={Camera} message="No hay fotos de evolución" />
                   ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 max-h-[440px] overflow-y-auto pr-1">
-                      {expediente.fotosEvolucion.map(foto => (
-                        <div key={foto.id} className="group relative">
-                          <img src={foto.url} alt={foto.descripcion} className="w-full aspect-square object-cover rounded-xl" />
-                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-end p-3">
-                            <div className="text-white">
-                              <p className="text-sm font-medium">{foto.descripcion}</p>
-                              <p className="text-xs opacity-75">{new Date(foto.fecha).toLocaleDateString('es-ES')}</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                       {expediente.fotosEvolucion.map(foto => (
+                         <div key={foto.id} className="group relative overflow-hidden rounded-xl border border-border/60 bg-muted/30 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+                           <button
+                             type="button"
+                             className="block w-full cursor-zoom-in text-left"
+                             onClick={() => setFotoSeleccionada(foto)}
+                             aria-label={`Ampliar foto: ${foto.descripcion}`}
+                           >
+                             <img src={foto.url} alt={foto.descripcion} className="w-full aspect-square object-cover transition-transform duration-300 group-hover:scale-105" />
+                             <span className="absolute right-2 top-2 rounded-full bg-black/55 p-1.5 text-white opacity-0 transition-opacity group-hover:opacity-100">
+                               <Maximize2 className="h-3.5 w-3.5" />
+                             </span>
+                           </button>
+                           <div className="border-t border-border/50 bg-card/95 px-3 py-2">
+                             <p className="truncate text-sm font-medium" title={foto.descripcion}>{foto.descripcion}</p>
+                             <div className="mt-1 flex items-center justify-between gap-2">
+                               <p className="text-xs text-muted-foreground">{new Date(foto.fecha).toLocaleDateString('es-ES')}</p>
+                               {puedeSubirEvolucion && (
+                                 <div className="flex gap-1">
+                                   <button type="button" onClick={() => abrirEdicionFoto(foto)} className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-brand-primary" aria-label="Editar descripción">
+                                     <Pencil className="h-3.5 w-3.5" />
+                                   </button>
+                                   <button type="button" onClick={() => setFotoEliminar(foto)} className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-red-500/10 hover:text-red-600" aria-label="Eliminar foto">
+                                     <Trash2 className="h-3.5 w-3.5" />
+                                   </button>
+                                 </div>
+                               )}
+                             </div>
+                           </div>
+                         </div>
+                       ))}
+                     </div>
                   )}
                 </CardContent>
               </Card>
@@ -1182,6 +1245,84 @@ export default function ExpedienteDetailPage() {
         </DialogContent>
       </Dialog>
 
+      {/* ── Dialog: Vista ampliada de evolución ── */}
+      <Dialog open={!!fotoSeleccionada} onOpenChange={open => { if (!open) setFotoSeleccionada(null); }}>
+        <DialogPortal>
+          <DialogOverlay className="bg-black/40 backdrop-blur-sm" />
+          <DialogPrimitive.Content className="fixed left-1/2 top-1/2 z-50 grid max-h-[90vh] w-full max-w-4xl -translate-x-1/2 -translate-y-1/2 gap-3 overflow-y-auto rounded-2xl border-0 bg-black/95 p-2 shadow-2xl outline-none data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:p-3">
+            <DialogTitle className="sr-only">Fotografía de evolución ampliada</DialogTitle>
+            {fotoSeleccionada && (
+              <div className="relative flex max-h-[85vh] flex-col items-center gap-3">
+                <img
+                  src={fotoSeleccionada.url}
+                  alt={fotoSeleccionada.descripcion}
+                  className="max-h-[72vh] w-auto max-w-full rounded-lg object-contain"
+                />
+                <div className="w-full rounded-lg bg-white/10 px-4 py-3 text-white">
+                  <p className="font-medium">{fotoSeleccionada.descripcion}</p>
+                  <p className="mt-1 text-xs text-white/65">{new Date(fotoSeleccionada.fecha).toLocaleDateString('es-ES')}</p>
+                </div>
+              </div>
+            )}
+          </DialogPrimitive.Content>
+        </DialogPortal>
+      </Dialog>
+
+      {/* ── Dialog: Editar descripción de foto ── */}
+      <Dialog open={!!fotoEditar} onOpenChange={open => { if (!open && !guardandoFoto) setFotoEditar(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Pencil className="h-5 w-5 text-brand-primary" />
+              Editar foto de evolución
+            </DialogTitle>
+            <DialogDescription>Actualiza la descripción para identificar mejor el seguimiento del paciente.</DialogDescription>
+          </DialogHeader>
+          {fotoEditar && (
+            <div className="space-y-4">
+              <img src={fotoEditar.url} alt={fotoEditar.descripcion} className="mx-auto h-32 w-32 rounded-xl object-cover shadow-sm" />
+              <div className="space-y-1">
+                <Label>Descripción</Label>
+                <Textarea
+                  value={fotoDescripcionEdicion}
+                  onChange={e => setFotoDescripcionEdicion(e.target.value)}
+                  placeholder="Ej. Herida en pata trasera, día 3 de tratamiento"
+                  className="min-h-[80px]"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setFotoEditar(null)} disabled={guardandoFoto}>Cancelar</Button>
+            <Button onClick={() => void guardarEdicionFoto()} disabled={guardandoFoto} className="bg-brand-primary hover:bg-brand-primary">
+              {guardandoFoto ? 'Guardando...' : 'Guardar cambios'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Dialog: Confirmar eliminación de foto ── */}
+      <Dialog open={!!fotoEliminar} onOpenChange={open => { if (!open && !guardandoFoto) setFotoEliminar(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertTriangle className="h-5 w-5" />
+              Eliminar foto de evolución
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              ¿Está seguro de que desea eliminar esta fotografía? Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 pt-2">
+            <Button variant="outline" onClick={() => setFotoEliminar(null)} disabled={guardandoFoto}>Cancelar</Button>
+            <Button variant="destructive" onClick={() => void confirmarEliminarFoto()} disabled={guardandoFoto}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              {guardandoFoto ? 'Eliminando...' : 'Sí, eliminar foto'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* ── Dialog: Subir foto (perfil o evolución) ── */}
       <Dialog open={fotoOpen} onOpenChange={open => {
         if (!subiendoFoto) {
@@ -1289,12 +1430,12 @@ export default function ExpedienteDetailPage() {
           </DialogHeader>
 
           <div className="py-2">
-            <div className="flex items-center gap-2 mb-4 bg-gray-50 rounded-lg p-1">
+            <div className="flex items-center gap-2 mb-4 bg-muted rounded-lg p-1">
               <button
                 type="button"
                 onClick={() => setAgregarTipo('vacuna')}
                 className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-all ${
-                  agregarTipo === 'vacuna' ? 'bg-white text-brand-primary shadow-sm ring-1 ring-brand-primary/20' : 'text-gray-500 hover:text-gray-700'
+                   agregarTipo === 'vacuna' ? 'bg-background text-brand-primary shadow-sm ring-1 ring-brand-primary/20' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <Syringe className="w-3.5 h-3.5" /> Vacuna
@@ -1303,7 +1444,7 @@ export default function ExpedienteDetailPage() {
                 type="button"
                 onClick={() => setAgregarTipo('desparasitacion')}
                 className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-all ${
-                  agregarTipo === 'desparasitacion' ? 'bg-white text-emerald-700 shadow-sm ring-1 ring-emerald-200' : 'text-gray-500 hover:text-gray-700'
+                   agregarTipo === 'desparasitacion' ? 'bg-background text-emerald-700 dark:text-emerald-300 shadow-sm ring-1 ring-emerald-200 dark:ring-emerald-800' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <Pill className="w-3.5 h-3.5" /> Desparasitación
