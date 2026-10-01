@@ -71,6 +71,58 @@ export interface ExpedienteResumen {
   consultasCount: number;
 }
 
+export type EstadoRequisitoExportacion = 'pendiente' | 'en_proceso' | 'completado';
+export type EstadoExportacion = 'borrador' | 'en_proceso' | 'completado' | 'cancelado';
+
+export interface RequisitoExportacion {
+  id: string;
+  nombre: string;
+  descripcion?: string;
+  estado: EstadoRequisitoExportacion;
+  obligatorio: boolean;
+}
+
+export interface CostoExportacion {
+  id: string;
+  concepto: string;
+  cantidad: number;
+  precioUnitario: number;
+  total: number;
+}
+
+export interface ExportacionMascota {
+  id: string;
+  veterinariaId: string;
+  mascotaId: string;
+  paisDestino: string;
+  destinoDetalle?: string;
+  fechaTramiteProgramada: string;
+  fechaViaje?: string;
+  estado: EstadoExportacion;
+  requisitos: RequisitoExportacion[];
+  costos: CostoExportacion[];
+  moneda: string;
+  veterinarioResponsable: string;
+  responsableId?: string;
+  observaciones?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GuardarExportacionMascotaDTO {
+  mascotaId: string;
+  paisDestino: string;
+  destinoDetalle?: string;
+  fechaTramiteProgramada: string;
+  fechaViaje?: string;
+  estado: EstadoExportacion;
+  requisitos: RequisitoExportacion[];
+  costos: CostoExportacion[];
+  moneda?: string;
+  veterinarioResponsable: string;
+  observaciones?: string;
+}
+
 export interface Consulta {
   id: string;
   veterinariaId: string;

@@ -21,13 +21,14 @@ import { PatientInfoCard } from '@/components/organisms/PatientInfoCard';
 import { ProximasCitasCard } from '@/components/molecules';
 import { EmptyState } from '@/components/molecules/EmptyState';
 import { VerConsultaDialog } from '@/components/organisms/VerConsultaDialog';
+import { ExportacionMascotaDialog } from '@/components/organisms/ExportacionMascotaDialog';
 import { ACCEPT_ARCHIVO_EVOLUCION, esPdf, validarArchivoEvolucion } from '@/lib/archivoEvolucion';
 import { VerVacunaDialog } from '@/components/organisms/VerVacunaDialog';
 import { VerDesparasitacionDialog } from '@/components/organisms/VerDesparasitacionDialog';
 import {
   Stethoscope, Syringe, Camera, FileText, Plus, ArrowLeft,
   Pencil, Trash2, AlertTriangle, Filter, CalendarDays,
-  Pill, Stamp, ChevronDown,
+  Pill, Stamp, ChevronDown, Plane,
 } from 'lucide-react';
 import type { Consulta, Expediente, FotoEvolucion, Mascota, Vacuna, Desparasitacion } from '@/types';
 import {
@@ -391,6 +392,7 @@ export default function ExpedienteDetailPage() {
   // ── Diálogos ─────────────────────────────────────────────────────────────────
   const [editOpen,   setEditOpen]   = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [exportacionOpen, setExportacionOpen] = useState(false);
   const [fotoOpen, setFotoOpen] = useState(false);
   const [fotoModo, setFotoModo] = useState<'perfil' | 'evolucion'>('evolucion');
   const [consultaDetalle, setConsultaDetalle] = useState<Consulta | null>(null);
@@ -775,6 +777,9 @@ export default function ExpedienteDetailPage() {
           </div>
         </div>
         <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" onClick={() => setExportacionOpen(true)} className="border-brand-primary/20 text-brand-primary hover:bg-brand-primary/5">
+            <Plane className="w-4 h-4 mr-2" />Trámite de exportación
+          </Button>
           <Button variant="outline" onClick={abrirEdicion} className="border-brand-primary/20 text-brand-primary hover:bg-brand-primary/5">
             <Pencil className="w-4 h-4 mr-2" />Editar
           </Button>
@@ -1275,6 +1280,13 @@ export default function ExpedienteDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ExportacionMascotaDialog
+        open={exportacionOpen}
+        onOpenChange={setExportacionOpen}
+        mascota={mascota}
+        veterinarioPredeterminado={user?.nombre}
+      />
 
       {/* ── Dialog: Agregar Vacuna / Desparasitación ── */}
       <Dialog open={agregarOpen} onOpenChange={setAgregarOpen}>
