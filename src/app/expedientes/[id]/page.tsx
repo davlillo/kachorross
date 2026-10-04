@@ -23,13 +23,14 @@ import { PatientInfoCard } from '@/components/organisms/PatientInfoCard';
 import { ProximasCitasCard } from '@/components/molecules';
 import { EmptyState } from '@/components/molecules/EmptyState';
 import { VerConsultaDialog } from '@/components/organisms/VerConsultaDialog';
+import { ExportacionMascotaDialog } from '@/components/organisms/ExportacionMascotaDialog';
 import { ACCEPT_ARCHIVO_EVOLUCION, esPdf, validarArchivoEvolucion } from '@/lib/archivoEvolucion';
 import { VerVacunaDialog } from '@/components/organisms/VerVacunaDialog';
 import { VerDesparasitacionDialog } from '@/components/organisms/VerDesparasitacionDialog';
 import {
   Stethoscope, Syringe, Camera, FileText, Plus, ArrowLeft,
   Pencil, Trash2, AlertTriangle, Filter, CalendarDays,
-  Pill, Stamp, ChevronDown, Maximize2,
+  Pill, Stamp, ChevronDown, Plane, Maximize2
 } from 'lucide-react';
 import type { Consulta, Expediente, FotoEvolucion, Mascota, Vacuna, Desparasitacion } from '@/types';
 import {
@@ -216,7 +217,7 @@ function HistorialEntry({
             {medico && (
               <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                 <Stethoscope className="w-3 h-3 shrink-0" />
-                {entrada.tipo === 'vacuna' ? 'Médico encargado' : 'Médico responsable'}: {medico}
+                Médico responsable: {medico}
               </p>
             )}
           </div>
@@ -393,6 +394,7 @@ export default function ExpedienteDetailPage() {
   // ── Diálogos ─────────────────────────────────────────────────────────────────
   const [editOpen,   setEditOpen]   = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [exportacionOpen, setExportacionOpen] = useState(false);
   const [fotoOpen, setFotoOpen] = useState(false);
   const [fotoModo, setFotoModo] = useState<'perfil' | 'evolucion'>('evolucion');
   const [fotoSeleccionada, setFotoSeleccionada] = useState<FotoEvolucion | null>(null);
@@ -818,6 +820,9 @@ export default function ExpedienteDetailPage() {
           </div>
         </div>
         <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" onClick={() => setExportacionOpen(true)} className="border-brand-primary/20 text-brand-primary hover:bg-brand-primary/5">
+            <Plane className="w-4 h-4 mr-2" />Trámite de exportación
+          </Button>
           <Button variant="outline" onClick={abrirEdicion} className="border-brand-primary/20 text-brand-primary hover:bg-brand-primary/5">
             <Pencil className="w-4 h-4 mr-2" />Editar
           </Button>
@@ -1417,6 +1422,13 @@ export default function ExpedienteDetailPage() {
         </DialogContent>
       </Dialog>
 
+      <ExportacionMascotaDialog
+        open={exportacionOpen}
+        onOpenChange={setExportacionOpen}
+        mascota={mascota}
+        veterinarioPredeterminado={user?.nombre}
+      />
+
       {/* ── Dialog: Agregar Vacuna / Desparasitación ── */}
       <Dialog open={agregarOpen} onOpenChange={setAgregarOpen}>
         <DialogContent className="max-w-md">
@@ -1483,7 +1495,7 @@ export default function ExpedienteDetailPage() {
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label>Médico Encargado</Label>
+                    <Label>Médico Responsable</Label>
                     <Input placeholder="Nombre del médico que aplicó" value={agregarForm.aplicadaPor} onChange={e => setAgregarForm(prev => ({ ...prev, aplicadaPor: e.target.value }))} />
                   </div>
                   <div className="space-y-1.5">
