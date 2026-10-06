@@ -62,6 +62,11 @@ export interface Expediente {
   fotosEvolucion: FotoEvolucion[];
   vacunas: Vacuna[];
   desparasitaciones: Desparasitacion[];
+  /**
+   * Solo estancias ya cerradas. La de la mascota activa no llega acá porque el
+   * historial clínico registra hechos consumados, no estancias en curso.
+   */
+  hospedajesFinalizados: Hospedaje[];
 }
 
 export interface ExpedienteResumen {
@@ -69,6 +74,47 @@ export interface ExpedienteResumen {
   mascotaId: string;
   mascota: Mascota;
   consultasCount: number;
+}
+
+export type EstadoHospedaje = 'activo' | 'finalizado';
+
+/**
+ * Ciclo de facturación, separado de `EstadoHospedaje` a propósito: la estancia
+ * puede estar cerrada y todavía no cobrada. El monitor de salida usa este campo
+ * para saber qué hay que facturar.
+ */
+export type EstadoCobroHospedaje = 'pendiente' | 'facturado';
+
+export interface Hospedaje {
+  id: string;
+  veterinariaId: string;
+  /** Solo se hospeda mascotas del expediente, así que la referencia es obligatoria. */
+  mascotaId: string;
+  /** Anida el paciente con su propietario. Nullable porque PostgREST puede omitir el embed. */
+  mascota: Mascota | null;
+  fechaIngreso: string;
+  fechaSalidaEstimada: string;
+  fechaSalidaReal: string | null;
+  tarifaDiaria: number;
+  totalCargo: number | null;
+  observaciones?: string;
+  estado: EstadoHospedaje;
+  estadoCobro: EstadoCobroHospedaje;
+  /**
+   * Instante del cobro. Va aparte de `fechaSalidaReal` porque son días distintos:
+   * la salida es cuando se fue el paciente y el cobro es cuando se cerró la caja.
+   * "Consultas del Día" y el dashboard cuentan por este valor.
+   */
+  facturadoAt: string | null;
+  consultaId?: string;
+}
+
+export interface GuardarHospedajeDTO {
+  mascotaId: string;
+  fechaIngreso: string;
+  fechaSalidaEstimada: string;
+  tarifaDiaria: number;
+  observaciones?: string;
 }
 
 export type EstadoRequisitoExportacion = 'pendiente' | 'en_proceso' | 'completado';
@@ -202,12 +248,44 @@ export interface Desparasitacion {
   medicoResponsable?: string;
 }
 
-export interface MonitorSalida {
-  consultaId: string;
+interface BaseMonitorSalida {
+  /** Id de la fila de origen: la consulta en un caso, el hospedaje en el otro. */
+  id: string;
   mascota: Mascota;
   horaTermino: string;
   total: number;
   estado: 'listo' | 'pagando' | 'entregado';
+}
+
+/**
+ * El monitor mezcla consultas pendientes de facturar con hospedajes ya cerrados
+ * que aún no se cobraron, así que el origen va discriminado: el detalle y la
+ * acción de cierre dependen de cuál sea.
+ */
+export type MonitorSalida =
+  | (BaseMonitorSalida & { origen: 'consulta'; consulta: Consulta })
+  | (BaseMonitorSalida & { origen: 'hospedaje'; hospedaje: Hospedaje });
+
+/**
+ * Una fila de la pestaña "Consultas del Día": consultas finalizadas más hospedajes
+ * ya facturados.
+ *
+ * No reutiliza `MonitorSalida` porque el monitor y el cierre de caja son cosas
+ * distintas: acá no hay estado de "listo/pagando" porque todo lo que aparece ya se
+ * procesó, y `hora` es la del cobro en hospedajes, no la salida.
+ */
+export interface ProcesadoSalida {
+  origen: 'consulta' | 'hospedaje';
+  /** Id de la fila de origen, como en `MonitorSalida`. */
+  id: string;
+  /** Instante que define el día: `fecha` en consultas, `facturado_at` en hospedajes. */
+  hora: string;
+  motivo: string;
+  /** Médico en consultas, raza en hospedajes. */
+  responsable: string;
+  total: number;
+  consulta: Consulta | null;
+  hospedaje: Hospedaje | null;
 }
 
 export interface DashboardStats {

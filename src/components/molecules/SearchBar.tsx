@@ -38,7 +38,7 @@ export function SearchBar({ placeholder, value, onChange, filters, currentFilter
             filterVariant === 'select' ? (
               <div className="relative min-w-[180px]">
                 <select
-                  aria-label="Filtrar por especie"
+                  aria-label="Filtrar lista"
                   value={currentFilter}
                   onChange={(e) => onFilterChange(e.target.value)}
                   className="h-11 w-full appearance-none rounded-md border border-input bg-background px-3 pr-9 text-sm font-medium leading-none text-foreground outline-none transition-colors hover:bg-muted/40 focus:ring-2 focus:ring-ring"

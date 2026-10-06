@@ -3,6 +3,8 @@ import { useAuth } from '@/context/AuthContext';
 import { MascotaController } from '@/controllers/mascota.controller';
 import { ConsultaController } from '@/controllers/consulta.controller';
 import { VacunaController } from '@/controllers/vacuna.controller';
+import { HospedajeController } from '@/controllers/hospedaje.controller';
+import { useHospedajesFacturados } from '@/hooks/useHospedajes';
 import { compararEventosAgenda, type EventoAgenda } from '@/controllers/agenda.controller';
 import { useAgenda } from '@/hooks/useAgenda';
 import { AgendaDiaPanel, AlertaBell } from '@/components/molecules';
@@ -28,14 +30,15 @@ import {
   Plus, Syringe, Bug, DollarSign, FileText,
   TrendingUp, Banknote, HeartPulse, ClipboardList
 } from 'lucide-react';
+import { TransportCageIcon } from '@/components/atoms/custom';
 import { Link } from 'react-router-dom';
 import {
   format, startOfMonth, endOfMonth, eachDayOfInterval,
   isSameDay, addMonths, subMonths, getDay, subDays, isWithinInterval
 } from 'date-fns';
 import { es } from 'date-fns/locale';
-import type { Consulta } from '@/types';
-import { fechaLocalClave, todayLocal } from '@/lib/utils';
+import type { Consulta, Hospedaje } from '@/types';
+import { claveDiaLocal, fechaLocalClave, rangoUtcDeDiaLocal, todayLocal } from '@/lib/utils';
 
 // ── Leyenda colores calendario ────────────────────────────────────────────────
 const tiposEvento: { tipo: TipoEvento; icon: React.ElementType }[] = [
@@ -64,34 +67,8 @@ export default function DashboardPage() {
   const consultaCtrl = ConsultaController.getInstance();
   const [mascotas, setMascotas] = useState<any[]>([]);
   const [consultas, setConsultas] = useState<Consulta[]>([]);
-  const [dashboardStats, setDashboardStats] = useState({
-    pacientesHoy: 0,
-    pacientesEspera: 0,
-    ingresosHoy: 0,
-    consultasPendientes: 0,
-  });
-
-  useEffect(() => {
-    const load = async () => {
-      const [mascotasData, consultasData] = await Promise.all([
-        mascotaCtrl.getAll(),
-        consultaCtrl.getAll(),
-      ]);
-      const hoy = todayLocal();
-      const consultasHoy = consultasData.filter(c => c.fecha && fechaLocalClave(c.fecha) === hoy);
-      const pendientes = consultasData.filter(c => c.estado === 'pendiente');
-
-      setMascotas(mascotasData);
-      setConsultas(consultasData);
-      setDashboardStats({
-        pacientesHoy: consultasHoy.length,
-        pacientesEspera: pendientes.length,
-        ingresosHoy: consultasHoy.reduce((acc, c) => acc + c.total, 0),
-        consultasPendientes: pendientes.length,
-      });
-    };
-    void load();
-  }, [mascotaCtrl, consultaCtrl]);
+  // Antes `dashboardStats` se llenaba dentro del efecto de carga; ahora se deriva con
+// useMemo porque depende de los hospedajes facturados, que llegan por su propio hook.
 
   // ── Calendario ──────────────────────────────────────────────────────────────
   const [mesActual, setMesActual] = useState(new Date());
@@ -110,34 +87,108 @@ export default function DashboardPage() {
   // ── Gráficas ────────────────────────────────────────────────────────────────
   const [periodoGrafica, setPeriodoGrafica] = useState<'semana' | 'mes'>('semana');
 
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [mascotasData, consultasData] = await Promise.all([
+          mascotaCtrl.getAll(),
+          consultaCtrl.getAll(),
+        ]);
+        setMascotas(mascotasData);
+        setConsultas(consultasData);
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'No se pudieron cargar los datos del panel');
+      }
+    };
+    void load();
+  }, [mascotaCtrl, consultaCtrl]);
+
+  // Los hospedajes facturados se piden por rango porque el filtro por día depende de
+  // la zona horaria y `facturado_at` es timestamptz. El rango cubre el periodo visible
+  // de la gráfica más el día de hoy, que es el que usan las tarjetas.
+  const rangoFacturados = useMemo(() => {
+    const diasGrafica =
+      periodoGrafica === 'semana'
+        ? Array.from({ length: 7 }, (_, i) => subDays(new Date(), 6 - i))
+        : eachDayOfInterval({ start: startOfMonth(mesActual), end: endOfMonth(mesActual) });
+
+    const claves = diasGrafica.map(d => format(d, 'yyyy-MM-dd')).concat(todayLocal());
+    const desde = rangoUtcDeDiaLocal(claves.reduce((a, b) => (a < b ? a : b)));
+    const hasta = rangoUtcDeDiaLocal(claves.reduce((a, b) => (a > b ? a : b)));
+
+    return { desdeUtc: desde.desdeUtc, hastaUtc: hasta.hastaUtc };
+  }, [periodoGrafica, mesActual]);
+
+  const { hospedajes: hospedajesFacturados } = useHospedajesFacturados(
+    rangoFacturados.desdeUtc,
+    rangoFacturados.hastaUtc,
+  );
+
+  // Estancias abiertas ahora. No viene de los facturados porque es otro subconjunto.
+  const hospedajeCtrl = HospedajeController.getInstance();
+  const [hospedadosAhora, setHospedadosAhora] = useState(0);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setHospedadosAhora(await hospedajeCtrl.contarActivos());
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'No se pudo contar las mascotas en hospedaje');
+      }
+    };
+    void load();
+  }, [hospedajeCtrl]);
+
+  const totalDeHospedaje = (hospedaje: Hospedaje) => hospedaje.totalCargo ?? 0;
+
+  const dashboardStats = useMemo(() => {
+    const hoy = todayLocal();
+    const consultasHoy = consultas.filter(c => c.fecha && fechaLocalClave(c.fecha) === hoy);
+    const pendientes = consultas.filter(c => c.estado === 'pendiente');
+    const hospedajesHoy = hospedajesFacturados.filter(h => h.facturadoAt && claveDiaLocal(h.facturadoAt) === hoy);
+
+    return {
+      // Un hospedaje facturado es un paciente atendido y facturado hoy, así que
+      // cuenta en el mismo número que una consulta.
+      pacientesHoy: consultasHoy.length + hospedajesHoy.length,
+      pacientesEspera: pendientes.length,
+      ingresosHoy:
+        consultasHoy.reduce((acc, c) => acc + c.total, 0) +
+        hospedajesHoy.reduce((acc, h) => acc + totalDeHospedaje(h), 0),
+      consultasPendientes: pendientes.length,
+    };
+  }, [consultas, hospedajesFacturados]);
+
   const datosGrafica = useMemo(() => {
+    const ingresosDeDia = (key: string) => {
+      const delDia = consultas.filter(c => c.fecha && fechaLocalClave(c.fecha) === key);
+      const hospedajesDelDia = hospedajesFacturados.filter(
+        h => h.facturadoAt && claveDiaLocal(h.facturadoAt) === key,
+      );
+
+      return {
+        consultas: delDia.length + hospedajesDelDia.length,
+        ingresos:
+          delDia.reduce((sum, c) => sum + c.total, 0) +
+          hospedajesDelDia.reduce((sum, h) => sum + totalDeHospedaje(h), 0),
+      };
+    };
+
     if (periodoGrafica === 'semana') {
       const dias = Array.from({ length: 7 }, (_, i) => subDays(new Date(), 6 - i));
       return dias.map((dia) => {
         const key = format(dia, 'yyyy-MM-dd');
-        const consultasDia = consultas.filter(c => c.fecha && fechaLocalClave(c.fecha) === key);
-        return {
-          dia: format(dia, 'EEE', { locale: es }),
-          consultas: consultasDia.length,
-          ingresos: consultasDia.reduce((sum, c) => sum + c.total, 0),
-        };
+        return { dia: format(dia, 'EEE', { locale: es }), ...ingresosDeDia(key) };
       });
     }
 
-    const inicio = startOfMonth(mesActual);
-    const fin = endOfMonth(mesActual);
-    const diasMes = eachDayOfInterval({ start: inicio, end: fin });
+    const diasMes = eachDayOfInterval({ start: startOfMonth(mesActual), end: endOfMonth(mesActual) });
 
     return diasMes.map((dia) => {
       const key = format(dia, 'yyyy-MM-dd');
-      const consultasDia = consultas.filter(c => c.fecha && fechaLocalClave(c.fecha) === key);
-      return {
-        dia: format(dia, 'd'),
-        consultas: consultasDia.length,
-        ingresos: consultasDia.reduce((sum, c) => sum + c.total, 0),
-      };
+      return { dia: format(dia, 'd'), ...ingresosDeDia(key) };
     });
-  }, [consultas, periodoGrafica, mesActual]);
+  }, [consultas, hospedajesFacturados, periodoGrafica, mesActual]);
 
   const serviciosFrecuentes = useMemo(() => {
     const inicio = startOfMonth(mesActual);
@@ -354,7 +405,7 @@ export default function DashboardPage() {
         {/* Columna izquierda (2/3) */}
         <div className="lg:col-span-2 flex flex-col gap-4">
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {/* Pacientes Hoy */}
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-primary via-brand-primary to-brand-primary p-6 shadow-lg text-white min-h-[140px]">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.15),transparent_60%)]" />
@@ -393,6 +444,30 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-1.5 mt-3">
                     <span className="flex items-center gap-0.5 text-[11px] font-semibold bg-white/20 rounded-full px-2 py-0.5">
                       <TrendingUp className="w-3 h-3" /> Prefacturado
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* En Hospedaje. Va al final de la fila para que se lea de izquierda a
+                derecha siguiendo el día: pacientes atendidos, ingresos y lo que queda
+                en la clínica. */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-cyan-700 via-cyan-600 to-cyan-500 p-6 shadow-lg text-white min-h-[140px]">
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.15),transparent_60%)]" />
+              <TransportCageIcon className="absolute -right-4 -bottom-4 w-28 h-28 opacity-[0.08]" />
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div className="flex items-start justify-between">
+                  <p className="text-xs font-bold uppercase tracking-[0.15em] text-white/60">En Hospedaje</p>
+                  <div className="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
+                    <TransportCageIcon className="w-5 h-5 text-white" />
+                  </div>
+                </div>
+                <div>
+                  <p className="text-5xl font-black leading-none tabular-nums">{hospedadosAhora}</p>
+                  <div className="flex items-center gap-1.5 mt-3">
+                    <span className="flex items-center gap-0.5 text-[11px] font-semibold bg-white/20 rounded-full px-2 py-0.5">
+                      {hospedadosAhora === 1 ? '1 paciente' : `${hospedadosAhora} pacientes`}
                     </span>
                   </div>
                 </div>
