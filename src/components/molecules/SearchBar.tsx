@@ -39,8 +39,8 @@ export function SearchBar({ placeholder, value, onChange, filters, currentFilter
             filterVariant === 'select' ? (
               <div className="relative min-w-[180px]">
                 <Select value={currentFilter} onValueChange={onFilterChange}>
-                  <SelectTrigger aria-label="Filtrar por especie" className="h-11 rounded-lg font-medium">
-                    <SelectValue placeholder="Filtrar por especie" />
+                  <SelectTrigger aria-label="Filtrar lista" className="h-11 rounded-lg font-medium">
+                    <SelectValue placeholder="Filtrar lista" />
                   </SelectTrigger>
                   <SelectContent>
                     {filters.map((f) => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}

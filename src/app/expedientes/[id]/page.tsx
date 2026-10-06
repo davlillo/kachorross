@@ -27,12 +27,14 @@ import { ExportacionMascotaDialog } from '@/components/organisms/ExportacionMasc
 import { ACCEPT_ARCHIVO_EVOLUCION, esPdf, validarArchivoEvolucion } from '@/lib/archivoEvolucion';
 import { VerVacunaDialog } from '@/components/organisms/VerVacunaDialog';
 import { VerDesparasitacionDialog } from '@/components/organisms/VerDesparasitacionDialog';
+import { VerHospedajeDialog } from '@/components/organisms/VerHospedajeDialog';
 import {
   Stethoscope, Syringe, Camera, FileText, Plus, ArrowLeft,
   Pencil, Trash2, AlertTriangle, Filter, CalendarDays,
   Pill, Stamp, ChevronDown, Plane, Maximize2
 } from 'lucide-react';
-import type { Consulta, Expediente, FotoEvolucion, Mascota, Vacuna, Desparasitacion } from '@/types';
+import { TransportCageIcon } from '@/components/atoms/custom';
+import type { Consulta, Expediente, FotoEvolucion, Hospedaje, Mascota, Vacuna, Desparasitacion } from '@/types';
 import {
   formatTelefono,
   formatPeso,
@@ -42,7 +44,7 @@ import {
   TELEFONO_MAX_LENGTH,
   TELEFONO_PLACEHOLDER,
 } from '@/lib/input-validators';
-import { cn, parseDateLocal, formatDateLocal, todayLocal } from '@/lib/utils';
+import { cn, parseDateLocal, formatDateLocal, todayLocal, diffDias } from '@/lib/utils';
 import { colorEvento } from '@/data/eventosData';
 
 const especies: { value: Mascota['especie']; label: string }[] = [
@@ -69,7 +71,7 @@ interface CartillaPageData {
   desparasitaciones: Desparasitacion[];
 }
 
-type TipoHistorial = 'consulta' | 'vacuna' | 'desparasitacion';
+type TipoHistorial = 'consulta' | 'vacuna' | 'desparasitacion' | 'hospedaje';
 
 interface EntradaHistorial {
   key: string;
@@ -80,6 +82,7 @@ interface EntradaHistorial {
   consulta?: Consulta;
   vacuna?: Vacuna;
   desparasitacion?: Desparasitacion;
+  hospedaje?: Hospedaje;
 }
 
 const OPCIONES_FILTRO_TIPO: { value: 'todos' | TipoHistorial; label: string }[] = [
@@ -87,12 +90,25 @@ const OPCIONES_FILTRO_TIPO: { value: 'todos' | TipoHistorial; label: string }[] 
   { value: 'consulta', label: 'Consultas' },
   { value: 'vacuna', label: 'Vacunas' },
   { value: 'desparasitacion', label: 'Desparasitaciones' },
+  { value: 'hospedaje', label: 'Hospedajes' },
 ];
 
-const TIPO_HISTORIAL_META: Record<TipoHistorial, { label: string; evento: keyof typeof colorEvento }> = {
-  consulta: { label: 'Consulta general', evento: 'control' },
-  vacuna: { label: 'Vacuna', evento: 'vacuna' },
-  desparasitacion: { label: 'Desparasitación', evento: 'desparasitante' },
+// Estilos propios del historial: consulta/vacuna/desparasitacion reusan la paleta
+// de la agenda para no cambiar lo que ya se ve, y hospedaje trae la suya porque
+// `TipoEvento` es vocabulario de la agenda y no tiene un tipo para estancias.
+const ESTILO_HOSPEDAJE = {
+  bg: 'bg-cyan-50',
+  text: 'text-cyan-700',
+  dot: 'bg-cyan-500',
+  label: 'Hospedaje',
+  border: 'border-l-cyan-500',
+};
+
+const TIPO_HISTORIAL_META: Record<TipoHistorial, { label: string; estilo: typeof colorEvento.control }> = {
+  consulta: { label: 'Consulta general', estilo: colorEvento.control },
+  vacuna: { label: 'Vacuna', estilo: colorEvento.vacuna },
+  desparasitacion: { label: 'Desparasitación', estilo: colorEvento.desparasitante },
+  hospedaje: { label: 'Hospedaje', estilo: ESTILO_HOSPEDAJE },
 };
 
 function EmptySlot() {
@@ -175,15 +191,24 @@ function HistorialEntry({
   fotos?: FotoEvolucion[];
 }) {
   const meta = TIPO_HISTORIAL_META[entrada.tipo];
-  const estilo = colorEvento[meta.evento];
-  const Icon = entrada.tipo === 'consulta' ? Stethoscope : entrada.tipo === 'vacuna' ? Syringe : Pill;
+  const estilo = meta.estilo;
+  const Icon =
+    entrada.tipo === 'consulta'
+      ? Stethoscope
+      : entrada.tipo === 'vacuna'
+        ? Syringe
+        : entrada.tipo === 'hospedaje'
+          ? TransportCageIcon
+          : Pill;
   const esConsulta = entrada.tipo === 'consulta';
   const medico =
     entrada.tipo === 'vacuna'
       ? entrada.vacuna?.aplicadaPor
       : entrada.tipo === 'desparasitacion'
         ? entrada.desparasitacion?.medicoResponsable
-        : entrada.consulta?.medicoResponsable;
+        : entrada.tipo === 'hospedaje'
+          ? undefined
+          : entrada.consulta?.medicoResponsable;
 
   return (
     <div
@@ -403,6 +428,7 @@ export default function ExpedienteDetailPage() {
   const [consultaDetalle, setConsultaDetalle] = useState<Consulta | null>(null);
   const [vacunaDetalle, setVacunaDetalle] = useState<Vacuna | null>(null);
   const [desparasitacionDetalle, setDesparasitacionDetalle] = useState<Desparasitacion | null>(null);
+  const [hospedajeDetalle, setHospedajeDetalle] = useState<Hospedaje | null>(null);
 
   // ── Subida de fotos ────────────────────────────────────────────────────────────
   const [fotoPendiente, setFotoPendiente] = useState<File | null>(null);
@@ -513,6 +539,19 @@ export default function ExpedienteDetailPage() {
         fechaLabel: formatDateShort(d.fechaAplicacion),
         resumen: `${d.tipo} · ${d.viaAdministracion}`,
         desparasitacion: d,
+      });
+    }
+
+    for (const h of expediente.hospedajesFinalizados) {
+      const dias = h.fechaSalidaReal ? Math.max(diffDias(h.fechaIngreso, h.fechaSalidaReal), 1) : 1;
+      entradas.push({
+        key: `h-${h.id}`,
+        tipo: 'hospedaje',
+        // Se ancla al ingreso, que es cuando la mascota entró a la clínica.
+        fecha: h.fechaIngreso,
+        fechaLabel: formatDateShort(h.fechaIngreso),
+        resumen: `${dias} ${dias === 1 ? 'día' : 'días'}${h.totalCargo != null ? ` · $${h.totalCargo.toFixed(2)}` : ''}`,
+        hospedaje: h,
       });
     }
 
@@ -870,9 +909,12 @@ export default function ExpedienteDetailPage() {
                       Historial Médico
                       <Badge variant="outline" className="ml-2 text-xs font-normal">{historialFiltrado.length}</Badge>
                     </CardTitle>
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    {/* Una sola fila: los controles de fecha no bajan de línea. Antes
+                        `flex-wrap` los partía en dos renglones cuando no entraban, y los
+                        campos quedaban desalineados del filtro de tipo. */}
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
                       {/* Filtro por tipo */}
-                      <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+                      <div className="flex items-center gap-1 bg-muted rounded-lg p-1 shrink-0">
                         {OPCIONES_FILTRO_TIPO.map(op => (
                           <button
                             key={op.value}
@@ -889,20 +931,22 @@ export default function ExpedienteDetailPage() {
                           </button>
                         ))}
                       </div>
-                      {/* Filtro fechas */}
-                      <div className="flex items-center gap-2 flex-wrap">
+                      {/* Filtro fechas. `shrink-0` mantiene los dos campos y el guion en un único
+                          renglón; el guion y el botón de limpiar son `w-*` fijos para que
+                          no se desplacen al cambiar el ancho de los campos. */}
+                      <div className="flex items-center gap-2 shrink-0">
                         <CalendarDays className="w-4 h-4 text-muted-foreground shrink-0" />
                         <Input type="date" value={consultaDesde} onChange={e => setConsultaDesde(e.target.value)}
                           className="h-8 text-xs w-36" />
-                        <span className="text-xs text-muted-foreground">–</span>
+                        <span className="text-xs text-muted-foreground w-3 text-center shrink-0" aria-hidden="true">–</span>
                         <Input type="date" value={consultaHasta} onChange={e => setConsultaHasta(e.target.value)}
                           className="h-8 text-xs w-36" />
-                        {(consultaDesde || consultaHasta) && (
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground"
-                            onClick={() => { setConsultaDesde(''); setConsultaHasta(''); }}>
-                            <span aria-hidden="true" className="text-xs leading-none">×</span>
-                          </Button>
-                        )}
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground shrink-0"
+                          onClick={() => { setConsultaDesde(''); setConsultaHasta(''); }}
+                          disabled={!consultaDesde && !consultaHasta}
+                          aria-label="Limpiar filtro de fechas">
+                          <span aria-hidden="true" className="text-xs leading-none">×</span>
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -923,6 +967,7 @@ export default function ExpedienteDetailPage() {
                             if (entrada.consulta) setConsultaDetalle(entrada.consulta);
                             else if (entrada.vacuna) setVacunaDetalle(entrada.vacuna);
                             else if (entrada.desparasitacion) setDesparasitacionDetalle(entrada.desparasitacion);
+                            else if (entrada.hospedaje) setHospedajeDetalle(entrada.hospedaje);
                           }}
                         />
                       ))}
@@ -950,6 +995,12 @@ export default function ExpedienteDetailPage() {
               open={!!desparasitacionDetalle}
               onOpenChange={(v) => { if (!v) setDesparasitacionDetalle(null) }}
               desparasitacion={desparasitacionDetalle}
+            />
+
+            <VerHospedajeDialog
+              open={!!hospedajeDetalle}
+              onOpenChange={(v) => { if (!v) setHospedajeDetalle(null) }}
+              hospedaje={hospedajeDetalle}
             />
 
             {/* ── Tab: Vacunas (Cartilla) ── */}

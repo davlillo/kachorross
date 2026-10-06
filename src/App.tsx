@@ -18,6 +18,10 @@ import ExpedienteDetailPage from '@/app/expedientes/[id]/page';
 
 import NuevaConsultaPage from '@/app/consulta/nueva/page';
 
+import HospedajePage from '@/app/hospedaje/page';
+
+import NuevoHospedajePage from '@/app/hospedaje/nuevo/page';
+
 import RecepcionPage from '@/app/recepcion/page';
 
 import CatalogoPage from '@/app/admin/catalogo/page';
@@ -183,6 +187,30 @@ function AppRoutes() {
         <ProtectedRoute allowedRoles={['doctora', 'admin']}>
 
           <Layout><ExpedienteDetailPage /></Layout>
+
+        </ProtectedRoute>
+
+      } />
+
+
+
+      <Route path="/hospedaje" element={
+
+        <ProtectedRoute allowedRoles={['doctora', 'admin']}>
+
+          <Layout><HospedajePage /></Layout>
+
+        </ProtectedRoute>
+
+      } />
+
+
+
+      <Route path="/hospedaje/nuevo" element={
+
+        <ProtectedRoute allowedRoles={['doctora', 'admin']}>
+
+          <Layout><NuevoHospedajePage /></Layout>
 
         </ProtectedRoute>
 

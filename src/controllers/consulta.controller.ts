@@ -229,7 +229,7 @@ export class ConsultaController {
   }
 
   async getMonitorSalida(): Promise<MonitorSalida[]> {
-    const pendientes = await this.getPendientes(3)
+    const pendientes = await this.getPendientes()
     if (pendientes.length === 0) return []
 
     const mascotaIds = [...new Set(pendientes.map(c => c.mascotaId))]
@@ -238,15 +238,17 @@ export class ConsultaController {
     const mascotasById = new Map(mascotas.map(m => [m.id, m]))
 
     return pendientes
-      .map((c, i) => {
+      .map(c => {
         const mascota = mascotasById.get(c.mascotaId)
         if (!mascota) return null
         return {
-          consultaId: c.id,
+          origen: 'consulta' as const,
+          id: c.id,
           mascota,
           horaTermino: c.fecha,
           total: c.total,
-          estado: (i === 2 ? 'pagando' : 'listo') as MonitorSalida['estado'],
+          estado: 'listo' as const,
+          consulta: c,
         }
       })
       .filter(Boolean) as MonitorSalida[]
