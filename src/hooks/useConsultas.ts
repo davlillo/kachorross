@@ -8,8 +8,15 @@ const consultaCtrl = ConsultaController.getInstance()
 const catalogoCtrl = CatalogoController.getInstance()
 const mascotaCtrl = MascotaController.getInstance()
 
+/**
+ * Consultas pendientes de facturar, ya resueltas con su paciente.
+ *
+ * No corta a 3 ni arma el estado por posición: el monitor mezcla también los
+ * hospedajes por facturar, así que el corte y el orden se resuelven después, en
+ * `combinarMonitor`.
+ */
 async function attachMascotasToMonitor(consultas: Consulta[]): Promise<MonitorSalida[]> {
-  const pendientes = consultas.filter(c => c.estado === 'pendiente').slice(0, 3)
+  const pendientes = consultas.filter(c => c.estado === 'pendiente')
   if (pendientes.length === 0) return []
 
   const mascotaIds = [...new Set(pendientes.map(c => c.mascotaId))]
@@ -17,15 +24,17 @@ async function attachMascotasToMonitor(consultas: Consulta[]): Promise<MonitorSa
   const mascotasById = new Map(mascotas.map(m => [m.id, m]))
 
   return pendientes
-    .map((c, i) => {
+    .map(c => {
       const mascota = mascotasById.get(c.mascotaId)
       if (!mascota) return null
       return {
-        consultaId: c.id,
+        origen: 'consulta' as const,
+        id: c.id,
         mascota,
         horaTermino: c.fecha,
         total: c.total,
-        estado: (i === 2 ? 'pagando' : 'listo') as MonitorSalida['estado'],
+        estado: 'listo' as const,
+        consulta: c,
       }
     })
     .filter(Boolean) as MonitorSalida[]
