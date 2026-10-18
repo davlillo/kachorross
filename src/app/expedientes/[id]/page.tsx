@@ -31,7 +31,7 @@ import { VerHospedajeDialog } from '@/components/organisms/VerHospedajeDialog';
 import {
   Stethoscope, Syringe, Camera, FileText, Plus, ArrowLeft,
   Pencil, Trash2, AlertTriangle, Filter, CalendarDays,
-  Pill, Stamp, ChevronDown, Maximize2, Plane,
+  Pill, Stamp, ChevronDown, Maximize2, Plane, FileDown, Download,
 } from 'lucide-react';
 import { TransportCageIcon } from '@/components/atoms/custom';
 import type { Consulta, Expediente, FotoEvolucion, Hospedaje, Mascota, Vacuna, Desparasitacion } from '@/types';
@@ -46,6 +46,7 @@ import {
 } from '@/lib/input-validators';
 import { cn, parseDateLocal, formatDateLocal, todayLocal, diffDias } from '@/lib/utils';
 import { colorEvento } from '@/data/eventosData';
+import { generarPdfHistorialClinico } from '@/lib/pdfHistorialClinico';
 
 const especies: { value: Mascota['especie']; label: string }[] = [
   { value: 'perro', label: 'Perro' },
@@ -366,7 +367,7 @@ function CartillaPageView({
 export default function ExpedienteDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, veterinaria } = useAuth();
   const ctrl = MascotaController.getInstance();
   const evolucionInputRef = useRef<HTMLInputElement>(null);
 
@@ -420,6 +421,9 @@ export default function ExpedienteDetailPage() {
   const [editOpen,   setEditOpen]   = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [exportacionOpen, setExportacionOpen] = useState(false);
+  const [exportandoHistorial, setExportandoHistorial] = useState(false);
+  const [pdfHistorialUrl, setPdfHistorialUrl] = useState<string | null>(null);
+  const [pdfHistorialFilename, setPdfHistorialFilename] = useState('historial-clinico.pdf');
   const [fotoOpen, setFotoOpen] = useState(false);
   const [fotoModo, setFotoModo] = useState<'perfil' | 'evolucion'>('evolucion');
   const [fotoSeleccionada, setFotoSeleccionada] = useState<FotoEvolucion | null>(null);
@@ -693,6 +697,29 @@ export default function ExpedienteDetailPage() {
     navigate('/expedientes');
   };
 
+  const exportarHistorial = async () => {
+    if (!expediente) return;
+    try {
+      setExportandoHistorial(true);
+      const pdf = await generarPdfHistorialClinico({ expediente, veterinaria });
+      const bytes = Uint8Array.from(atob(pdf.base64), character => character.charCodeAt(0));
+      const file = new File([bytes], pdf.filename, { type: 'application/pdf' });
+      if (pdfHistorialUrl) URL.revokeObjectURL(pdfHistorialUrl);
+      setPdfHistorialFilename(pdf.filename);
+      setPdfHistorialUrl(URL.createObjectURL(file));
+    } catch (error) {
+      console.error('Error al exportar historial clínico:', error);
+      toast.error(error instanceof Error ? error.message : 'No se pudo generar el PDF');
+    } finally {
+      setExportandoHistorial(false);
+    }
+  };
+
+  const cerrarVistaPreviaHistorial = () => {
+    if (pdfHistorialUrl) URL.revokeObjectURL(pdfHistorialUrl);
+    setPdfHistorialUrl(null);
+  };
+
   // createObjectURL en el render fuga una URL por cada re-render; se ata al
   // archivo y se revoca al cambiarlo o cerrar.
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -859,6 +886,15 @@ export default function ExpedienteDetailPage() {
           </div>
         </div>
         <div className="flex gap-2 flex-wrap">
+          <Button
+            variant="outline"
+            onClick={() => void exportarHistorial()}
+            disabled={exportandoHistorial}
+            className="border-brand-primary/20 text-brand-primary hover:bg-brand-primary/5"
+          >
+            <FileDown className="w-4 h-4 mr-2" />
+            {exportandoHistorial ? 'Generando PDF...' : 'Exportar historial PDF'}
+          </Button>
           <Button variant="outline" onClick={() => setExportacionOpen(true)} className="border-brand-primary/20 text-brand-primary hover:bg-brand-primary/5">
             <Plane className="w-4 h-4 mr-2" />Trámite de exportación
           </Button>
@@ -1479,6 +1515,32 @@ export default function ExpedienteDetailPage() {
         mascota={mascota}
         veterinarioPredeterminado={user?.nombre}
       />
+
+      <Dialog
+        open={!!pdfHistorialUrl}
+        onOpenChange={open => { if (!open) cerrarVistaPreviaHistorial(); }}
+      >
+        <DialogContent className="max-w-5xl gap-0 overflow-hidden p-0">
+          <DialogHeader className="flex-row items-center justify-between gap-3 border-b border-border px-5 py-4 pr-20">
+            <div>
+              <DialogTitle>Vista previa del historial clínico</DialogTitle>
+              <DialogDescription>{pdfHistorialFilename}</DialogDescription>
+            </div>
+            {pdfHistorialUrl && (
+              <Button asChild size="sm" className="shrink-0 bg-brand-primary hover:bg-brand-primary">
+                <a href={pdfHistorialUrl} download={pdfHistorialFilename}>
+                  <Download className="mr-2 h-4 w-4" />Descargar PDF
+                </a>
+              </Button>
+            )}
+          </DialogHeader>
+          {pdfHistorialUrl && (
+            <div className="h-[78vh] min-h-[480px] bg-muted">
+              <embed src={pdfHistorialUrl} type="application/pdf" className="h-full w-full" />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* ── Dialog: Agregar Vacuna / Desparasitación ── */}
       <Dialog open={agregarOpen} onOpenChange={setAgregarOpen}>
