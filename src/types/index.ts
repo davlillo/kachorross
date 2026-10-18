@@ -96,6 +96,8 @@ export interface Hospedaje {
   fechaSalidaEstimada: string;
   fechaSalidaReal: string | null;
   tarifaDiaria: number;
+  subtotalCargo: number | null;
+  descuentoPorcentaje: number;
   totalCargo: number | null;
   observaciones?: string;
   estado: EstadoHospedaje;

@@ -39,6 +39,8 @@ type HospedajeRow = {
   fecha_salida_estimada: string
   fecha_salida_real: string | null
   tarifa_diaria: number
+  subtotal_cargo: number | null
+  descuento_porcentaje: number
   total_cargo: number | null
   observaciones: string | null
   estado: EstadoHospedaje
@@ -62,7 +64,7 @@ type HospedajeInsert = Pick<
 >
 
 const SELECT_HOSPEDAJE =
-  'id,veterinaria_id,mascota_id,fecha_ingreso,fecha_salida_estimada,fecha_salida_real,tarifa_diaria,total_cargo,observaciones,estado,estado_cobro,facturado_at,consulta_id,' +
+  'id,veterinaria_id,mascota_id,fecha_ingreso,fecha_salida_estimada,fecha_salida_real,tarifa_diaria,subtotal_cargo,descuento_porcentaje,total_cargo,observaciones,estado,estado_cobro,facturado_at,consulta_id,' +
   'mascotas(id,veterinaria_id,nombre,especie,raza,fecha_nacimiento,sexo,color,peso,foto,alergias,notas_especiales,fecha_registro,propietarios(id,veterinaria_id,nombre,telefono,email,direccion))'
 
 const ESPECIES = new Set(['perro', 'gato', 'ave', 'conejo', 'otro'])
@@ -153,6 +155,8 @@ export class HospedajeController {
       fechaSalidaEstimada: row.fecha_salida_estimada,
       fechaSalidaReal: row.fecha_salida_real,
       tarifaDiaria: Number(row.tarifa_diaria),
+      subtotalCargo: row.subtotal_cargo === null ? null : Number(row.subtotal_cargo),
+      descuentoPorcentaje: Number(row.descuento_porcentaje ?? 0),
       totalCargo: row.total_cargo === null ? null : Number(row.total_cargo),
       observaciones: row.observaciones ?? undefined,
       estado: row.estado,
@@ -312,6 +316,25 @@ export class HospedajeController {
 
     if (error) throw new Error(`No se pudo marcar el hospedaje como facturado: ${error.message}`)
 
+    return data === true
+  }
+
+  /** Ajusta el total antes del cobro, sin exponer otros campos de la estancia. */
+  async ajustarCargo(id: string, subtotalCargo: number, descuentoPorcentaje: number): Promise<boolean> {
+    if (!Number.isFinite(subtotalCargo) || subtotalCargo < 0) {
+      throw new Error('El subtotal debe ser mayor o igual a cero')
+    }
+    if (!Number.isFinite(descuentoPorcentaje) || descuentoPorcentaje < 0 || descuentoPorcentaje > 100) {
+      throw new Error('El descuento debe estar entre 0 y 100 por ciento')
+    }
+
+    const { data, error } = await supabase.rpc('ajustar_hospedaje_cargo', {
+      p_hospedaje_id: id,
+      p_subtotal_cargo: subtotalCargo,
+      p_descuento_porcentaje: descuentoPorcentaje,
+    })
+
+    if (error) throw new Error(`No se pudo ajustar el cargo del hospedaje: ${error.message}`)
     return data === true
   }
 

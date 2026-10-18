@@ -75,7 +75,18 @@ export function useHospedajesPrefacturacion() {
     [refresh],
   )
 
-  return { hospedajes, isLoading, error, marcarFacturado, refresh }
+  const ajustarCargo = useCallback(
+    async (id: string, subtotalCargo: number, descuentoPorcentaje: number): Promise<void> => {
+      const ok = await hospedajeCtrl.ajustarCargo(id, subtotalCargo, descuentoPorcentaje)
+      if (!ok) {
+        throw new Error('El hospedaje ya fue facturado o no está disponible')
+      }
+      await refresh()
+    },
+    [refresh],
+  )
+
+  return { hospedajes, isLoading, error, marcarFacturado, ajustarCargo, refresh }
 }
 
 /**
