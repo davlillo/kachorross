@@ -111,11 +111,6 @@ export class EmailController {
     pdfBase64: string
   }): Promise<{ ok: boolean; error?: string }> {
     try {
-      const config = await this.getConfig(params.veterinariaId)
-      if (!config) {
-        return { ok: false, error: 'No hay configuración SMTP. Configúralo en Ajustes > Correo.' }
-      }
-
       const fechaFormateada = new Date(params.fecha).toLocaleDateString('es-ES', {
         weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
       })
@@ -204,11 +199,6 @@ ${params.veterinariaNombre}
     veterinariaEmail?: string | null
   }): Promise<{ ok: boolean; error?: string }> {
     try {
-      const config = await this.getConfig(params.veterinariaId)
-      if (!config) {
-        return { ok: false, error: 'No hay configuración SMTP en Configuración.' }
-      }
-
       // La fecha sale de la cita real, no de "mañana": este metodo tambien se
       // usa para recordar citas que no son necesariamente del dia siguiente.
       const fechaClave = fechaEnElSalvador(params.proximaCitaIso)
