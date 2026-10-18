@@ -18,6 +18,7 @@ import {
 import type { PlantillaDestinoExportacion } from '@/controllers/exportacion.controller'
 import { useAuth } from '@/context/AuthContext'
 import { generarPdfCertificadoExportacion } from '@/lib/pdfCertificadoExportacion'
+import { EnvioDocumentosExportacion } from '@/components/organisms/EnvioDocumentosExportacion'
 import type {
   CostoExportacion,
   EstadoExportacion,
@@ -55,6 +56,7 @@ interface ExportacionMascotaDialogProps {
   onOpenChange: (open: boolean) => void
   mascota: Mascota
   veterinarioPredeterminado?: string
+  initialRecordId?: string
 }
 
 const controller = ExportacionController.getInstance()
@@ -145,6 +147,7 @@ export function ExportacionMascotaDialog({
   onOpenChange,
   mascota,
   veterinarioPredeterminado = '',
+  initialRecordId,
 }: ExportacionMascotaDialogProps) {
   const { veterinaria } = useAuth()
   const [registros, setRegistros] = useState<ExportacionMascota[]>([])
@@ -160,18 +163,20 @@ export function ExportacionMascotaDialog({
   useEffect(() => {
     if (!open) return
     let activo = true
+    setCargando(true)
     void controller.listarPorMascota(mascota.id)
       .then((data) => {
         if (!activo) return
         setRegistros(data)
-        if (data.length > 0) {
-          setSeleccionadoId(null)
-          setForm(nuevoFormulario(mascota.id, veterinarioPredeterminado))
-          setMostrarFormulario(false)
+        const solicitado = data.find(item => item.id === initialRecordId)
+        if (solicitado) {
+          setSeleccionadoId(solicitado.id)
+          setForm(formularioDesdeRegistro(solicitado))
+          setMostrarFormulario(true)
         } else {
           setSeleccionadoId(null)
           setForm(nuevoFormulario(mascota.id, veterinarioPredeterminado))
-          setMostrarFormulario(true)
+          setMostrarFormulario(data.length === 0)
         }
       })
       .catch((error) => {
@@ -183,13 +188,16 @@ export function ExportacionMascotaDialog({
     return () => {
       activo = false
     }
-  }, [open, mascota.id, veterinarioPredeterminado])
+  }, [open, mascota.id, veterinarioPredeterminado, initialRecordId])
 
   const pendientes = form.requisitos.filter(
     item => item.obligatorio && item.estado !== 'completado',
   ).length
   const plantillaSeleccionada = plantillaDesdeDestino(form.paisDestino)
   const certificadoConLogo = Boolean(veterinaria?.logoUrl)
+  const registroSeleccionado = registros.find(item => item.id === seleccionadoId)
+  const hayCambiosSinGuardar = registroSeleccionado
+    && JSON.stringify(form) !== JSON.stringify(formularioDesdeRegistro(registroSeleccionado))
   const total = useMemo(
     () => form.costos.reduce(
       (sum, item) => sum + (Number(item.cantidad) || 0) * (Number(item.precioUnitario) || 0),
@@ -296,6 +304,10 @@ export function ExportacionMascotaDialog({
   }
 
   const descargarCertificado = async () => {
+    if (hayCambiosSinGuardar) {
+      toast.info('Guarde los cambios antes de generar el certificado')
+      return
+    }
     if (!certificadoConLogo) {
       toast.info('Cargue el logo de la clínica en Configuración')
       return
@@ -574,6 +586,10 @@ export function ExportacionMascotaDialog({
                   className="min-h-24"
                 />
               </section>
+              {registroSeleccionado && (hayCambiosSinGuardar
+                ? <p className="border-t pt-5 text-sm text-amber-700">Guarde los cambios antes de enviar documentación.</p>
+                : <EnvioDocumentosExportacion key={registroSeleccionado.id} tramite={registroSeleccionado}
+                    mascota={mascota} veterinaria={veterinaria} />)}
               </div>
             ) : (
               <div className="flex min-h-[55vh] items-center justify-center p-6">
@@ -602,7 +618,7 @@ export function ExportacionMascotaDialog({
               <Button
                 variant="outline"
                 onClick={descargarCertificado}
-                disabled={!seleccionadoId || !certificadoConLogo || generandoPdf || guardando}
+                disabled={!seleccionadoId || !certificadoConLogo || !!hayCambiosSinGuardar || generandoPdf || guardando}
               >
                 {generandoPdf
                   ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />

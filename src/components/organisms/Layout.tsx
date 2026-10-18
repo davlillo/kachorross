@@ -30,6 +30,7 @@ import {
   History,
   Sun,
   Moon,
+  Plane,
 } from 'lucide-react';
 import { useState } from 'react';
 import { TransportCageIcon } from '@/components/atoms/custom';
@@ -60,6 +61,12 @@ const navItems: NavItem[] = [
     label: 'Hospedaje',
     href: '/hospedaje',
     icon: TransportCageIcon,
+    roles: ['doctora', 'admin'],
+  },
+  {
+    label: 'Exportación de mascotas',
+    href: '/exportaciones',
+    icon: Plane,
     roles: ['doctora', 'admin'],
   },
   {

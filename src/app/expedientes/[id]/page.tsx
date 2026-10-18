@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { toast } from 'sonner';
 import { MascotaController } from '@/controllers/mascota.controller';
@@ -367,6 +367,8 @@ function CartillaPageView({
 export default function ExpedienteDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tramiteSolicitado = searchParams.get('exportacion');
   const { user, veterinaria } = useAuth();
   const ctrl = MascotaController.getInstance();
   const evolucionInputRef = useRef<HTMLInputElement>(null);
@@ -424,6 +426,20 @@ export default function ExpedienteDetailPage() {
   const [exportandoHistorial, setExportandoHistorial] = useState(false);
   const [pdfHistorialUrl, setPdfHistorialUrl] = useState<string | null>(null);
   const [pdfHistorialFilename, setPdfHistorialFilename] = useState('historial-clinico.pdf');
+  useEffect(() => {
+    if (tramiteSolicitado) setExportacionOpen(true);
+  }, [tramiteSolicitado]);
+
+  const cambiarExportacionOpen = (abierto: boolean) => {
+    setExportacionOpen(abierto);
+    if (!abierto && tramiteSolicitado) {
+      setSearchParams(prev => {
+        const next = new URLSearchParams(prev);
+        next.delete('exportacion');
+        return next;
+      }, { replace: true });
+    }
+  };
   const [fotoOpen, setFotoOpen] = useState(false);
   const [fotoModo, setFotoModo] = useState<'perfil' | 'evolucion'>('evolucion');
   const [fotoSeleccionada, setFotoSeleccionada] = useState<FotoEvolucion | null>(null);
@@ -1511,9 +1527,10 @@ export default function ExpedienteDetailPage() {
 
       <ExportacionMascotaDialog
         open={exportacionOpen}
-        onOpenChange={setExportacionOpen}
+        onOpenChange={cambiarExportacionOpen}
         mascota={mascota}
         veterinarioPredeterminado={user?.nombre}
+        initialRecordId={tramiteSolicitado ?? undefined}
       />
 
       <Dialog

@@ -22,6 +22,8 @@ import HospedajePage from '@/app/hospedaje/page';
 
 import NuevoHospedajePage from '@/app/hospedaje/nuevo/page';
 
+import ExportacionesPage from '@/app/exportaciones/page';
+
 import RecepcionPage from '@/app/recepcion/page';
 
 import CatalogoPage from '@/app/admin/catalogo/page';
@@ -211,6 +213,16 @@ function AppRoutes() {
         <ProtectedRoute allowedRoles={['doctora', 'admin']}>
 
           <Layout><NuevoHospedajePage /></Layout>
+
+        </ProtectedRoute>
+
+      } />
+
+      <Route path="/exportaciones" element={
+
+        <ProtectedRoute allowedRoles={['doctora', 'admin']}>
+
+          <Layout><ExportacionesPage /></Layout>
 
         </ProtectedRoute>
 

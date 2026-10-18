@@ -171,6 +171,18 @@ export interface GuardarExportacionMascotaDTO {
   observaciones?: string;
 }
 
+export type DocumentoExportacion = 'certificado' | 'cartilla' | 'laboratorio';
+
+export interface EnvioExportacion {
+  id: string;
+  exportacionId: string;
+  destinatarioEmail: string;
+  documentos: DocumentoExportacion[];
+  estado: 'pendiente' | 'enviado' | 'fallido';
+  fechaEnvio?: string;
+  createdAt: string;
+}
+
 export interface Consulta {
   id: string;
   veterinariaId: string;

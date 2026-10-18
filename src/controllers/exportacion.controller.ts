@@ -1,9 +1,12 @@
 import { supabase } from '@/supabase/client'
+import { mensajeErrorEdgeFunction } from '@/lib/edgeFunctionError'
 import type {
   CostoExportacion,
   ExportacionMascota,
   GuardarExportacionMascotaDTO,
   RequisitoExportacion,
+  DocumentoExportacion,
+  EnvioExportacion,
 } from '@/types'
 import { AuthController } from './auth.controller'
 
@@ -26,6 +29,11 @@ type ExportacionRow = {
   observaciones: string | null
   created_at: string
   updated_at: string
+}
+
+export type ExportacionResumen = ExportacionMascota & {
+  mascotaNombre: string
+  propietarioNombre: string
 }
 
 const ESTADOS_REQUISITO = new Set(['pendiente', 'en_proceso', 'completado'])
@@ -242,6 +250,25 @@ export class ExportacionController {
     return (data ?? []).map(row => this.map(row as ExportacionRow))
   }
 
+  async listar(): Promise<ExportacionResumen[]> {
+    const { veterinariaId } = await this.getContexto()
+    const { data, error } = await supabase
+      .from('exportaciones_mascota')
+      .select('*,mascotas(nombre,propietarios(nombre))')
+      .eq('veterinaria_id', veterinariaId)
+      .order('created_at', { ascending: false })
+
+    if (error) throw new Error(`No se pudieron cargar los trámites: ${error.message}`)
+    return (data ?? []).map(row => {
+      const mascota = row.mascotas as { nombre: string; propietarios: { nombre: string } | null } | null
+      return {
+        ...this.map(row as ExportacionRow),
+        mascotaNombre: mascota?.nombre ?? 'Mascota no disponible',
+        propietarioNombre: mascota?.propietarios?.nombre ?? '—',
+      }
+    })
+  }
+
   async crear(data: GuardarExportacionMascotaDTO): Promise<ExportacionMascota> {
     const { user, veterinariaId } = await this.getContexto()
     const payload = this.normalizar(data)
@@ -276,5 +303,32 @@ export class ExportacionController {
       throw new Error(`No se pudo actualizar el trámite: ${error?.message ?? 'respuesta vacía'}`)
     }
     return this.map(updated as ExportacionRow)
+  }
+
+  async listarEnvios(exportacionId: string): Promise<EnvioExportacion[]> {
+    const { veterinariaId } = await this.getContexto()
+    const { data, error } = await supabase.from('envios_exportacion')
+      .select('id,exportacion_id,destinatario_email,documentos,estado,fecha_envio,created_at')
+      .eq('veterinaria_id', veterinariaId).eq('exportacion_id', exportacionId)
+      .order('created_at', { ascending: false })
+    if (error) throw new Error(`No se pudo cargar el historial de envíos: ${error.message}`)
+    return (data ?? []).map(row => ({
+      id: row.id,
+      exportacionId: row.exportacion_id,
+      destinatarioEmail: row.destinatario_email,
+      documentos: row.documentos as DocumentoExportacion[],
+      estado: row.estado as EnvioExportacion['estado'],
+      fechaEnvio: row.fecha_envio ?? undefined,
+      createdAt: row.created_at,
+    }))
+  }
+
+  async enviarDocumentacion(exportacionId: string, destinatarioEmail: string,
+    adjuntos: Array<{ tipo: DocumentoExportacion; content: string }>): Promise<void> {
+    await this.getContexto()
+    const { error } = await supabase.functions.invoke('send-export-documents', {
+      body: { exportacionId, destinatarioEmail, adjuntos },
+    })
+    if (error) throw new Error(await mensajeErrorEdgeFunction(error, 'No se pudo enviar la documentación'))
   }
 }
