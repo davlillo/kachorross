@@ -30,8 +30,10 @@ import {
   History,
   Sun,
   Moon,
+  Plane,
 } from 'lucide-react';
 import { useState } from 'react';
+import { TransportCageIcon } from '@/components/atoms/custom';
 import type { Perfil } from '@/types';
 
 interface NavItem {
@@ -53,6 +55,18 @@ const navItems: NavItem[] = [
     label: 'Expedientes',
     href: '/expedientes',
     icon: Search,
+    roles: ['doctora', 'admin'],
+  },
+  {
+    label: 'Hospedaje',
+    href: '/hospedaje',
+    icon: TransportCageIcon,
+    roles: ['doctora', 'admin'],
+  },
+  {
+    label: 'Exportación de mascotas',
+    href: '/exportaciones',
+    icon: Plane,
     roles: ['doctora', 'admin'],
   },
   {

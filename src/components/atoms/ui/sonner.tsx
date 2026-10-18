@@ -12,7 +12,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       className="toaster group"
       icons={{
-        success: <CircleCheckIcon className="size-4 text-brand-primary" />,
+        success: <CircleCheckIcon className="size-4 text-brand-primary dark:text-white" />,
         info: <InfoIcon className="size-4 text-brand-secondary" />,
         warning: <TriangleAlertIcon className="size-4 text-amber-500 dark:text-amber-400" />,
         error: <OctagonXIcon className="size-4 text-red-500 dark:text-red-400" />,
@@ -24,7 +24,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
             'group toast !bg-card !text-foreground !border !border-border !shadow-lg !rounded-xl',
           title: '!text-sm !font-semibold',
           description: '!text-xs !text-muted-foreground',
-          success: '!border-brand-primary/30 dark:!border-brand-primary/20 !bg-brand-primary/10 dark:!bg-brand-primary/15',
+          success: '!border-brand-primary/30 dark:!border-brand-primary dark:!bg-brand-primary dark:!text-white !bg-brand-primary/10',
           error: '!border-red-300 dark:!border-red-800 !bg-red-50 dark:!bg-red-950/60',
           warning: '!border-amber-300 dark:!border-amber-800 !bg-amber-50 dark:!bg-amber-950/60',
           info: '!border-blue-300 dark:!border-blue-800 !bg-blue-50 dark:!bg-blue-950/60',

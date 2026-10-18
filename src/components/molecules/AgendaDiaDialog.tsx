@@ -281,7 +281,7 @@ export function AgendaDiaPanel({
               )}
 
               <div className="px-3 pb-3 pt-2 flex items-center justify-center gap-2 border-t border-border/40">
-                <Button asChild variant="outline" size="sm" className="h-7 text-[10px] px-3 flex-1 max-w-[160px]">
+                <Button asChild variant="outline" size="sm" className="h-7 text-[10px] px-3 flex-1 max-w-[160px] text-foreground border-border hover:bg-muted hover:text-foreground">
                   <Link to={`/expedientes/${grupo.mascotaId}`} onClick={onClose}>
                     Ver expediente
                   </Link>

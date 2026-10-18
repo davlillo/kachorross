@@ -7,6 +7,7 @@ export { EmailController } from './email.controller'
 export { VacunaController } from './vacuna.controller'
 export { AgendaController } from './agenda.controller'
 export { NotificacionController } from './notificacion.controller'
+export { HospedajeController } from './hospedaje.controller'
 export {
   ExportacionController,
   crearCostosExportacionIniciales,

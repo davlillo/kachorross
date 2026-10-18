@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/atoms/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/atoms/ui/select';
 import { PageHeader } from '@/components/molecules/PageHeader';
 import { TratamientoHoja } from '@/components/molecules';
 import { ProductSelectorDialog } from '@/components/organisms/ProductSelectorDialog';
@@ -281,7 +282,7 @@ export default function NuevaConsultaPage() {
                     Próximo seguimiento
                     <span className="text-xs font-normal text-muted-foreground">(opcional)</span>
                   </Label>
-                  <div className="mt-1 flex min-h-[120px] flex-1 flex-col rounded-xl border border-brand-primary/10 bg-brand-primary/5 p-4 md:min-h-0">
+                  <div className="mt-1 flex min-h-[120px] flex-1 flex-col rounded-xl border border-brand-primary/10 bg-brand-primary/5 dark:bg-brand-primary/10 p-4 md:min-h-0">
                     <div className="space-y-3">
                       <div>
                         <Label htmlFor="proximaCita" className="text-[11px] text-muted-foreground">
@@ -292,7 +293,7 @@ export default function NuevaConsultaPage() {
                           type="date"
                           value={proximaCita}
                           onChange={(e) => setProximaCita(e.target.value)}
-                          className="mt-0.5 h-10 bg-white"
+                          className="mt-0.5 h-10 bg-background text-foreground"
                           min={todayLocal()}
                         />
                       </div>
@@ -300,17 +301,20 @@ export default function NuevaConsultaPage() {
                         <Label htmlFor="tipoSeguimiento" className="text-[11px] text-muted-foreground">
                           Tipo de seguimiento
                         </Label>
-                        <select
-                          id="tipoSeguimiento"
-                          className="mt-0.5 flex h-10 w-full rounded-md border border-input bg-white px-3 text-sm disabled:opacity-50"
+                        <Select
                           value={tipoSeguimiento}
-                          onChange={(e) => setTipoSeguimiento(e.target.value as TipoSeguimiento)}
+                          onValueChange={value => setTipoSeguimiento(value as TipoSeguimiento)}
                           disabled={!proximaCita}
                         >
-                          {TIPOS_SEGUIMIENTO.map(({ value, label }) => (
-                            <option key={value} value={value}>{label}</option>
-                          ))}
-                        </select>
+                          <SelectTrigger id="tipoSeguimiento" className="mt-0.5 h-10 rounded-lg">
+                            <SelectValue placeholder="Seleccionar seguimiento" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {TIPOS_SEGUIMIENTO.map(({ value, label }) => (
+                              <SelectItem key={value} value={value}>{label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       {proximaCita && (
                         <p className="text-[11px] text-muted-foreground">

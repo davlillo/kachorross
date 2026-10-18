@@ -107,10 +107,17 @@ export function ProductTable({ productos, onEdit, onDelete }: ProductTableProps)
                             onClick={() => onEdit(producto)} title="Editar">
                             <Edit2 className="w-4 h-4 text-brand-secondary" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 opacity-60 hover:opacity-100"
-                            onClick={() => setEliminarTarget(producto)} title="Eliminar">
-                            <Trash2 className="w-4 h-4 text-destructive" />
-                          </Button>
+                          {producto.activo ? (
+                            <Button variant="ghost" size="icon" className="h-8 w-8 opacity-60 hover:opacity-100"
+                              onClick={() => setEliminarTarget(producto)} title="Desactivar" aria-label={`Desactivar ${producto.nombre}`}>
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          ) : (
+                            <Button variant="ghost" size="icon" className="h-8 w-8 opacity-60 hover:opacity-100"
+                              onClick={() => onEdit(producto)} title="Reactivar" aria-label={`Reactivar ${producto.nombre}`}>
+                              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -179,24 +186,24 @@ export function ProductTable({ productos, onEdit, onDelete }: ProductTableProps)
         </DialogContent>
       </Dialog>
 
-      {/* ── Modal confirmar eliminar ── */}
+       {/* ── Modal confirmar desactivación ── */}
       <Dialog open={!!eliminarTarget} onOpenChange={v => !v && setEliminarTarget(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-red-600">
               <AlertTriangle className="w-5 h-5" />
-              Eliminar producto
+               Desactivar producto
             </DialogTitle>
             <DialogDescription className="pt-2">
-              ¿Está seguro de que desea eliminar{' '}
-              <span className="font-semibold text-foreground">{eliminarTarget?.nombre}</span>?
-              <span className="block mt-1.5 text-red-600 font-medium text-xs">Esta acción no se puede deshacer.</span>
+               ¿Está seguro de que desea desactivar{' '}
+               <span className="font-semibold text-foreground">{eliminarTarget?.nombre}</span>?
+               <span className="block mt-1.5 text-muted-foreground text-xs">No aparecerá en nuevas prefacturas. Puede reactivarlo desde Editar.</span>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 pt-2">
             <Button variant="outline" onClick={() => setEliminarTarget(null)}>Cancelar</Button>
             <Button variant="destructive" onClick={confirmarEliminar}>
-              <Trash2 className="w-4 h-4 mr-2" />Eliminar
+               <Trash2 className="w-4 h-4 mr-2" />Desactivar
             </Button>
           </DialogFooter>
         </DialogContent>

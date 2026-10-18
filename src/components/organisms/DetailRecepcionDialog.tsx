@@ -1,15 +1,16 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import {
   Dialog, DialogPortal, DialogOverlay, DialogTitle,
 } from '@/components/atoms/ui/dialog'
 import { Button } from '@/components/atoms/ui/button'
-import { cn } from '@/lib/utils'
+import { cn, diffDias, parseDateLocal } from '@/lib/utils'
 import {
   CheckCircle, X, PawPrint, User, Phone, Clock, FileText,
-  Stethoscope, Printer,
+  Stethoscope, Printer, CalendarDays, Receipt, Pencil, Save,
 } from 'lucide-react'
-import type { Consulta, Mascota } from '@/types'
+import { TransportCageIcon } from '@/components/atoms/custom'
+import type { Consulta, Hospedaje, Mascota } from '@/types'
 import { getCategoriaConfig } from '@/lib/catalogo-categorias'
 import { useAuth } from '@/context/AuthContext'
 import { imprimirTratamiento } from '@/lib/printTratamiento'
@@ -18,6 +19,7 @@ import { EmailController } from '@/controllers/email.controller'
 import { proximaCitaEsManana } from '@/lib/fechaAgenda'
 import { toast } from 'sonner'
 import { DetalleProductoCell } from '@/components/molecules/DetalleProductoCell'
+import { Input } from '@/components/atoms/ui/input'
 
 const emailCtrl = EmailController.getInstance()
 
@@ -27,17 +29,81 @@ interface DetailRecepcionDialogProps {
   consulta: Consulta | undefined
   mascota?: Mascota
   onTerminado?: (consultaId: string) => void
+  /** Cuando viene informado, el dialogo muestra la prefactura de un hospedaje. */
+  hospedaje?: Hospedaje
+  onHospedajeCargoAjustado?: (hospedajeId: string, subtotalCargo: number, descuentoPorcentaje: number) => Promise<void>
+  onHospedajeFacturado?: (hospedajeId: string) => void
 }
 
 export function DetailRecepcionDialog({
-  open, onOpenChange, consulta, mascota, onTerminado,
+  open, onOpenChange, consulta, mascota, onTerminado, hospedaje, onHospedajeCargoAjustado, onHospedajeFacturado,
 }: DetailRecepcionDialogProps) {
   const [confirmando, setConfirmando] = useState(false)
+  const [editandoCargo, setEditandoCargo] = useState(false)
+  const [subtotalEditado, setSubtotalEditado] = useState('')
+  const [descuentoEditado, setDescuentoEditado] = useState('')
+  const [guardandoCargo, setGuardandoCargo] = useState(false)
   const { veterinaria } = useAuth()
+
+  const esHospedaje = !!hospedaje
+
+  useEffect(() => {
+    setEditandoCargo(false)
+    setGuardandoCargo(false)
+    const subtotal = hospedaje?.subtotalCargo ?? (hospedaje?.fechaSalidaReal
+      ? Math.max(diffDias(hospedaje.fechaIngreso, hospedaje.fechaSalidaReal), 1) * hospedaje.tarifaDiaria
+      : 0)
+    setSubtotalEditado(subtotal.toFixed(2))
+    setDescuentoEditado(hospedaje?.descuentoPorcentaje?.toFixed(2) ?? '0.00')
+  }, [
+    open,
+    hospedaje?.id,
+    hospedaje?.totalCargo,
+    hospedaje?.subtotalCargo,
+    hospedaje?.descuentoPorcentaje,
+    hospedaje?.fechaIngreso,
+    hospedaje?.fechaSalidaReal,
+    hospedaje?.tarifaDiaria,
+  ])
 
   const handleClose = () => {
     setConfirmando(false)
     onOpenChange(false)
+  }
+
+  const handleFacturado = () => {
+    if (!hospedaje) return
+    if (!confirmando) { setConfirmando(true); return }
+
+    setConfirmando(false)
+    onHospedajeFacturado?.(hospedaje.id)
+    onOpenChange(false)
+  }
+
+  const handleAjustarCargo = async () => {
+    if (!hospedaje || !onHospedajeCargoAjustado || guardandoCargo) return
+
+    const subtotal = Number(subtotalEditado)
+    const descuento = Number(descuentoEditado)
+    if (!Number.isFinite(subtotal) || subtotal < 0) {
+      toast.error('El subtotal debe ser mayor o igual a cero')
+      return
+    }
+    if (!Number.isFinite(descuento) || descuento < 0 || descuento > 100) {
+      toast.error('El descuento debe estar entre 0% y 100%')
+      return
+    }
+
+    try {
+      setGuardandoCargo(true)
+      await onHospedajeCargoAjustado(hospedaje.id, subtotal, descuento)
+      setEditandoCargo(false)
+      toast.success('Descuento y total del hospedaje actualizados')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'No se pudo actualizar el total')
+    } finally {
+      setGuardandoCargo(false)
+    }
   }
 
   const handleTerminado = () => {
@@ -134,6 +200,22 @@ export function DetailRecepcionDialog({
     )
   }
 
+  const diasHospedaje = hospedaje?.fechaSalidaReal
+    ? Math.max(diffDias(hospedaje.fechaIngreso, hospedaje.fechaSalidaReal), 1)
+    : 0
+  const subtotalHospedaje = hospedaje ? diasHospedaje * hospedaje.tarifaDiaria : 0
+  const descuentoPreview = Number(descuentoEditado)
+  const subtotalPreview = Number(subtotalEditado)
+  const totalPreview = Number.isFinite(subtotalPreview) && subtotalPreview >= 0
+    && Number.isFinite(descuentoPreview) && descuentoPreview >= 0 && descuentoPreview <= 100
+    ? subtotalPreview * (1 - descuentoPreview / 100)
+    : hospedaje?.totalCargo ?? 0
+
+  const formatearFecha = (fecha: string) =>
+    parseDateLocal(fecha).toLocaleDateString('es-ES', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    })
+
   return (
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogPortal>
@@ -151,23 +233,27 @@ export function DetailRecepcionDialog({
             'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
           )}
         >
-          <DialogTitle className="sr-only">Detalle de consulta</DialogTitle>
+          <DialogTitle className="sr-only">{esHospedaje ? 'Detalle de hospedaje' : 'Detalle de consulta'}</DialogTitle>
 
           {/* ── Header degradado ── */}
-          <div className="relative bg-gradient-to-r from-brand-primary to-brand-primary px-6 py-4 text-white">
+          <div className={cn('relative px-6 py-4 text-white', esHospedaje ? 'bg-gradient-to-r from-cyan-700 to-cyan-500' : 'bg-gradient-to-r from-brand-primary to-brand-primary')}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                  <FileText className="w-5 h-5" />
+                  {esHospedaje ? <TransportCageIcon className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
                 </div>
                 <div>
-                  <h2 className="font-bold text-lg leading-tight">Prefactura de Consulta</h2>
+                  <h2 className="font-bold text-lg leading-tight">
+                    {esHospedaje ? 'Prefactura de Hospedaje' : 'Prefactura de Consulta'}
+                  </h2>
                   <p className="text-xs text-white/70">
-                    {consulta
-                      ? new Date(consulta.fecha).toLocaleDateString('es-ES', {
-                          weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-                        })
-                      : ''}
+                    {esHospedaje && hospedaje?.fechaIngreso
+                      ? `Ingreso ${formatearFecha(hospedaje.fechaIngreso)}`
+                      : consulta
+                        ? new Date(consulta.fecha).toLocaleDateString('es-ES', {
+                            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+                          })
+                        : ''}
                   </p>
                 </div>
               </div>
@@ -182,7 +268,174 @@ export function DetailRecepcionDialog({
 
           {/* ── Cuerpo ── */}
           <div className="p-5 space-y-4 max-h-[65vh] overflow-y-auto">
-            {consulta && mascota && (
+            {esHospedaje && hospedaje && (
+              <>
+                {/* Info paciente + propietario */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/50 border border-border">
+                    <PawPrint className="w-4 h-4 text-cyan-600 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Paciente</p>
+                      <p className="font-bold text-sm truncate">{hospedaje.mascota?.nombre ?? '—'}</p>
+                      <p className="text-xs text-muted-foreground truncate">{hospedaje.mascota?.raza}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/50 border border-border">
+                    <User className="w-4 h-4 text-brand-secondary shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Propietario</p>
+                      <p className="font-bold text-sm truncate">{hospedaje.mascota?.propietario.nombre ?? '—'}</p>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Phone className="w-3 h-3" />{hospedaje.mascota?.propietario.telefono}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Ingreso / salida */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex items-center gap-2 p-3 rounded-xl bg-cyan-50 border border-cyan-100">
+                    <CalendarDays className="w-4 h-4 text-cyan-600 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Ingreso</p>
+                      <p className="font-semibold text-sm text-cyan-900">
+                        {new Date(`${hospedaje.fechaIngreso}T12:00:00`).toLocaleDateString('es-ES', {
+                          day: 'numeric', month: 'long', year: 'numeric',
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 p-3 rounded-xl bg-cyan-50 border border-cyan-100">
+                    <CalendarDays className="w-4 h-4 text-cyan-600 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Salida</p>
+                      <p className="font-semibold text-sm text-cyan-900">
+                        {hospedaje.fechaSalidaReal
+                          ? new Date(`${hospedaje.fechaSalidaReal}T12:00:00`).toLocaleDateString('es-ES', {
+                              day: 'numeric', month: 'long', year: 'numeric',
+                            })
+                          : '—'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tarifa y días */}
+                <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-muted/50 border border-border">
+                  <div className="flex items-center gap-2">
+                    <Receipt className="w-4 h-4 text-cyan-600 shrink-0" />
+                    <div>
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Tarifa diaria</p>
+                      <p className="text-sm mt-0.5">${hospedaje.tarifaDiaria.toFixed(2)}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground shrink-0">
+                    {diasHospedaje} {diasHospedaje === 1 ? 'día' : 'días'}
+                  </p>
+                </div>
+
+                {hospedaje.observaciones && (
+                  <div className="p-3 rounded-xl bg-muted/50 border border-border">
+                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Observaciones</p>
+                    <p className="text-sm mt-1 whitespace-pre-wrap">{hospedaje.observaciones}</p>
+                  </div>
+                )}
+
+                {/* Descuento y total editables hasta confirmar el cobro */}
+                <div className="p-4 rounded-xl bg-gradient-to-r from-cyan-50 to-cyan-50 border border-cyan-200">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground font-medium">Total a cobrar</p>
+                      <p className="text-[10px] text-amber-600 mt-0.5">Procesar en sistema externo</p>
+                    </div>
+                    {!editandoCargo && onHospedajeCargoAjustado && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditandoCargo(true)}
+                        disabled={guardandoCargo}
+                      >
+                        <Pencil className="w-3.5 h-3.5 mr-1.5" />Ajustar
+                      </Button>
+                    )}
+                  </div>
+                  {editandoCargo ? (
+                    <div className="mt-3 space-y-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Subtotal calculado</span>
+                        <span className="font-medium">${subtotalHospedaje.toFixed(2)}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label htmlFor="subtotalHospedaje" className="text-sm text-muted-foreground whitespace-nowrap">
+                          Subtotal a cobrar ($)
+                        </label>
+                        <Input
+                          id="subtotalHospedaje"
+                          aria-label="Subtotal ajustado del hospedaje"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={subtotalEditado}
+                          onChange={event => setSubtotalEditado(event.target.value)}
+                          autoFocus
+                          disabled={guardandoCargo}
+                          className="text-right font-bold"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label htmlFor="descuentoHospedaje" className="text-sm text-muted-foreground whitespace-nowrap">
+                          Descuento (%)
+                        </label>
+                        <Input
+                          id="descuentoHospedaje"
+                          aria-label="Porcentaje de descuento aplicado al hospedaje"
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="0.01"
+                          value={descuentoEditado}
+                          onChange={event => setDescuentoEditado(event.target.value)}
+                          disabled={guardandoCargo}
+                          className="text-right font-bold"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between border-t border-cyan-200 pt-2">
+                        <span className="font-medium">Total final</span>
+                        <span className="text-2xl font-black text-cyan-900">${totalPreview.toFixed(2)}</span>
+                      </div>
+                      <div className="flex gap-2 justify-end">
+                        <Button type="button" onClick={() => void handleAjustarCargo()} disabled={guardandoCargo}>
+                          <Save className="w-4 h-4 mr-1.5" />Guardar
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => setEditandoCargo(false)}
+                          disabled={guardandoCargo}
+                          aria-label="Cancelar ajuste"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-1 text-right">
+                      {hospedaje.descuentoPorcentaje > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          Subtotal ${(hospedaje.subtotalCargo ?? subtotalHospedaje).toFixed(2)} · Descuento {hospedaje.descuentoPorcentaje.toFixed(2)}%
+                        </p>
+                      )}
+                      <p className="text-3xl font-black text-cyan-900">
+                        ${(hospedaje.totalCargo ?? 0).toFixed(2)}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            {!esHospedaje && consulta && mascota && (
               <>
                 {/* Info paciente + propietario */}
                 <div className="grid grid-cols-2 gap-3">
@@ -292,7 +545,42 @@ export function DetailRecepcionDialog({
           </div>
 
           {/* ── Footer — botones ── */}
-          {consulta && (
+          {esHospedaje && hospedaje && (
+            <div className="px-5 pb-5 space-y-2">
+              {confirmando ? (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-3">
+                  <p className="text-sm font-semibold text-amber-800 text-center">
+                    ¿Confirmar que se cobró el hospedaje?
+                  </p>
+                  <p className="text-xs text-amber-700 text-center">
+                    Se marcará como facturado y saldrá de la lista activa.
+                  </p>
+                  <div className="flex gap-2">
+                    <Button variant="outline" className="flex-1 h-9 text-sm" onClick={() => setConfirmando(false)}>
+                      Cancelar
+                    </Button>
+                    <Button
+                      className="flex-1 h-9 text-sm bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-600 hover:to-cyan-500"
+                      onClick={handleFacturado}
+                      disabled={editandoCargo || guardandoCargo}
+                    >
+                      <CheckCircle className="w-4 h-4 mr-1.5" />Confirmar cobro
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  className="w-full h-11 text-sm font-semibold bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-600 hover:to-cyan-500 shadow-md"
+                  onClick={handleFacturado}
+                  disabled={editandoCargo || guardandoCargo}
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />Marcar como facturado
+                </Button>
+              )}
+            </div>
+          )}
+
+          {!esHospedaje && consulta && (
             <div className="px-5 pb-5 space-y-2">
               <Button
                 variant="outline"

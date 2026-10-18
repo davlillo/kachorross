@@ -7,6 +7,7 @@ import type {
   Expediente,
   ExpedienteResumen,
   FotoEvolucion,
+  Hospedaje,
   Mascota,
   Producto,
   Propietario,
@@ -236,7 +237,7 @@ export class MascotaController {
 
     if (!mascota) return undefined
 
-    const [{ data: consultasData, error: consultasError }, { data: vacunasData, error: vacunasError }, { data: fotosData, error: fotosError }, { data: desparasitacionesData, error: desparasitacionesError }] =
+    const [{ data: consultasData, error: consultasError }, { data: vacunasData, error: vacunasError }, { data: fotosData, error: fotosError }, { data: desparasitacionesData, error: desparasitacionesError }, { data: hospedajesData, error: hospedajesError }] =
       await Promise.all([
         supabase
           .from('consultas')
@@ -262,12 +263,23 @@ export class MascotaController {
           .eq('mascota_id', mascota.id)
           .eq('veterinaria_id', veterinariaId)
           .order('fecha_aplicacion', { ascending: false }),
+        // El historial clínico solo muestra estancias ya cerradas: la de la
+        // mascota activa todavía no es un hecho consumado. Sin el embed de
+        // `mascotas` porque larelation ya viene cargada arriba.
+        supabase
+          .from('hospedajes')
+          .select('id,mascota_id,veterinaria_id,fecha_ingreso,fecha_salida_estimada,fecha_salida_real,tarifa_diaria,subtotal_cargo,descuento_porcentaje,total_cargo,observaciones,estado,estado_cobro,facturado_at,consulta_id')
+          .eq('mascota_id', mascota.id)
+          .eq('veterinaria_id', veterinariaId)
+          .eq('estado', 'finalizado')
+          .order('fecha_ingreso', { ascending: false }),
       ])
 
     if (consultasError) throw new Error(`No se pudieron cargar consultas del expediente: ${consultasError.message}`)
     if (vacunasError) throw new Error(`No se pudieron cargar vacunas del expediente: ${vacunasError.message}`)
     if (fotosError) throw new Error(`No se pudieron cargar fotos de evolución: ${fotosError.message}`)
     if (desparasitacionesError) throw new Error(`No se pudieron cargar desparasitaciones: ${desparasitacionesError.message}`)
+    if (hospedajesError) throw new Error(`No se pudieron cargar hospedajes del expediente: ${hospedajesError.message}`)
 
     const consultaIds = (consultasData ?? []).map(c => c.id)
     const { data: detallesData, error: detallesError } = consultaIds.length
@@ -324,6 +336,27 @@ export class MascotaController {
       medicoResponsable: row.medico_responsable ?? undefined,
     }))
 
+    const hospedajesFinalizados: Hospedaje[] = (hospedajesData ?? []).map(row => ({
+      id: row.id,
+      veterinariaId: row.veterinaria_id,
+      mascotaId: row.mascota_id,
+      mascota,
+      fechaIngreso: row.fecha_ingreso,
+      fechaSalidaEstimada: row.fecha_salida_estimada,
+       fechaSalidaReal: row.fecha_salida_real,
+       tarifaDiaria: row.tarifa_diaria,
+       subtotalCargo: row.subtotal_cargo ?? null,
+       descuentoPorcentaje: row.descuento_porcentaje ?? 0,
+       totalCargo: row.total_cargo,
+      observaciones: row.observaciones ?? undefined,
+      estado: 'finalizado',
+      // La consulta ya viene filtrada por `estado = 'finalizado'`, así que solo
+      // falta traer el estado de cobro que acompaña a la fila.
+      estadoCobro: row.estado_cobro ?? 'pendiente',
+      facturadoAt: row.facturado_at ?? null,
+      consultaId: row.consulta_id ?? undefined,
+    }))
+
     return {
       id: `exp-${mascota.id}`,
       mascotaId: mascota.id,
@@ -332,6 +365,7 @@ export class MascotaController {
       fotosEvolucion,
       vacunas,
       desparasitaciones,
+      hospedajesFinalizados,
     }
   }
 
@@ -464,6 +498,30 @@ export class MascotaController {
       descripcion: row.descripcion ?? 'Sin descripción',
       consultaId: row.consulta_id ?? undefined,
       tipoArchivo: row.tipo_archivo ?? undefined,
+    }
+  }
+
+  async actualizarFotoEvolucion(fotoId: string, descripcion: string): Promise<void> {
+    const { error } = await supabase
+      .from('fotos_evolucion')
+      .update({ descripcion: descripcion.trim() || null })
+      .eq('id', fotoId)
+
+    if (error) throw new Error(`No se pudo actualizar la foto de evolución: ${error.message}`)
+  }
+
+  async eliminarFotoEvolucion(fotoId: string, fotoUrl?: string): Promise<void> {
+    const { error } = await supabase
+      .from('fotos_evolucion')
+      .delete()
+      .eq('id', fotoId)
+
+    if (error) throw new Error(`No se pudo eliminar la foto de evolución: ${error.message}`)
+
+    const marker = '/storage/v1/object/public/fotos_evolucion/'
+    const filePath = fotoUrl?.split(marker)[1]
+    if (filePath) {
+      await supabase.storage.from('fotos_evolucion').remove([decodeURIComponent(filePath)])
     }
   }
 

@@ -1,0 +1,2 @@
+[functions.send-export-documents]
+verify_jwt = true
