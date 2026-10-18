@@ -268,7 +268,7 @@ export class MascotaController {
         // `mascotas` porque larelation ya viene cargada arriba.
         supabase
           .from('hospedajes')
-          .select('id,mascota_id,veterinaria_id,fecha_ingreso,fecha_salida_estimada,fecha_salida_real,tarifa_diaria,total_cargo,observaciones,estado,estado_cobro,facturado_at,consulta_id')
+          .select('id,mascota_id,veterinaria_id,fecha_ingreso,fecha_salida_estimada,fecha_salida_real,tarifa_diaria,subtotal_cargo,descuento_porcentaje,total_cargo,observaciones,estado,estado_cobro,facturado_at,consulta_id')
           .eq('mascota_id', mascota.id)
           .eq('veterinaria_id', veterinariaId)
           .eq('estado', 'finalizado')
@@ -343,9 +343,11 @@ export class MascotaController {
       mascota,
       fechaIngreso: row.fecha_ingreso,
       fechaSalidaEstimada: row.fecha_salida_estimada,
-      fechaSalidaReal: row.fecha_salida_real,
-      tarifaDiaria: row.tarifa_diaria,
-      totalCargo: row.total_cargo,
+       fechaSalidaReal: row.fecha_salida_real,
+       tarifaDiaria: row.tarifa_diaria,
+       subtotalCargo: row.subtotal_cargo ?? null,
+       descuentoPorcentaje: row.descuento_porcentaje ?? 0,
+       totalCargo: row.total_cargo,
       observaciones: row.observaciones ?? undefined,
       estado: 'finalizado',
       // La consulta ya viene filtrada por `estado = 'finalizado'`, así que solo

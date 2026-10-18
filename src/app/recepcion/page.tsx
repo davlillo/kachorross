@@ -18,7 +18,7 @@ import type { MonitorSalida } from '@/types';
 
 export default function RecepcionPage() {
   const { consultas, monitorSalida: consultasMonitor, finalizarConsulta, isLoading } = useConsultas();
-  const { hospedajes: hospedajesMonitor, marcarFacturado } = useHospedajesPrefacturacion();
+  const { hospedajes: hospedajesMonitor, marcarFacturado, ajustarCargo } = useHospedajesPrefacturacion();
 
   const [seleccion, setSeleccion] = useState<{ id: string; origen: MonitorSalida['origen'] } | null>(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
@@ -77,6 +77,10 @@ export default function RecepcionPage() {
       toast.error(err instanceof Error ? err.message : 'No se pudo marcar el hospedaje como facturado');
     }
   }, [marcarFacturado, refrescarFacturados]);
+
+  const handleCargoAjustado = useCallback(async (id: string, subtotalCargo: number, descuentoPorcentaje: number) => {
+    await ajustarCargo(id, subtotalCargo, descuentoPorcentaje);
+  }, [ajustarCargo]);
 
   return (
     <div className="space-y-6 animate-fade-in-up">
@@ -188,6 +192,7 @@ export default function RecepcionPage() {
         mascota={itemSeleccionado?.mascota}
         onTerminado={handleTerminado}
         hospedaje={hospedajeSeleccionado}
+        onHospedajeCargoAjustado={handleCargoAjustado}
         onHospedajeFacturado={(id) => void handleFacturado(id)}
       />
     </div>
